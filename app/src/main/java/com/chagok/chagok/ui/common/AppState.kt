@@ -221,4 +221,5 @@ fun Capability.supports(code: MissionCode): Boolean = when (code) {
     MissionCode.BLINK -> blink
     MissionCode.WIPER -> wiper
     MissionCode.NEXT_TURN -> navi
+    MissionCode.NEAR_DEST -> navi
 }

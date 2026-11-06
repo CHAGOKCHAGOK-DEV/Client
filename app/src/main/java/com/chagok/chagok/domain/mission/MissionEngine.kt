@@ -48,6 +48,8 @@ class MissionEngine(
     private var lastEndMs: Long? = null
     private var nextTurnArmed = true
     private var naviDir: TurnDir = TurnDir.NONE
+    private var etaSec: Int? = null
+    private var nearDestDone = false                // 곧 도착은 주행당 1회
 
     init {
         scope.launch {
@@ -78,6 +80,13 @@ class MissionEngine(
     private fun onNavi(info: NaviInfo) {
         distToTurn = info.distToTurnM
         naviDir = info.nextTurnDir
+        etaSec = info.etaSec
+
+        // 곧 도착: 주행당 1회. 모드가 꺼져 있어 못 받았으면 다음 내비 갱신 때 다시 시도
+        if (!nearDestDone && MissionDefinitions.isNearDestination(info)) {
+            if (offer(MissionDefinitions.nearDestCandidate(nowMs()))) nearDestDone = true
+        }
+
         val dist = info.distToTurnM
         if (dist == null || dist > 500) { nextTurnArmed = true; return }   // 다음 회전을 위해 재무장
         if (nextTurnArmed && dist >= 300) {
@@ -88,14 +97,15 @@ class MissionEngine(
         }
     }
 
-    /** 새 후보 등록. 중복이면 무시, 기존 대기 후보는 EXPIRED로 교체 (F-09-4) */
-    private fun offer(c: MissionCandidate) {
-        if (!enabled()) return
-        if (!isSupported(c.code)) return
-        if (pending?.key == c.key) return
+    /** 새 후보 등록. 중복이면 무시, 기존 대기 후보는 EXPIRED로 교체 (F-09-4). 받았으면 true */
+    private fun offer(c: MissionCandidate): Boolean {
+        if (!enabled()) return false
+        if (!isSupported(c.code)) return false
+        if (pending?.key == c.key) return false
         pending?.let { saveEnded(it, MissionState.EXPIRED) }
         pending = c.copy(tripId = tripId())
         if (!running) _state.value = MissionState.CANDIDATE
+        return true
     }
 
     private suspend fun tick() {
@@ -134,6 +144,7 @@ class MissionEngine(
             val expectedDir = if (c.expectedAnswer == Answer.LEFT) TurnDir.LEFT else TurnDir.RIGHT
             if (naviDir != expectedDir) return true                  // 경로 재탐색으로 방향이 바뀜
         }
+        if (c.code == MissionCode.NEAR_DEST && etaSec == null) return true   // 도착·경로 취소
         return false
     }
 
@@ -146,6 +157,7 @@ class MissionEngine(
         pending = null
         lastEndMs = null
         nextTurnArmed = true
+        nearDestDone = false
         if (!running) _state.value = null
     }
 
@@ -162,13 +174,20 @@ class MissionEngine(
                 if (askedAt == null) askedAt = nowMs()
                 speech.speak(def.question)                       // TTS 끝난 뒤에 STT 시작
                 _state.value = MissionState.LISTENING
-                given = speech.listen(listenTimeoutMs)
+                given = speech.listen(listenTimeoutMs, def.answerKind)
                 if (given != Answer.NONE || retry >= 1) break
                 retry++                                           // 실패·무응답: 1회 재질문
             }
 
             if (given == Answer.NONE) {
-                finish(c, MissionState.SKIPPED, null, false, retry, askedAt, null)
+                if (c.code == MissionCode.NEAR_DEST) {
+                    // 곧 도착은 무응답이어도 완료로 친다 (설계서 미션 카탈로그)
+                    _state.value = MissionState.JUDGING
+                    speech.speak(def.wrongMessage)
+                    finish(c, MissionState.DONE, Answer.NONE, false, retry, askedAt, null)
+                } else {
+                    finish(c, MissionState.SKIPPED, null, false, retry, askedAt, null)
+                }
                 return
             }
 

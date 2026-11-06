@@ -87,4 +87,45 @@ class MissionEngineTest {
         assertEquals(listOf(MissionState.EXPIRED), states)
         assertEquals(0, speech.spoken.size)
     }
+
+    @Test
+    fun `도착 5분 전이 되면 곧 도착 미션, 아무 말이나 하면 정답`() = runTest {
+        val navi = MutableStateFlow(NaviInfo())
+        val store = InMemoryMissionResultStore()
+        val speech = FakeSpeechPort(nextAnswer = Answer.YES)   // 무슨 말이든
+        val engine = TestEnv(backgroundScope, { testScheduler.currentTime }, MutableStateFlow(false), navi, speech, store)
+
+        navi.value = NaviInfo(etaSec = 600)      // 10분 전: 아직
+        advanceTimeBy(1_000)
+        assertEquals(null, engine.state.value)
+
+        navi.value = NaviInfo(etaSec = 290)      // 5분 이내
+        advanceTimeBy(4_000)
+
+        val r = store.results.first().single()
+        assertEquals(MissionCode.NEAR_DEST, r.code)
+        assertEquals(MissionState.DONE, r.state)
+        assertEquals(true, r.correct)
+        assertEquals(Answer.ANY, r.givenAnswer)
+    }
+
+    @Test
+    fun `곧 도착은 무응답이어도 재질문 후 완료(DONE), 주행당 한 번만`() = runTest {
+        val navi = MutableStateFlow(NaviInfo())
+        val store = InMemoryMissionResultStore()
+        val speech = FakeSpeechPort(nextAnswer = Answer.NONE)
+        TestEnv(backgroundScope, { testScheduler.currentTime }, MutableStateFlow(false), navi, speech, store)
+
+        navi.value = NaviInfo(etaSec = 280)
+        advanceTimeBy(5_000)
+        navi.value = NaviInfo(etaSec = 200)      // 다시 갱신돼도
+        advanceTimeBy(5_000)
+
+        val results = store.results.first()
+        assertEquals(1, results.size)
+        assertEquals(MissionState.DONE, results.single().state)
+        assertEquals(false, results.single().correct)
+        assertEquals(1, results.single().retryCount)
+        assertEquals(3, speech.spoken.size)      // 질문 + 재질문 + 마무리 멘트
+    }
 }
