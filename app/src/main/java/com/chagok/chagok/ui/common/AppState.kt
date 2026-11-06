@@ -99,13 +99,15 @@ class AppState(
      * S-08로 가야 하는 이유. null이면 정상.
      * 연결을 한 번도 안 한 상태(앱 시작 직후)는 제한 모드로 보지 않는다.
      */
+    // 연결 여부는 vehicle.connected를 직접 본다. vehicleHealth는 한 단계 늦게 바뀌어서
+    // 연결 직후 잠깐 DISCONNECTED로 남아 있다 (S-08이 깜빡 뜨는 문제)
     val limitedReason: StateFlow<LimitedReason?> = combine(
-        connectFailed, everConnected, vehicleHealth, _capability,
-    ) { failed, ever, health, cap ->
+        connectFailed, everConnected, vehicle.connected, vehicleHealth, _capability,
+    ) { failed, ever, connected, health, cap ->
         when {
             failed -> LimitedReason.CONNECT_FAILED
             !ever -> null
-            health == VehicleHealth.DISCONNECTED -> LimitedReason.DISCONNECTED
+            !connected -> LimitedReason.DISCONNECTED
             health == VehicleHealth.SPEED_LOST -> LimitedReason.SPEED_LOST
             !cap.blink && !cap.wiper && !cap.navi -> LimitedReason.NO_MISSIONS
             else -> null
