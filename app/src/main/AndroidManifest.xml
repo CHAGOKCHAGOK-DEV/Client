@@ -6,6 +6,7 @@
 
     <!-- Vehicle SDK: 주행 정보 및 주행거리 -->
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+    <uses-permission android:name="pleos.car.permission.CAR_LIGHTS" />
 
     <!-- FusedLocation SDK: 차량 위치 -->
     <uses-permission android:name="pleos.car.permission.FUSED_LOCATION" />
