@@ -51,6 +51,10 @@
         <activity
             android:name=".MainActivity"
             android:exported="true">
+            <!-- 주행 중에도 화면 표시 (Distraction Optimized) -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
