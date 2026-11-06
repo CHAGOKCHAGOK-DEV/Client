@@ -29,6 +29,8 @@ class MissionEngine(
     private val intervalMs: () -> Long = { 180_000L },          // 프로필 강도 연결 전 기본 3분
     private val isNaviSpeaking: () -> Boolean = { false },      // 오디오 포커스 연결 전 기본값
     private val enabled: () -> Boolean = { true },              // 부기장 모드 ON일 때만
+    private val isSupported: (MissionCode) -> Boolean = { true },  // capability: 이 차에서 되는 미션만
+    private val tripId: () -> String? = { null },               // 결과를 묶을 주행 id
     private val tickMs: Long = 500,
     private val listenTimeoutMs: Long = 5_000,                  // 🟡 STT 대기 5초
 ) {
@@ -45,6 +47,7 @@ class MissionEngine(
     private var distToTurn: Int? = null
     private var lastEndMs: Long? = null
     private var nextTurnArmed = true
+    private var naviDir: TurnDir = TurnDir.NONE
 
     init {
         scope.launch {
@@ -74,6 +77,7 @@ class MissionEngine(
 
     private fun onNavi(info: NaviInfo) {
         distToTurn = info.distToTurnM
+        naviDir = info.nextTurnDir
         val dist = info.distToTurnM
         if (dist == null || dist > 500) { nextTurnArmed = true; return }   // 다음 회전을 위해 재무장
         if (nextTurnArmed && dist >= 300) {
@@ -87,27 +91,27 @@ class MissionEngine(
     /** 새 후보 등록. 중복이면 무시, 기존 대기 후보는 EXPIRED로 교체 (F-09-4) */
     private fun offer(c: MissionCandidate) {
         if (!enabled()) return
+        if (!isSupported(c.code)) return
         if (pending?.key == c.key) return
         pending?.let { saveEnded(it, MissionState.EXPIRED) }
-        pending = c
+        pending = c.copy(tripId = tripId())
         if (!running) _state.value = MissionState.CANDIDATE
     }
 
     private suspend fun tick() {
         if (running) return
         val c = pending ?: return
-        if (!enabled()) return
 
-        val now = nowMs()
-        val expiredByTime = c.expiresAtMs != null && now > c.expiresAtMs
-        val d = distToTurn
-        val expiredByDistance = c.code == MissionCode.NEXT_TURN && d != null && d < MissionTiming.TURN_HOLD_M
-        if (expiredByTime || expiredByDistance) {
+        // 만료 확인은 비활성(정차 등) 중에도 한다. 그래야 다시 출발했을 때 지난 일을 묻지 않는다.
+        if (isExpired(c, nowMs())) {
             pending = null
             saveEnded(c, MissionState.EXPIRED)
             _state.value = null
             return
         }
+        if (!enabled()) return
+
+        val now = nowMs()
 
         val decision = MissionTiming.decide(
             c,
@@ -120,6 +124,29 @@ class MissionEngine(
 
         pending = null
         run(c)
+    }
+
+    private fun isExpired(c: MissionCandidate, now: Long): Boolean {
+        if (c.expiresAtMs != null && now > c.expiresAtMs) return true
+        if (c.code == MissionCode.NEXT_TURN) {
+            val d = distToTurn ?: return true                        // 경로 안내 종료
+            if (d < MissionTiming.TURN_HOLD_M) return true           // 300m 도달
+            val expectedDir = if (c.expectedAnswer == Answer.LEFT) TurnDir.LEFT else TurnDir.RIGHT
+            if (naviDir != expectedDir) return true                  // 경로 재탐색으로 방향이 바뀜
+        }
+        return false
+    }
+
+    /**
+     * 주행이 끝나면 호출. 대기 후보는 EXPIRED로 버리고 간격 타이머도 초기화한다.
+     * 진행 중인 미션은 끝까지 마친다 (아이 말을 끊지 않기).
+     */
+    fun reset() {
+        pending?.let { saveEnded(it, MissionState.EXPIRED) }
+        pending = null
+        lastEndMs = null
+        nextTurnArmed = true
+        if (!running) _state.value = null
     }
 
     private suspend fun run(c: MissionCandidate) {
@@ -162,7 +189,7 @@ class MissionEngine(
         lastEndMs = nowMs()
         store.save(
             MissionResult(
-                id = UUID.randomUUID().toString(), code = c.code, expectedAnswer = c.expectedAnswer,
+                id = UUID.randomUUID().toString(), tripId = c.tripId, code = c.code, expectedAnswer = c.expectedAnswer,
                 givenAnswer = given, state = state, correct = correct, retryCount = retry,
                 triggeredAtMs = c.triggeredAtMs, askedAtMs = askedAt, answeredAtMs = answeredAt,
             )
@@ -174,7 +201,7 @@ class MissionEngine(
         scope.launch {
             store.save(
                 MissionResult(
-                    id = UUID.randomUUID().toString(), code = c.code, expectedAnswer = c.expectedAnswer,
+                    id = UUID.randomUUID().toString(), tripId = c.tripId, code = c.code, expectedAnswer = c.expectedAnswer,
                     givenAnswer = null, state = state, correct = false, retryCount = 0,
                     triggeredAtMs = c.triggeredAtMs, askedAtMs = null, answeredAtMs = null,
                 )
