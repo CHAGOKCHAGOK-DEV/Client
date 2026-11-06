@@ -22,6 +22,7 @@ class MissionEngineTest {
         navi: MutableStateFlow<NaviInfo>,
         speech: FakeSpeechPort,
         store: InMemoryMissionResultStore,
+        naviSpeaking: Boolean = false,
     ) = MissionEngine(
         scope = scope,
         driveState = MutableStateFlow(DriveState.DRIVING),
@@ -31,6 +32,7 @@ class MissionEngineTest {
         speech = speech,
         store = store,
         nowMs = now,
+        isNaviSpeaking = { naviSpeaking },
     )
 
     @Test
@@ -69,14 +71,20 @@ class MissionEngineTest {
         val navi = MutableStateFlow(NaviInfo())
         val store = InMemoryMissionResultStore()
         val speech = FakeSpeechPort()
-        // 직전 미션 직후라 보류되도록 간격을 길게 만들기 어렵기 때문에, 후보 직후 바로 거리를 줄인다
-        TestEnv(backgroundScope, { testScheduler.currentTime }, MutableStateFlow(false), navi, speech, store)
+        // 내비 안내 중이라 후보가 보류 상태로 대기한다
+        TestEnv(
+            backgroundScope, { testScheduler.currentTime },
+            MutableStateFlow(false), navi, speech, store,
+            naviSpeaking = true,
+        )
 
         navi.value = NaviInfo(nextTurnDir = TurnDir.LEFT, distToTurnM = 400)
+        advanceTimeBy(100)      // 엔진이 400m 값을 보고 후보를 만들 시간
         navi.value = NaviInfo(nextTurnDir = TurnDir.LEFT, distToTurnM = 250)
-        advanceTimeBy(1_000)
+        advanceTimeBy(1_000)    // tick이 돌면서 EXPIRED 처리
 
         val states = store.results.first().map { it.state }
         assertEquals(listOf(MissionState.EXPIRED), states)
+        assertEquals(0, speech.spoken.size)
     }
 }
