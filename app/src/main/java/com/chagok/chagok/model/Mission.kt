@@ -16,6 +16,7 @@ data class MissionCandidate(
     val triggeredAtMs: Long,
     val expectedAnswer: Answer,     // 생성 시점에 정해 둔 정답
     val expiresAtMs: Long?,         // 시간 기준 유효 (BLINK/WIPER). NEXT_TURN은 null
+    val tripId: String? = null,     // 후보가 생긴 주행. 엔진이 offer 시점에 채운다
 ) {
     val key: String get() = "${code.name}@$triggeredAtMs"
 }
@@ -23,6 +24,7 @@ data class MissionCandidate(
 /** 완료된 미션 기록. 음성·원문 텍스트는 저장하지 않는다. */
 data class MissionResult(
     val id: String,
+    val tripId: String?,            // 어느 주행에서 나온 결과인지 (S-07 요약, 업로드 묶음)
     val code: MissionCode,
     val expectedAnswer: Answer,
     val givenAnswer: Answer?,       // 건너뜀이면 null
