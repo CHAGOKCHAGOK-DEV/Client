@@ -38,15 +38,28 @@ object SignalWatchdog {
             .distinctUntilChanged()
 }
 
-/** 연결 상태 + 속도 수신 여부 -> VehicleHealth */
+/**
+ * 연결 상태 + 속도 수신 여부 -> VehicleHealth
+ *
+ * SPEED_LOST는 lostConfirmMs 동안 이어져야 내보낸다.
+ * 앱이 뒤로 가서 안드로이드가 잠깐 얼렸다 풀면, 밀린 타이머가 속도 값보다 먼저 울려
+ * 순간적으로 SPEED_LOST가 났다가 바로 OK가 된다 (에뮬레이터에서 확인). 그 깜빡임을 거른다.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 fun vehicleHealthFlow(
     connected: Flow<Boolean>,
     speed: Flow<Float>,
     speedTimeoutMs: Long,
+    lostConfirmMs: Long = 1_000,
 ): Flow<VehicleHealth> =
     connected.distinctUntilChanged().flatMapLatest { c ->
         if (!c) flowOf(VehicleHealth.DISCONNECTED)
         else SignalWatchdog.alive(speed, speedTimeoutMs)
             .map { alive -> if (alive) VehicleHealth.OK else VehicleHealth.SPEED_LOST }
-    }.distinctUntilChanged()
+    }
+        .distinctUntilChanged()
+        .transformLatest { h ->
+            if (h == VehicleHealth.SPEED_LOST) delay(lostConfirmMs)   // 그사이 OK가 오면 취소됨
+            emit(h)
+        }
+        .distinctUntilChanged()

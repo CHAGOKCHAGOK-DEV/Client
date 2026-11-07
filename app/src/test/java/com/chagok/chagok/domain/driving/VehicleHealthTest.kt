@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -38,6 +39,8 @@ class VehicleHealthTest {
         assertEquals(VehicleHealth.OK, h.value)
 
         advanceTimeBy(3_100)
+        assertEquals(VehicleHealth.OK, h.value)          // 끊긴 직후엔 아직 확정 전
+        advanceTimeBy(1_000)
         assertEquals(VehicleHealth.SPEED_LOST, h.value)
 
         speed.emit(30f); runCurrent()
@@ -53,5 +56,21 @@ class VehicleHealthTest {
         connected.value = false
         runCurrent()
         assertEquals(VehicleHealth.DISCONNECTED, h.value)
+    }
+
+    @Test
+    fun `앱이 얼었다 풀릴 때처럼 순간 끊김은 SPEED_LOST로 안 바뀐다`() = runTest {
+        val connected = MutableStateFlow(true)
+        val speed = MutableSharedFlow<Float>()
+        val seen = mutableListOf<VehicleHealth>()
+        val h = vehicleHealthFlow(connected, speed, 3_000)
+        backgroundScope.launch { h.collect { seen += it } }
+        runCurrent()
+
+        advanceTimeBy(3_100)          // 타이머가 먼저 울리고
+        speed.emit(0f)                // 곧바로 밀린 속도 값이 들어온다
+        advanceTimeBy(2_000)
+
+        assertEquals(listOf(VehicleHealth.OK), seen)
     }
 }

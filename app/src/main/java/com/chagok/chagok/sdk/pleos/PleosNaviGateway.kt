@@ -3,6 +3,7 @@ package com.chagok.chagok.sdk.pleos
 import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.constants.TurnType
 import ai.pleos.playground.navi.data.DestinationArrivedInfo
+import ai.pleos.playground.navi.data.DrivingInfo
 import ai.pleos.playground.navi.data.TBTInfo
 import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
@@ -22,7 +23,7 @@ import kotlinx.coroutines.flow.asStateFlow
  *   그 항목의 거리(m)는 회전 300m 보류 판단에, 방향은 NEXT_TURN 미션에 쓴다.
  *   좌/우가 아닌 안내(유턴, IC 진입, 회전교차로 등)는 방향 NONE으로 두어 미션은 안 만들고 보류에만 쓴다.
  * - 경로 취소·목적지 도착: 다음 회전 정보 초기화 (대기 중인 NEXT_TURN 미션이 폐기됨)
- * - 남은 거리·ETA(NEAR_DEST용)는 DrivingInfo.destination(DrivingState) 필드 확인 후 연결 예정
+ * - 남은 시간·거리: onDrivingInfo의 destination(DrivingState). NEAR_DEST(곧 도착) 판단에 쓴다
  *
  * 이벤트를 보내는 건 기본 내비 앱이라, 앱마다 어떤 이벤트가 오는지 다를 수 있다 (SDK 문서).
  */
@@ -41,6 +42,16 @@ class PleosNaviGateway(context: Context) : NaviGateway {
                 nextTurnDir = next?.type?.toTurnDir() ?: TurnDir.NONE,
                 distToTurnM = next?.distance?.toInt(),
             )
+        }
+
+        /**
+         * 목적지까지 남은 시간(duration, 초)과 거리(distance, m).
+         * SDK 문서상 distance는 "출발지부터"라 남은 거리가 아닐 수 있어,
+         * 곧 도착 판단은 기본으로 ETA만 쓴다 (MissionDefinitions.NEAR_DEST_USE_DISTANCE).
+         */
+        override fun onDrivingInfo(drivingInfo: DrivingInfo) {
+            val dest = drivingInfo.destination
+            _info.value = _info.value.copy(etaSec = dest.duration, remainDistM = dest.distance)
         }
 
         override fun onRouteCancelled() = clearRoute()

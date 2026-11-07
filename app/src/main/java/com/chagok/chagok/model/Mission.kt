@@ -2,7 +2,7 @@ package com.chagok.chagok.model
 
 import com.chagok.chagok.sdk.speech.Answer
 
-enum class MissionCode { BLINK, WIPER, NEXT_TURN }
+enum class MissionCode { BLINK, WIPER, NEXT_TURN, NEAR_DEST }
 
 enum class MissionState {
     CANDIDATE, HOLD,                 // 대기
