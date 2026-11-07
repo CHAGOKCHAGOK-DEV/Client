@@ -23,10 +23,11 @@ class AppStateTest {
         vehicle: FakeVehicleGateway,
         store: InMemoryMissionResultStore = InMemoryMissionResultStore(),
         speech: FakeSpeechPort = FakeSpeechPort(nextAnswer = Answer.YES),
+        navi: com.chagok.chagok.sdk.navigation.NaviGateway = FakeNaviGateway(),
     ) = AppState(
         scope = backgroundScope,
         vehicle = vehicle,
-        navi = FakeNaviGateway(),
+        navi = navi,
         speech = speech,
         store = store,
         permissionChecker = FakePermissionChecker(),
@@ -62,5 +63,27 @@ class AppStateTest {
 
         assertEquals(MissionState.DONE, state.missionState.value)
         assertEquals(MissionCode.WIPER, store.results.first().single().code)
+    }
+
+    @Test
+    fun `내비 연결이 실패해도 차량 연결은 성공, NEXT_TURN만 꺼진다`() = runTest {
+        val noNavi = object : com.chagok.chagok.sdk.navigation.NaviGateway {
+            override val naviInfo = kotlinx.coroutines.flow.MutableStateFlow(NaviInfo())
+            override suspend fun connect(): Boolean = false
+        }
+        val state = newState(FakeVehicleGateway(), navi = noNavi)
+        val result = state.connectVehicle()
+
+        assertEquals(true, result.isSuccess)
+        assertEquals(false, state.capability.value.navi)
+        assertEquals(true, state.capability.value.blink)
+    }
+
+    @Test
+    fun `차량 연결 실패면 capability는 그대로`() = runTest {
+        val vehicle = FakeVehicleGateway().apply { failConnect = true }
+        val state = newState(vehicle)
+        assertEquals(true, state.connectVehicle().isFailure)
+        assertEquals(false, state.capability.value.blink)
     }
 }

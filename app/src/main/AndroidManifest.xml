@@ -8,7 +8,18 @@
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
     <uses-permission android:name="pleos.car.permission.CAR_LIGHTS" />
 
+    <!-- 와이퍼 -->
     <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
+
+    <!-- 기어(P = 주차 판단). Gear API 권한이 문서에 없어 Pleos 샘플 앱과 같은 권한을 선언 -->
+    <uses-permission android:name="pleos.car.permission.CAR_POWERTRAIN" />
+
+    <!-- 속도: 안드로이드 차량 API(CarPropertyManager). 런타임 요청 필요 -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <uses-permission android:name="pleos.car.permission.CAR_SPEED" />
+
+    <!-- 마이크: 아이 대답 듣기(STT). 런타임 요청 필요 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- FusedLocation SDK: 차량 위치 -->
     <uses-permission android:name="pleos.car.permission.FUSED_LOCATION" />
@@ -32,9 +43,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chagok"
         tools:targetApi="31">
+
+        <!-- 속도 수집용 안드로이드 차량 라이브러리. 차량이 아닌 기기에서도 설치는 되게 required=false -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true">
+            <!-- 주행 중에도 화면 표시 (Distraction Optimized) -->
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -46,7 +46,7 @@ enum class MissionIntensity(val intervalMs: Long) {
 class AppState(
     scope: CoroutineScope,
     private val vehicle: VehicleGateway,
-    navi: NaviGateway,
+    private val navi: NaviGateway,
     speech: SpeechPort,
     store: MissionResultStore,
     val permissionChecker: PermissionChecker,
@@ -176,13 +176,18 @@ class AppState(
 
     // ---- 동작 ----
 
-    /** S-01: 차량 연결. 성공하면 capability 저장 */
+    /**
+     * S-01: 차량 연결. 성공하면 capability 저장.
+     * 내비는 따로 연결하고, 실패해도 차량 연결은 성공으로 본다 (NEXT_TURN만 꺼짐).
+     */
     suspend fun connectVehicle(): Result<Capability> =
-        vehicle.connect().onSuccess {
-            _capability.value = it
-            everConnected.value = true
-            connectFailed.value = false
-        }
+        vehicle.connect()
+            .map { it.copy(navi = navi.connect()) }
+            .onSuccess {
+                _capability.value = it
+                everConnected.value = true
+                connectFailed.value = false
+            }
 
     /** S-01에서 3회 실패 후 [제한 모드로 보기] */
     fun enterLimitedMode() { connectFailed.value = true }
@@ -206,6 +211,7 @@ class AppState(
     /** 앱 종료: 진행 중인 주행을 APP_EXIT로 끝내고 SDK 해제 */
     fun release() {
         trips.endNow(TripEndReason.APP_EXIT)
+        navi.release()
         vehicle.release()
     }
 }
