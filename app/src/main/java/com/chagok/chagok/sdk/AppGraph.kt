@@ -5,6 +5,7 @@ import com.chagok.chagok.data.repository.InMemoryMissionResultStore
 import com.chagok.chagok.permission.AndroidPermissionChecker
 import com.chagok.chagok.sdk.navigation.FakeNaviGateway
 import com.chagok.chagok.sdk.pleos.PleosNaviGateway
+import com.chagok.chagok.sdk.pleos.PleosSpeechPort
 import com.chagok.chagok.sdk.pleos.PleosVehicleGateway
 import com.chagok.chagok.sdk.speech.FakeSpeechPort
 import com.chagok.chagok.sdk.speech.SpeechPort
@@ -22,7 +23,8 @@ object AppGraph {
         context: Context,
         scope: CoroutineScope,
         useFake: Boolean = false,
-        speech: SpeechPort = FakeSpeechPort(),   // 실제 TTS/STT는 음성 담당이 교체
+        // F-11·F-12: 실제 TTS/STT. useFake면 로그만 찍는 가짜
+        speech: SpeechPort = if (useFake) FakeSpeechPort() else PleosSpeechPort(context),
     ): AppState = AppState(
         scope = scope,
         vehicle = if (useFake) FakeVehicleGateway() else PleosVehicleGateway(context),

@@ -16,4 +16,7 @@ interface SpeechPort {
 
     /** 듣고 정규화된 답을 돌려준다. 무응답/인식 실패면 Answer.NONE. */
     suspend fun listen(timeoutMs: Long, kind: AnswerKind = AnswerKind.YES_NO): Answer
+
+    /** 엔진 해제 (앱 종료). 가짜 구현은 할 일 없음 */
+    fun release() {}
 }

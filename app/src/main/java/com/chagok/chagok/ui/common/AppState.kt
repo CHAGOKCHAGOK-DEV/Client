@@ -47,7 +47,7 @@ class AppState(
     scope: CoroutineScope,
     private val vehicle: VehicleGateway,
     private val navi: NaviGateway,
-    speech: SpeechPort,
+    private val speech: SpeechPort,
     store: MissionResultStore,
     val permissionChecker: PermissionChecker,
     private val nowMs: () -> Long,
@@ -215,6 +215,7 @@ class AppState(
         trips.endNow(TripEndReason.APP_EXIT)
         navi.release()
         vehicle.release()
+        speech.release()
     }
 }
 
