@@ -7,6 +7,9 @@ android {
     namespace = "com.chagok.chagok"
     compileSdk = 36
 
+    // F-05 속도: CarPropertyManager(android.car) 사용
+    useLibrary("android.car")
+
     defaultConfig {
         applicationId = "com.chagok.chagok"
         minSdk = 28
