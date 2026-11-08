@@ -50,6 +50,7 @@ class MissionEngine(
     private var naviDir: TurnDir = TurnDir.NONE
     private var lastNavi = NaviInfo()
     private var nearDestDone = false                // 곧 도착은 주행당 1회
+    private var wiperNow = false
 
     init {
         scope.launch {
@@ -63,6 +64,7 @@ class MissionEngine(
                 }
             }
         }
+        scope.launch { wiperOn.collect { wiperNow = it } }
         scope.launch {
             wiperOn.distinctUntilChanged().filter { it }.collect {
                 offer(MissionDefinitions.wiperCandidate(nowMs()))
@@ -189,20 +191,25 @@ class MissionEngine(
                     speech.speak(def.wrongMessage)
                     finish(c, MissionState.DONE, Answer.NONE, false, retry, askedAt, null)
                 } else {
-                    finish(c, MissionState.SKIPPED, null, false, retry, askedAt, null)
+                    finish(c, MissionState.SKIPPED, Answer.NONE, false, retry, askedAt, null)
                 }
                 return
             }
 
             _state.value = MissionState.JUDGING
-            val correct = MissionDefinitions.isCorrect(c, given)
+            val judged = judgedCandidate(c)
+            val correct = MissionDefinitions.isCorrect(judged, given)
             speech.speak(if (correct) def.correctMessage else def.wrongMessage)
-            finish(c, MissionState.DONE, given, correct, retry, askedAt, nowMs())
+            finish(judged, MissionState.DONE, given, correct, retry, askedAt, nowMs())
         } finally {
             running = false
             _current.value = null
         }
     }
+
+    /** 와이퍼는 대답한 시점의 상태로 정답을 정한다 (그사이 꺼졌으면 NO) */
+    private fun judgedCandidate(c: MissionCandidate): MissionCandidate =
+        if (c.code == MissionCode.WIPER) c.copy(expectedAnswer = if (wiperNow) Answer.YES else Answer.NO) else c
 
     private suspend fun finish(
         c: MissionCandidate, state: MissionState, given: Answer?, correct: Boolean,
