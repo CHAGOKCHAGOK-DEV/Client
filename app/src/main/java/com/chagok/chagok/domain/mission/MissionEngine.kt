@@ -48,7 +48,7 @@ class MissionEngine(
     private var lastEndMs: Long? = null
     private var nextTurnArmed = true
     private var naviDir: TurnDir = TurnDir.NONE
-    private var etaSec: Int? = null
+    private var lastNavi = NaviInfo()
     private var nearDestDone = false                // 곧 도착은 주행당 1회
 
     init {
@@ -80,7 +80,7 @@ class MissionEngine(
     private fun onNavi(info: NaviInfo) {
         distToTurn = info.distToTurnM
         naviDir = info.nextTurnDir
-        etaSec = info.etaSec
+        lastNavi = info
 
         // 곧 도착: 주행당 1회. 모드가 꺼져 있어 못 받았으면 다음 내비 갱신 때 다시 시도
         if (!nearDestDone && MissionDefinitions.isNearDestination(info)) {
@@ -144,7 +144,10 @@ class MissionEngine(
             val expectedDir = if (c.expectedAnswer == Answer.LEFT) TurnDir.LEFT else TurnDir.RIGHT
             if (naviDir != expectedDir) return true                  // 경로 재탐색으로 방향이 바뀜
         }
-        if (c.code == MissionCode.NEAR_DEST && etaSec == null) return true   // 도착·경로 취소
+        if (c.code == MissionCode.NEAR_DEST) {
+            if (lastNavi.etaSec == null) return true                                     // 도착·경로 취소
+            if (MissionDefinitions.isTooCloseToDestination(lastNavi)) return true        // 1km 도달
+        }
         return false
     }
 

@@ -48,6 +48,7 @@ class PleosVehicleGateway(
     private var initialized = false
     private var subscribed = false
     private var wiperArea: WindowArea? = null
+    @Volatile private var gearKnown = false
 
     private val _connected = MutableStateFlow(false)
     private val _parked = MutableStateFlow(true)            // 기어 값이 오기 전엔 주차로 본다 (안전한 쪽)
@@ -82,6 +83,7 @@ class PleosVehicleGateway(
     private val gearListener = object : GearSelectionListener {
         override fun onSelected(gear: VehicleGear?) {
             if (gear == null || gear == VehicleGear.GEAR_UNKNOWN) return
+            gearKnown = true
             _parked.value = gear == VehicleGear.GEAR_PARK
         }
         override fun onFailed(e: Exception) { Log.w(TAG, "gear failed", e) }
@@ -109,6 +111,7 @@ class PleosVehicleGateway(
         }
 
         subscribe(blink)
+        readCurrent()
         _connected.value = true
         Capability(speed = speed, blink = blink, wiper = wiperArea != null, navi = false)
     }.onFailure { Log.w(TAG, "connect failed", it) }
@@ -143,8 +146,34 @@ class PleosVehicleGateway(
         if (subscribed) return
         if (blink) runSafely("register turn signal") { vehicle.getTurnSignal().registerTurnSignalState(turnListener) }
         wiperArea?.let { area -> runSafely("register wiper") { vehicle.getWiper().registerWiperState(area, wiperListener) } }
-        runSafely("register gear") { vehicle.getGear().registerGearSelection(gearListener) }
+        val gearOk = runSafely("register gear") { vehicle.getGear().registerGearSelection(gearListener) }
+        if (!gearOk) speedOnly()
         subscribed = true
+    }
+
+    /** 리스너는 바뀔 때만 오므로 연결 직후 현재 값을 한 번 읽는다 */
+    private fun readCurrent() {
+        runSafely("current gear") {
+            vehicle.getGear().getCurrentGearSelectionState(
+                { gear -> gearListener.onSelected(gear) },
+                { e -> Log.w(TAG, "current gear failed", e); if (!gearKnown) speedOnly() },
+            )
+        }
+        wiperArea?.let { area ->
+            runSafely("current wiper") {
+                vehicle.getWiper().getCurrentWiperState(
+                    area,
+                    { state -> wiperListener.onWiperStateUpdated(state) },
+                    { e -> Log.w(TAG, "current wiper failed", e) },
+                )
+            }
+        }
+    }
+
+    /** 기어를 못 읽으면 주차로 묶어 두지 않고 속도로만 판단한다 */
+    private fun speedOnly() {
+        Log.w(TAG, "gear unavailable, using speed only")
+        _parked.value = false
     }
 
     /** 구독 해제 + SDK 해제 (Vehicle.release()) */
@@ -163,9 +192,8 @@ class PleosVehicleGateway(
         _connected.value = false
     }
 
-    private inline fun runSafely(what: String, block: () -> Unit) {
-        try { block() } catch (e: Exception) { Log.w(TAG, "$what failed", e) }
-    }
+    private inline fun runSafely(what: String, block: () -> Unit): Boolean =
+        try { block(); true } catch (e: Exception) { Log.w(TAG, "$what failed", e); false }
 
     private companion object { const val TAG = "PleosVehicleGateway" }
 }

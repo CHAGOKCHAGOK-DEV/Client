@@ -46,16 +46,8 @@ object MissionDefinitions {
         answerKind = AnswerKind.LEFT_RIGHT,
     )
 
-    // 🟡 열린 이슈 #6: 남은 시간(ETA) 5분 또는 남은 거리 3km
-    const val NEAR_DEST_ETA_SEC = 300
-    const val NEAR_DEST_DIST_M = 3_000
-
-    /**
-     * NaviHelper DrivingState.distance가 "출발지부터의 거리"라고 문서에 적혀 있어
-     * 남은 거리인지 확실하지 않다. 확인 전까지는 ETA만 쓴다 (출발 직후 오발동 방지).
-     * 에뮬레이터 로그(NAVI remainDistM)가 남은 거리로 줄어드는 게 확인되면 true로 바꾼다.
-     */
-    var NEAR_DEST_USE_DISTANCE = false
+    const val NEAR_DEST_ETA_SEC = 300       // ETA 5분 이하면 시작
+    const val NEAR_DEST_MIN_DIST_M = 1_000  // 남은 거리 1km 이하면 시작 안 함, 대기 중이면 폐기
 
     val NEAR_DEST = MissionDefinition(
         code = MissionCode.NEAR_DEST,
@@ -73,14 +65,15 @@ object MissionDefinitions {
         MissionCode.NEAR_DEST -> NEAR_DEST
     }
 
-    /** 목적지가 가까운가 (NEAR_DEST 시작 조건) */
+    /** NEAR_DEST 시작 조건. ETA 0은 경로 없음으로 본다 */
     fun isNearDestination(info: NaviInfo): Boolean {
-        val eta = info.etaSec
-        val dist = info.remainDistM
-        if (eta != null && eta in 0..NEAR_DEST_ETA_SEC) return true
-        if (NEAR_DEST_USE_DISTANCE && dist != null && dist in 0..NEAR_DEST_DIST_M) return true
-        return false
+        val eta = info.etaSec ?: return false
+        return eta in 1..NEAR_DEST_ETA_SEC && !isTooCloseToDestination(info)
     }
+
+    /** 남은 거리를 모르면 false (ETA만으로 판단) */
+    fun isTooCloseToDestination(info: NaviInfo): Boolean =
+        info.remainDistM?.let { it <= NEAR_DEST_MIN_DIST_M } ?: false
 
     /** 곧 도착 후보. 아무 말이나 하면 정답 */
     fun nearDestCandidate(nowMs: Long) = MissionCandidate(
