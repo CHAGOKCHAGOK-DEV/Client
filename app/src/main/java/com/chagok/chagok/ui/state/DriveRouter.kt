@@ -38,8 +38,7 @@ class DriveRouter(
     private val acknowledgedTripId = MutableStateFlow<String?>(null)
     private val pauseDismissed = MutableStateFlow(false)
 
-    val lockOverlay: StateFlow<Boolean> = app.driveState.map { it == DriveState.DRIVING }
-        .stateIn(scope, SharingStarted.Eagerly, false)
+    val lockOverlay: StateFlow<Boolean> = app.uiLocked
 
     val route: StateFlow<DriveRoute> = combine(
         combine(app.driveState, app.currentTrip, app.lastEndedTrip) { d, cur, ended -> Triple(d, cur, ended) },

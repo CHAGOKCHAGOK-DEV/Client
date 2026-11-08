@@ -53,7 +53,7 @@ class AppState(
     private val nowMs: () -> Long,
     autoStart: Boolean = false,                 // 🟡 열린 이슈 #4. 임시로 꺼 둠
     val tripStore: TripStore = InMemoryTripStore(),
-    speedTimeoutMs: Long = 3_000,               // 🟡 속도 미수신 판단 N초
+    speedTimeoutMs: Long = 5_000,               // 데이터 미수신 판단 5초 (초기값)
     longStopMs: Long = 5 * 60_000L,             // 🟡 열린 이슈 #3
 ) {
     val missionStore: MissionResultStore = store
@@ -65,6 +65,10 @@ class AppState(
     // ---- 주행 상태 (F-02) ----
     private val detector = DriveStateDetector(scope, speed, vehicle.parkingBrake)
     val driveState: StateFlow<DriveState> = detector.state
+
+    /** F-15-1 주행 중 UI 제한 (C-02). 정차가 확정되면 풀린다 */
+    val uiLocked: StateFlow<Boolean> = driveState.map { it == DriveState.DRIVING }
+        .stateIn(scope, SharingStarted.Eagerly, false)
 
     // ---- 차량 신호 (F-03, F-05) ----
     private val signalTracker = TurnSignalTracker(scope, vehicle.turnSignal, nowMs)
@@ -168,6 +172,8 @@ class AppState(
                 _ready.value = false        // 주행이 끝나면 출발 버튼은 다시 꺼진 상태로
             },
         )
+        // F-15-3 데이터 미수신: 대기 중인 미션을 버린다
+        limitedReason.filterNotNull().onEach { engine.reset() }.launchIn(scope)
     }
 
     /** 진행 중인 주행 (없으면 null) */
@@ -190,6 +196,12 @@ class AppState(
                 everConnected.value = true
                 connectFailed.value = false
             }
+
+    /** S-08 [다시 연결]: 구독을 풀고 다시 연결해 capability를 새로 받는다 */
+    suspend fun reconnectVehicle(): Result<Capability> {
+        vehicle.release()
+        return connectVehicle()
+    }
 
     /** S-01에서 3회 실패 후 [제한 모드로 보기] */
     fun enterLimitedMode() { connectFailed.value = true }
