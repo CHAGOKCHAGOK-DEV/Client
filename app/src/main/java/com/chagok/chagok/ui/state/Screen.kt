@@ -40,6 +40,21 @@ object ScreenTexts {
     const val PERM_ALL_DONE = "모두 확인됐어요!"
     const val PERM_LATER_TOAST = "권한이 있어야 시작할 수 있어요"
 
+    // S-03 (법무 검토 전 임시 문구)
+    const val CONSENT_TITLE = "보호자님, 확인이 필요해요"
+    const val CONSENT_SUB = "아이 정보 이용에 동의해 주세요"
+    const val CONSENT_NOTICE = "정차 상태에서 확인해 주세요"
+    const val CONSENT_ITEM_NICKNAME = "별명을 이용해요"
+    const val CONSENT_ITEM_VOICE = "목소리는 인식 후 바로 지워요"
+    const val CONSENT_ITEM_FAMILY = "주행 기록은 가족 안에서만 써요"
+    const val CONSENT_ALL = "전체 동의"
+    const val CONSENT_AGREE = "동의하고 계속"
+    const val CONSENT_REFUSE = "동의하지 않아요"
+
+    // C-04
+    const val REFUSAL_TITLE = "동의가 필요해요"
+    const val REFUSAL_OK = "확인"
+
     // S-05
     const val MAIN_DEFAULT = "오늘도 기장님을 잘 부탁해요!"
     const val MAIN_READY = "차가 출발하면 시작돼요"

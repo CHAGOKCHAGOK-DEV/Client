@@ -6,47 +6,37 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-/**
- * S-03 부모 동의 · S-04 부기장 설정 저장 (기기 안에만 저장).
- *
- * - 아이 정보는 닉네임·연령대만. 실명·사진·음성은 저장하지 않는다.
- * - 동의를 철회하거나 [기록 삭제]를 하면 프로필까지 모두 지운다.
- * - 값은 앱 시작 때 한 번 읽어 StateFlow로 들고 있고, 쓸 때 바로 반영한다 (화면 분기 S-01이 즉시 읽음).
- */
+/** 동의·프로필을 기기에만 저장 (서버 전송 없음) */
 class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
-    private val _consented = MutableStateFlow(prefs.getBoolean(KEY_CONSENTED, false))
+    private val _consent = MutableStateFlow(readConsent())
+    override val consent: StateFlow<ConsentRecord?> = _consent.asStateFlow()
+
+    private val _consented = MutableStateFlow(ConsentRecord.isValid(_consent.value))
     override val consented: StateFlow<Boolean> = _consented.asStateFlow()
 
     private val _profile = MutableStateFlow(readProfile())
     override val profile: StateFlow<CopilotProfile?> = _profile.asStateFlow()
 
     private val _intensity = MutableStateFlow(readIntensity())
-    /** 미션 강도 (S-04). AppState.setIntensity()로 넘겨 준다 */
     val intensity: StateFlow<MissionIntensity> = _intensity.asStateFlow()
 
-    /** 동의한 시각 (설정 화면 표시·서버 업로드용). 동의 안 했으면 null */
-    val consentedAtMs: Long? get() = prefs.getLong(KEY_CONSENTED_AT, 0L).takeIf { it > 0 }
-
-    /** S-03 [동의하고 시작] */
-    fun agree(nowMs: Long = System.currentTimeMillis()) {
+    override fun saveConsent(record: ConsentRecord) {
         prefs.edit()
-            .putBoolean(KEY_CONSENTED, true)
-            .putLong(KEY_CONSENTED_AT, nowMs)
-            .putInt(KEY_CONSENT_VERSION, CONSENT_VERSION)
+            .putInt(KEY_CONSENT_VERSION, record.version)
+            .putLong(KEY_CONSENT_AT, record.agreedAtMs)
+            .putBoolean(KEY_ITEM_NICKNAME, ConsentItem.NICKNAME in record.items)
+            .putBoolean(KEY_ITEM_VOICE, ConsentItem.VOICE_DISCARD in record.items)
+            .putBoolean(KEY_ITEM_FAMILY, ConsentItem.FAMILY_ONLY in record.items)
             .apply()
-        _consented.value = true
+        _consent.value = record
+        _consented.value = ConsentRecord.isValid(record)
     }
 
-    /** 동의 철회. 아이 정보가 남지 않도록 프로필도 지운다 */
-    fun withdraw() {
-        clearAll()
-    }
-
-    /** S-04 [저장]. 닉네임은 앞뒤 공백을 지워서 저장 */
+    // TODO: S-04에서 명세대로 수정
     fun saveProfile(profile: CopilotProfile, intensity: MissionIntensity = _intensity.value) {
         val p = profile.copy(nickname = profile.nickname.trim())
         prefs.edit()
@@ -58,12 +48,26 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         _intensity.value = intensity
     }
 
-    /** 기기에 저장된 동의·프로필을 모두 지운다 */
     fun clearAll() {
         prefs.edit().clear().apply()
+        _consent.value = null
         _consented.value = false
         _profile.value = null
         _intensity.value = MissionIntensity.NORMAL
+    }
+
+    private fun readConsent(): ConsentRecord? {
+        if (!prefs.contains(KEY_CONSENT_VERSION)) return null
+        val items = buildSet {
+            if (prefs.getBoolean(KEY_ITEM_NICKNAME, false)) add(ConsentItem.NICKNAME)
+            if (prefs.getBoolean(KEY_ITEM_VOICE, false)) add(ConsentItem.VOICE_DISCARD)
+            if (prefs.getBoolean(KEY_ITEM_FAMILY, false)) add(ConsentItem.FAMILY_ONLY)
+        }
+        return ConsentRecord(
+            version = prefs.getInt(KEY_CONSENT_VERSION, 0),
+            items = items,
+            agreedAtMs = prefs.getLong(KEY_CONSENT_AT, 0L),
+        )
     }
 
     private fun readProfile(): CopilotProfile? {
@@ -79,14 +83,13 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
 
     private companion object {
         const val PREFS_NAME = "onboarding"
-        const val KEY_CONSENTED = "consented"
-        const val KEY_CONSENTED_AT = "consented_at"
         const val KEY_CONSENT_VERSION = "consent_version"
+        const val KEY_CONSENT_AT = "consent_accepted_at"
+        const val KEY_ITEM_NICKNAME = "consent_nickname"
+        const val KEY_ITEM_VOICE = "consent_voice_discard"
+        const val KEY_ITEM_FAMILY = "consent_family_only"
         const val KEY_NICKNAME = "nickname"
         const val KEY_AGE_GROUP = "age_group"
         const val KEY_INTENSITY = "intensity"
-
-        /** 동의 문구가 바뀌면 올린다. 저장된 버전이 낮으면 다시 동의를 받는 데 쓴다 */
-        const val CONSENT_VERSION = 1
     }
 }
