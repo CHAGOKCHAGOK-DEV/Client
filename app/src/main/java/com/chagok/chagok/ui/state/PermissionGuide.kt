@@ -1,7 +1,6 @@
 package com.chagok.chagok.ui.state
 
 import com.chagok.chagok.data.repository.OnboardingRepository
-import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.model.PermissionKind
 import com.chagok.chagok.model.PermissionStatus
 import com.chagok.chagok.ui.common.AppState
@@ -48,7 +47,7 @@ class PermissionGuide(
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
     val state: StateFlow<PermissionUiState> =
-        combine(app.permission, checking, app.driveState) { p, chk, drive ->
+        combine(app.permission, checking, app.uiLocked) { p, chk, locked ->
             fun row(kind: PermissionKind, title: String, s: PermissionStatus) =
                 PermissionRowUi(kind, title, if (chk) PermissionStatus.CHECKING else s)
             PermissionUiState(
@@ -61,7 +60,7 @@ class PermissionGuide(
                 showLater = p.anyDenied,
                 recheckEnabled = !chk,
                 allDone = p.allGranted,
-                locked = drive == DriveState.DRIVING,
+                locked = locked,
             )
         }.stateIn(scope, SharingStarted.Eagerly, PermissionUiState(emptyList(), false, false, true, false, false))
 

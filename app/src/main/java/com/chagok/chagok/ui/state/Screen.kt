@@ -73,6 +73,15 @@ object ScreenTexts {
     const val DRIVE_MODE_OFF_SUB = "부기장 모드 꺼짐 · 정차한 뒤 켜요"
     const val DRIVE_TOUCH_TTS = "정차 후에 눌러요"
 
+    // S-08
+    const val LIMITED_TITLE = "차와 연결이 안 돼요"
+    const val LIMITED_SUB = "지금은 부기장 미션을 쉬어요"
+    const val LIMITED_SUB2 = "차량 신호를 받으면 다시 시작해요"
+    const val LIMITED_RETRY = "다시 연결"
+    const val LIMITED_CONNECTING = "연결하고 있어요…"
+    const val LIMITED_PROFILE = "프로필 보기"
+    const val LIMITED_RECOVERED = "연결이 돌아왔어요"
+
     // C-02
     const val LOCK_TITLE = "주행 중이에요"
     const val LOCK_SUB = "차를 멈추면 계속할 수 있어요"

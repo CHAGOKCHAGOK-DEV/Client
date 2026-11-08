@@ -3,7 +3,6 @@ package com.chagok.chagok.ui.state
 import com.chagok.chagok.data.repository.ConsentItem
 import com.chagok.chagok.data.repository.ConsentRecord
 import com.chagok.chagok.data.repository.OnboardingRepository
-import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.ui.common.AppState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -45,10 +44,10 @@ class ConsentScreen(
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
     val state: StateFlow<ConsentUiState> =
-        combine(checked, refusalDialog, app.driveState) { c, dialog, drive -> build(c, dialog, drive) }
-            .stateIn(scope, SharingStarted.Eagerly, build(emptySet(), false, app.driveState.value))
+        combine(checked, refusalDialog, app.uiLocked) { c, dialog, locked -> build(c, dialog, locked) }
+            .stateIn(scope, SharingStarted.Eagerly, build(emptySet(), false, app.uiLocked.value))
 
-    private val locked: Boolean get() = app.driveState.value == DriveState.DRIVING
+    private val locked: Boolean get() = app.uiLocked.value
 
     fun toggle(item: ConsentItem) {
         if (locked || refusalDialog.value) return
@@ -94,12 +93,12 @@ class ConsentScreen(
         drive = app.driveState.value,
     )
 
-    private fun build(c: Set<ConsentItem>, dialog: Boolean, drive: DriveState) = ConsentUiState(
+    private fun build(c: Set<ConsentItem>, dialog: Boolean, locked: Boolean) = ConsentUiState(
         rows = ConsentItem.entries.map { ConsentRowUi(it, it.text(), it in c) },
         allChecked = allChecked(c),
         agreeEnabled = allChecked(c),
         showRefusalDialog = dialog,
-        locked = drive == DriveState.DRIVING,
+        locked = locked,
     )
 
     private fun allChecked(c: Set<ConsentItem>) = c.containsAll(ConsentItem.entries)
