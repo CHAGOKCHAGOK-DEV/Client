@@ -2,12 +2,17 @@ package com.chagok.chagok.sdk.pleos
 
 import ai.pleos.playground.navi.constants.NaviErrorCode
 import ai.pleos.playground.navi.constants.TurnType
+import ai.pleos.playground.navi.constants.NavigationStatus
 import ai.pleos.playground.navi.data.DestinationArrivedInfo
+import ai.pleos.playground.navi.data.DestinationInfo
 import ai.pleos.playground.navi.data.DrivingInfo
+import ai.pleos.playground.navi.data.RouteStartInfo
 import ai.pleos.playground.navi.data.TBTInfo
 import ai.pleos.playground.navi.helper.NaviHelper
 import ai.pleos.playground.navi.helper.listener.NaviHelperEventListener
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.chagok.chagok.model.NaviInfo
 import com.chagok.chagok.model.TurnDir
@@ -31,6 +36,15 @@ class PleosNaviGateway(context: Context) : NaviGateway {
 
     private val helper = NaviHelper(context.applicationContext)
     private var initialized = false
+    private val handler = Handler(Looper.getMainLooper())
+
+    // onDrivingInfo는 움직일 때만 올 수 있어 남은 거리·시간을 주기적으로 직접 묻는다
+    private val pollDestination = object : Runnable {
+        override fun run() {
+            runCatching { helper.getDestinationInfo() }
+            handler.postDelayed(this, POLL_MS)
+        }
+    }
 
     private val _info = MutableStateFlow(NaviInfo())
     override val naviInfo: StateFlow<NaviInfo> = _info.asStateFlow()
@@ -44,14 +58,27 @@ class PleosNaviGateway(context: Context) : NaviGateway {
             )
         }
 
-        /**
-         * 목적지까지 남은 시간(duration, 초)과 거리(distance, m).
-         * SDK 문서상 distance는 "출발지부터"라 남은 거리가 아닐 수 있어,
-         * 곧 도착 판단은 기본으로 ETA만 쓴다 (MissionDefinitions.NEAR_DEST_USE_DISTANCE).
-         */
+        /** TODO: distance가 남은 거리인지 에뮬레이터로 확인 */
         override fun onDrivingInfo(drivingInfo: DrivingInfo) {
             val dest = drivingInfo.destination
-            _info.value = _info.value.copy(etaSec = dest.duration, remainDistM = dest.distance)
+            Log.d(TAG, "drivingInfo dist=${dest.distance} dur=${dest.duration}")
+            setRemain(dest.distance, dest.duration)
+        }
+
+        /** getDestinationInfo() 응답. TODO: remainTime 단위(초) 확인 */
+        override fun onDestinationInfo(destinationInfo: DestinationInfo) {
+            Log.d(TAG, "destinationInfo remainDist=${destinationInfo.remainDistance} remainTime=${destinationInfo.remainTime}")
+            setRemain(destinationInfo.remainDistance, destinationInfo.remainTime)
+        }
+
+        /** 안내 시작 시점의 전체 거리·시간 = 남은 거리·시간 */
+        override fun onRouteStarted(routeStartInfo: RouteStartInfo) {
+            Log.d(TAG, "routeStarted dist=${routeStartInfo.distance} dur=${routeStartInfo.duration}")
+            setRemain(routeStartInfo.distance, routeStartInfo.duration)
+        }
+
+        override fun onNavigationStatus(navigationStatus: NavigationStatus) {
+            Log.d(TAG, "navigationStatus $navigationStatus")
         }
 
         override fun onRouteCancelled() = clearRoute()
@@ -65,12 +92,19 @@ class PleosNaviGateway(context: Context) : NaviGateway {
 
     private fun clearRoute() { _info.value = NaviInfo() }
 
+    /** 0 이하는 경로 없음 */
+    private fun setRemain(distM: Int, sec: Int) {
+        _info.value = if (distM <= 0 && sec <= 0) _info.value.copy(etaSec = null, remainDistM = null)
+        else _info.value.copy(etaSec = sec, remainDistM = distM)
+    }
+
     override suspend fun connect(): Boolean {
         if (initialized) return true
         return try {
             helper.initialize()
             helper.addListener(listener)
             initialized = true
+            handler.post(pollDestination)
             true
         } catch (e: Exception) {   // SecurityException(권한) 포함
             Log.w(TAG, "navi connect failed", e)
@@ -81,6 +115,7 @@ class PleosNaviGateway(context: Context) : NaviGateway {
 
     override fun release() {
         if (!initialized) return
+        handler.removeCallbacks(pollDestination)
         runCatching { helper.removeListener(listener) }
         runCatching { helper.release() }
         initialized = false
@@ -89,6 +124,7 @@ class PleosNaviGateway(context: Context) : NaviGateway {
 
     private companion object {
         const val TAG = "PleosNaviGateway"
+        const val POLL_MS = 5_000L
 
         /** 꺾는 안내가 아닌 것: 다음 회전 찾을 때 건너뜀 */
         val NOT_A_TURN = setOf(
