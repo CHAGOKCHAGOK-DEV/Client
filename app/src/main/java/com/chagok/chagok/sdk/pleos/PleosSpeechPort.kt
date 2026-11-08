@@ -76,6 +76,7 @@ class PleosSpeechPort(
         val ended = CompletableDeferred<Unit>()        // 인식 종료 (최종 결과는 아직일 수 있음)
         val finished = CompletableDeferred<String?>()  // 최종 결과 또는 오류
         @Volatile var lastText: String? = null         // 중간 결과 (시간 초과 때 대신 씀)
+        @Volatile var gotRms = false                   // 진단용: 마이크 입력이 왔는지
     }
 
     // ---- TTS 콜백 ----
@@ -93,9 +94,13 @@ class PleosSpeechPort(
 
     // ---- STT 콜백 ----
     private val sttListener = object : ResultListener {
-        override fun onReady() {}
-        override fun onStartedRecognition() { session?.started?.complete(Unit) }
+        override fun onReady() { Log.d(TAG, "stt ready") }
+        override fun onStartedRecognition() {
+            Log.d(TAG, "stt started")
+            session?.started?.complete(Unit)
+        }
         override fun onUpdated(text: String, completed: Boolean) {
+            Log.d(TAG, "stt updated len=${text.length} completed=$completed")   // 원문은 남기지 않는다
             val s = session ?: return
             s.lastText = text
             if (completed) {
@@ -103,9 +108,13 @@ class PleosSpeechPort(
                 s.finished.complete(text)
             }
         }
-        override fun onUpdatedEpdData(on: Long, off: Long) {}
-        override fun onUpdatedRms(rms: Double) {}
+        override fun onUpdatedEpdData(on: Long, off: Long) { Log.d(TAG, "stt epd on=$on off=$off") }
+        override fun onUpdatedRms(rms: Double) {
+            val s = session ?: return
+            if (!s.gotRms) { s.gotRms = true; Log.d(TAG, "stt first rms=$rms") }   // 마이크 소리가 들어오는지
+        }
         override fun onEndedRecognition() {
+            Log.d(TAG, "stt ended")
             val s = session ?: return
             s.started.complete(Unit)
             s.ended.complete(Unit)
@@ -224,6 +233,7 @@ class PleosSpeechPort(
         val s = ListenSession()
         session = s
         try {
+            Log.d(TAG, "stt request kind=$kind")
             stt.request()
 
             // 1단계: 말이 시작되기를 기다린다
@@ -248,7 +258,8 @@ class PleosSpeechPort(
             Log.w(TAG, "stt listen failed", e)
             Answer.NONE
         } finally {
-            if (!s.finished.isCompleted && !s.ended.isCompleted) runSafely("stt stop") { stt.stop() }
+            // 다음 request()가 무시되지 않도록 매번 엔진을 멈춰 둔다 (11/8: 두 번째 듣기부터 콜백이 안 옴)
+            runSafely("stt stop") { stt.stop() }
             if (session === s) session = null
         }
     }
