@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bugi_mint"
+    tools:context=".ui.landing.LandingActivity">
+
+    <!-- 로고 자리. 로고 나오면 android:src 추가하고 background 삭제 -->
+    <ImageView
+        android:id="@+id/iv_landing_logo"
+        android:layout_width="@dimen/landing_logo_size"
+        android:layout_height="@dimen/landing_logo_size"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_logo_placeholder"
+        android:contentDescription="@string/app_name"
+        android:padding="16dp"
+        android:scaleType="fitCenter" />
+
+</FrameLayout>

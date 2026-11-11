@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bugi_mint">#62B79D</color>
+    <color name="logo_placeholder">#D9D9D9</color>
+
+    <dimen name="landing_logo_size">128dp</dimen>
+
+    <style name="Theme.Bugi.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bugi_mint</item>
+        <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
+        <item name="postSplashScreenTheme">@style/Theme.Chagok</item>
+    </style>
+</resources>

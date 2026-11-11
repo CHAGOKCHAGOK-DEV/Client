@@ -48,18 +48,26 @@
         <uses-library
             android:name="android.car"
             android:required="false" />
+
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <!-- 주행 중에도 화면 표시 (Distraction Optimized) -->
+            android:name=".ui.landing.LandingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Bugi.Splash">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
         </activity>
     </application>
 
