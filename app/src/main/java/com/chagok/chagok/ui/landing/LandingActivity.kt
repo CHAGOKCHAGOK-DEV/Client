@@ -7,13 +7,12 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.chagok.chagok.MainActivity
 import com.chagok.chagok.R
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.core.view.doOnPreDraw
+import com.chagok.chagok.ui.loading.LoadingActivity
 
-/** S01_1 랜딩: 민트 배경 + 로고를 1초 보여준 뒤 다음 화면으로 이동 */
 class LandingActivity : AppCompatActivity() {
 
     private var navigated = false
@@ -37,7 +36,7 @@ class LandingActivity : AppCompatActivity() {
         if (navigated) return
         navigated = true
         // TODO: S01_2 로딩 화면이 생기면 그 Activity로 교체
-        startActivity(Intent(this, MainActivity::class.java))
+        startActivity(Intent(this, LoadingActivity::class.java))
         overridePendingTransition(0, 0)
         finish()
     }
