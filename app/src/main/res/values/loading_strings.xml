@@ -17,11 +17,10 @@
     <string name="fail_car_conn_sub">앱을 다시 열거나 잠시 후 시도해 주세요</string>
     <string name="fail_perm_read_title">권한을 확인하지 못했어요</string>
     <string name="fail_perm_read_sub">잠깐 뒤에 다시 시도해 주세요</string>
-    <string name="fail_store_read_title">저장된 설정을 불러오지 못했어요</string>
-    <string name="fail_store_read_sub">처음부터 다시 설정해 주시면 돼요</string>
     <string name="fail_unsupported_title">이 차량에서는 사용할 수 없어요</string>
     <string name="fail_unsupported_sub">필요한 차량 신호를 읽을 수 없어요</string>
 
     <string name="btn_retry">다시 시도</string>
     <string name="btn_close">닫기</string>
+    <string name="btn_limited">제한 모드로 보기</string>
 </resources>

@@ -19,10 +19,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.MainActivity
 import com.chagok.chagok.R
+import com.chagok.chagok.ui.state.Screen
+import com.chagok.chagok.ui.state.StartupError
+import com.chagok.chagok.ui.state.StartupStep
+import com.chagok.chagok.ui.state.StartupUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** S01_2 로딩(3단계) + 로딩 실패 */
+/**
+ * S01_2 로딩중 / 로딩실패 (S-01, F-01, F-01-1).
+ * 최소 표시 시간 없이 단계가 끝나는 대로 진행하고, 3/3이 끝나면 분기 화면으로 바로 이동한다.
+ */
 class LoadingActivity : AppCompatActivity() {
 
     private val viewModel: LoadingViewModel by viewModels()
@@ -36,6 +43,7 @@ class LoadingActivity : AppCompatActivity() {
     private lateinit var tvFailTitle: TextView
     private lateinit var tvFailSub: TextView
     private lateinit var btnRetry: TextView
+    private lateinit var btnLimited: TextView
 
     private lateinit var spin: Animation
     private var navigated = false
@@ -53,10 +61,12 @@ class LoadingActivity : AppCompatActivity() {
         tvFailTitle = findViewById(R.id.tv_fail_title)
         tvFailSub = findViewById(R.id.tv_fail_sub)
         btnRetry = findViewById(R.id.btn_retry)
+        btnLimited = findViewById(R.id.btn_limited)
 
         spin = AnimationUtils.loadAnimation(this, R.anim.rotate_cw_infinite)
 
         btnRetry.setOnClickListener { viewModel.retry() }
+        btnLimited.setOnClickListener { viewModel.enterLimitedMode() }
         // 피그마: 모달 노출 없이 close
         findViewById<View>(R.id.btn_close).setOnClickListener { finishAffinity() }
 
@@ -67,68 +77,41 @@ class LoadingActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun render(state: LoadingUiState) {
-        when (state) {
-            is LoadingUiState.Loading -> {
-                showLoading()
-                tvBubble.setText(
-                    if (state.step == 3) R.string.loading_bubble_almost else R.string.loading_bubble
-                )
-                tvStatus.text = when (state.step) {
-                    1 -> highlight(getString(R.string.loading_step1), getString(R.string.loading_step1_key))
-                    2 -> highlight(getString(R.string.loading_step2), getString(R.string.loading_step2_key))
-                    else -> highlight(getString(R.string.loading_step3), getString(R.string.loading_step3_key))
+    private suspend fun render(state: StartupUiState) {
+        val next = state.destination
+        when {
+            next != null -> {
+                if (next != Screen.LIMITED) {
+                    showLoading(StartupStep.SETTINGS)
+                    animateProgress(PROGRESS_MAX)
+                    delay(BAR_ANIM_MS) // 바가 다 찬 걸 보여 주고 바로 이동
                 }
-                animateProgress(state.completed * PROGRESS_MAX / 3)
+                navigate(next)
             }
-
-            is LoadingUiState.Done -> {
-                animateProgress(PROGRESS_MAX)
-                delay(BAR_ANIM_MS) // 바가 100% 찬 걸 보여주고 바로 이동
-                navigate(state.next)
+            state.error -> showFail(state)
+            else -> {
+                showLoading(state.step)
+                animateProgress(state.step.index * PROGRESS_MAX / 3)
             }
-
-            is LoadingUiState.Failed -> showFail(state.reason)
         }
     }
 
-    private fun showLoading() {
+    // ---------- 로딩중 ----------
+
+    private fun showLoading(step: StartupStep) {
         groupFail.visibility = View.GONE
         groupLoading.visibility = View.VISIBLE
         if (ivSpinner.animation == null) ivSpinner.startAnimation(spin)
-    }
 
-    private fun showFail(reason: FailReason) {
-        ivSpinner.clearAnimation()
-        groupLoading.visibility = View.GONE
-        groupFail.visibility = View.VISIBLE
-        progress.progress = 0
-
-        val (title, sub) = when (reason) {
-            FailReason.CAR_CONN -> R.string.fail_car_conn_title to R.string.fail_car_conn_sub
-            FailReason.PERM_READ -> R.string.fail_perm_read_title to R.string.fail_perm_read_sub
-            FailReason.STORE_READ -> R.string.fail_store_read_title to R.string.fail_store_read_sub
-            FailReason.CAR_UNSUPPORTED -> R.string.fail_unsupported_title to R.string.fail_unsupported_sub
+        // 피그마: 1·2단계 "부기장 출근 중!", 3단계 "거의 다 왔어요!"
+        tvBubble.setText(
+            if (step == StartupStep.SETTINGS) R.string.loading_bubble_almost else R.string.loading_bubble
+        )
+        tvStatus.text = when (step) {
+            StartupStep.CONNECT -> highlight(R.string.loading_step1, R.string.loading_step1_key)
+            StartupStep.PERMISSION -> highlight(R.string.loading_step2, R.string.loading_step2_key)
+            StartupStep.SETTINGS -> highlight(R.string.loading_step3, R.string.loading_step3_key)
         }
-        tvFailTitle.setText(title)
-        tvFailSub.setText(sub)
-        // 미지원 차량은 다시 시도해도 소용없으므로 [닫기]만
-        btnRetry.visibility = if (reason == FailReason.CAR_UNSUPPORTED) View.GONE else View.VISIBLE
-    }
-
-    private fun navigate(next: Destination) {
-        if (navigated) return
-        navigated = true
-        // TODO: S-02 권한 / S-03 동의 / S-04 설정 화면이 생기면 각각 연결
-        val target = when (next) {
-            Destination.PERMISSION -> MainActivity::class.java
-            Destination.CONSENT -> MainActivity::class.java
-            Destination.PROFILE -> MainActivity::class.java
-            Destination.MAIN -> MainActivity::class.java
-        }
-        startActivity(Intent(this, target))
-        overridePendingTransition(0, 0)
-        finish()
     }
 
     private fun animateProgress(target: Int) {
@@ -139,16 +122,52 @@ class LoadingActivity : AppCompatActivity() {
     }
 
     /** 문장에서 핵심 단어만 민트로 */
-    private fun highlight(full: String, key: String): CharSequence {
+    private fun highlight(fullRes: Int, keyRes: Int): CharSequence {
+        val full = getString(fullRes)
+        val key = getString(keyRes)
         val s = SpannableString(full)
         val i = full.indexOf(key)
         if (i >= 0) {
             s.setSpan(
-                ForegroundColorSpan(getColor(R.color.brand_strong)),
-                i, i + key.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                ForegroundColorSpan(getColor(R.color.brand)),
+                i, i + key.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
         }
         return s
+    }
+
+    // ---------- 로딩실패 ----------
+
+    private fun showFail(state: StartupUiState) {
+        ivSpinner.clearAnimation()
+        groupLoading.visibility = View.GONE
+        groupFail.visibility = View.VISIBLE
+        progress.progress = 0
+
+        val (title, sub) = when (state.errorKind) {
+            StartupError.PERM_READ -> R.string.fail_perm_read_title to R.string.fail_perm_read_sub
+            StartupError.CAR_UNSUPPORTED -> R.string.fail_unsupported_title to R.string.fail_unsupported_sub
+            StartupError.CAR_CONN, null -> R.string.fail_car_conn_title to R.string.fail_car_conn_sub
+        }
+        tvFailTitle.setText(title)
+        tvFailSub.setText(sub)
+        btnRetry.visibility = if (state.showRetry) View.VISIBLE else View.GONE
+        // 3회째 연결 실패부터
+        btnLimited.visibility = if (state.showLimitedMode) View.VISIBLE else View.GONE
+    }
+
+    // ---------- 이동 ----------
+
+    private fun navigate(next: Screen) {
+        if (navigated) return
+        navigated = true
+        // TODO: S-02·S-03·S-04·S-05·S-06·S-08 화면이 생기면 각 Activity로 연결.
+        //       지금은 MainActivity로 가고, 정해진 화면 이름을 함께 넘긴다.
+        val intent = Intent(this, MainActivity::class.java)
+            .putExtra(MainActivity.EXTRA_SCREEN, next.name)
+        startActivity(intent)
+        overridePendingTransition(0, 0)
+        finish()
     }
 
     companion object {

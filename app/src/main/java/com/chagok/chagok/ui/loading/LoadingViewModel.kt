@@ -1,90 +1,35 @@
 package com.chagok.chagok.ui.loading
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.chagok.chagok.ChagokApp
+import com.chagok.chagok.ui.state.StartupFlow
+import com.chagok.chagok.ui.state.StartupUiState
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
-/** 로딩이 끝난 뒤 갈 화면 */
-enum class Destination { PERMISSION, CONSENT, PROFILE, MAIN }
+/**
+ * S-01 로딩 화면용. 실제 동작은 StartupFlow(F-01, F-01-1)가 한다.
+ * 1/3 차 연결 → 2/3 권한 읽기 → 3/3 저장값·미션팩 → 분기(S-02/03/04/05/06)
+ */
+class LoadingViewModel(application: Application) : AndroidViewModel(application) {
 
-sealed interface LoadingUiState {
-    /** step: 지금 하는 단계(1~3), completed: 끝난 단계 수(0~3) */
-    data class Loading(val step: Int, val completed: Int) : LoadingUiState
-    data class Done(val next: Destination) : LoadingUiState
-    data class Failed(val reason: FailReason) : LoadingUiState
-}
+    private val app = application as ChagokApp
 
-class LoadingViewModel(
-    // TODO: Pleos SDK 연결되면 실제 구현으로 교체
-    private val repo: BootRepository = FakeBootRepository(),
-) : ViewModel() {
+    private val flow = StartupFlow(
+        scope = viewModelScope,
+        app = app.appState,
+        onboarding = app.onboarding,
+        // TODO: 서버 미션팩 최신 버전 확인 (GET /api/missions/packs/latest). 실패해도 진행
+    )
 
-    private val _state = MutableStateFlow<LoadingUiState>(LoadingUiState.Loading(1, 0))
-    val state: StateFlow<LoadingUiState> = _state.asStateFlow()
+    val state: StateFlow<StartupUiState> = flow.state
 
-    var retryCount = 0
-        private set
+    init { flow.start() }
 
-    private var job: Job? = null
+    /** [다시 시도]: 1/3부터. 진행 중 연타는 무시 */
+    fun retry() = flow.retry()
 
-    init { start() }
-
-    /** [다시 시도]. 진행 중이면 무시(연타 방지) */
-    fun retry() {
-        if (job?.isActive == true) return
-        retryCount++
-        start()
-    }
-
-    private fun start() {
-        job = viewModelScope.launch {
-            try {
-                _state.value = LoadingUiState.Loading(step = 1, completed = 0)
-                runStep(FailReason.CAR_CONN) { repo.connectCar() }
-
-                _state.value = LoadingUiState.Loading(step = 2, completed = 1)
-                val allGranted = runStep(FailReason.PERM_READ) { repo.readPermissions() }
-
-                _state.value = LoadingUiState.Loading(step = 3, completed = 2)
-                val settings = runStep(FailReason.STORE_READ) { repo.loadSettings() }
-
-                _state.value = LoadingUiState.Done(decide(allGranted, settings))
-            } catch (e: BootException) {
-                _state.value = LoadingUiState.Failed(e.reason)
-            }
-        }
-    }
-
-    /** 설계서 순서: 권한 → 동의 → 프로필 → 메인 (TODO: 주행 중이면 S-06) */
-    private fun decide(allGranted: Boolean, s: BootSettings): Destination = when {
-        !allGranted -> Destination.PERMISSION
-        !s.consentDone -> Destination.CONSENT
-        !s.profileExists -> Destination.PROFILE
-        else -> Destination.MAIN
-    }
-
-    /** 한 단계 실행. 10초 넘거나 예외가 나면 그 단계의 실패 사유로 바꿔 던진다 */
-    private suspend fun <T> runStep(reason: FailReason, block: suspend () -> T): T =
-        try {
-            withTimeout(STEP_TIMEOUT_MS) { block() }
-        } catch (e: BootException) {
-            throw e
-        } catch (e: TimeoutCancellationException) {
-            throw BootException(reason)
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            throw BootException(reason)
-        }
-
-    companion object {
-        private const val STEP_TIMEOUT_MS = 10_000L // 설계서: 한 단계 제한 10초(임시)
-    }
+    /** [제한 모드로 보기] (3회째 실패부터) */
+    fun enterLimitedMode() = flow.enterLimitedMode()
 }

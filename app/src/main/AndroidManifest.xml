@@ -34,6 +34,7 @@
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
 
     <application
+        android:name=".ChagokApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
