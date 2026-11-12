@@ -34,6 +34,7 @@
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
 
     <application
+        android:name=".ChagokApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -48,18 +49,34 @@
         <uses-library
             android:name="android.car"
             android:required="false" />
+
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <!-- 주행 중에도 화면 표시 (Distraction Optimized) -->
+            android:name=".ui.landing.LandingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Bugi.Splash">
             <meta-data
                 android:name="distractionOptimized"
                 android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.loading.LoadingActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
         </activity>
     </application>
 

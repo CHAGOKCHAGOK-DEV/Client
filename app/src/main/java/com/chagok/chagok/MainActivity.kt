@@ -17,4 +17,9 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    companion object {
+        /** S-01 로딩이 정한 다음 화면 (ui.state.Screen 이름). 화면별 Activity가 생기기 전까지 임시로 여기로 온다 */
+        const val EXTRA_SCREEN = "screen"
+    }
 }

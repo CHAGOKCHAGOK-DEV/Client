@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  S01_2 로딩중 / 로딩실패. 피그마 1700x1184 기준 (Pleos 160dpi, 1dp = 1px).
+  두 그룹 모두 화면 정중앙 세로 배치. 미리보기에서 실패 화면을 보려면
+  group_loading에 tools:visibility="gone", group_fail에 tools:visibility="visible".
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_soft"
+    tools:context=".ui.loading.LoadingActivity">
+
+    <!-- ===================== 로딩중 ===================== -->
+    <LinearLayout
+        android:id="@+id/group_loading"
+        android:layout_width="900dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <!-- 말풍선 532x100 + 꼬리 -->
+        <TextView
+            android:id="@+id/tv_bubble"
+            android:layout_width="532dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_bubble"
+            android:gravity="center"
+            android:text="@string/loading_bubble"
+            android:textColor="@color/gray_500"
+            android:textStyle="bold"
+            android:textSize="36sp" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="21dp"
+            android:layout_gravity="center_horizontal"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_bubble_tail" />
+
+        <!-- 일러스트 자리 420x420 (달려가는 부기) -->
+        <FrameLayout
+            android:layout_width="420dp"
+            android:layout_height="420dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="64dp"
+            android:background="@drawable/bg_illust_placeholder">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="@string/loading_illust_placeholder"
+                android:textColor="@color/text_secondary"
+                android:textSize="28sp" />
+        </FrameLayout>
+
+        <!-- 상태 문구 + 회전 아이콘 (진행 바 왼쪽 끝에 맞춤) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="96dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/gray_600"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                tools:text="차와 연결하고 있어요" />
+
+            <ImageView
+                android:id="@+id/iv_spinner"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="12dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_loading_spinner" />
+        </LinearLayout>
+
+        <!-- 진행 바 900x32 -->
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginTop="32dp"
+            android:indeterminate="false"
+            android:max="1000"
+            android:progress="0"
+            android:progressDrawable="@drawable/bg_progress"
+            tools:progress="333" />
+    </LinearLayout>
+
+    <!-- ===================== 로딩실패 ===================== -->
+    <LinearLayout
+        android:id="@+id/group_fail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_warning" />
+
+        <TextView
+            android:id="@+id/tv_fail_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:text="@string/fail_car_conn_title"
+            android:textColor="@color/gray_600"
+            android:textSize="44sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_fail_sub"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/fail_car_conn_sub"
+            android:textColor="@color/gray_400"
+            android:textSize="36sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="64dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btn_retry"
+                android:layout_width="wrap_content"
+                android:layout_height="92dp"
+                android:layout_marginEnd="24dp"
+                android:paddingHorizontal="60dp"
+                android:includeFontPadding="false"
+                android:background="@drawable/bg_btn_primary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="@string/btn_retry"
+                android:textColor="@color/gray_00"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_close"
+                android:layout_width="wrap_content"
+                android:layout_height="92dp"
+                android:paddingHorizontal="60dp"
+                android:includeFontPadding="false"
+                android:background="@drawable/bg_btn_secondary"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="@string/btn_close"
+                android:textColor="@color/btn_secondary_text"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 3회째 연결 실패부터 표시 -->
+        <TextView
+            android:id="@+id/btn_limited"
+            android:layout_width="wrap_content"
+            android:layout_height="72dp"
+            android:layout_marginTop="22.5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingHorizontal="24dp"
+            android:text="@string/btn_limited"
+            android:textColor="@color/mint_400"
+            android:textSize="36sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+</FrameLayout>

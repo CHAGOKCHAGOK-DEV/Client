@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S01_2 로딩중 -->
+    <string name="loading_bubble">부기장 출근 중!</string>
+    <string name="loading_bubble_almost">거의 다 왔어요!</string>
+    <string name="loading_illust_placeholder">달려가는\n일러스트</string>
+
+    <string name="loading_step1">차와 연결하고 있어요</string>
+    <string name="loading_step1_key">연결</string>
+    <string name="loading_step2">권한을 확인하고 있어요</string>
+    <string name="loading_step2_key">권한</string>
+    <string name="loading_step3">설정을 불러오고 있어요</string>
+    <string name="loading_step3_key">설정</string>
+
+    <!-- S01_2 로딩실패 (화면설계서 실패 종류별 문구) -->
+    <string name="fail_car_conn_title">차와 연결하지 못했어요</string>
+    <string name="fail_car_conn_sub">앱을 다시 열거나 잠시 후 시도해 주세요</string>
+    <string name="fail_perm_read_title">권한을 확인하지 못했어요</string>
+    <string name="fail_perm_read_sub">잠깐 뒤에 다시 시도해 주세요</string>
+    <string name="fail_unsupported_title">이 차량에서는 사용할 수 없어요</string>
+    <string name="fail_unsupported_sub">필요한 차량 신호를 읽을 수 없어요</string>
+
+    <string name="btn_retry">다시 시도</string>
+    <string name="btn_close">닫기</string>
+    <string name="btn_limited">제한 모드로 보기</string>
+</resources>

@@ -83,4 +83,34 @@ class StartupFlowTest {
         assertFalse(flow.state.value.error)
         assertEquals(Screen.PERMISSION, flow.state.value.destination)
     }
+
+    @Test
+    fun `속도를 지원하지 않는 차는 다시 시도 없이 미지원 오류`() = runTest {
+        val t = TestApp(
+            this,
+            vehicle = com.chagok.chagok.sdk.vehicle.FakeVehicleGateway(
+                capability = com.chagok.chagok.model.Capability(speed = false, blink = true, wiper = true, navi = true),
+            ),
+        )
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+
+        assertTrue(flow.state.value.error)
+        assertEquals(StartupError.CAR_UNSUPPORTED, flow.state.value.errorKind)
+        assertFalse(flow.state.value.showRetry)
+        assertEquals(null, flow.state.value.destination)
+    }
+
+    @Test
+    fun `연결 실패는 CAR_CONN, 재시도하면 오류가 지워진다`() = runTest {
+        val t = TestApp(this)
+        t.vehicle.failConnect = true
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+        assertEquals(StartupError.CAR_CONN, flow.state.value.errorKind)
+
+        t.vehicle.failConnect = false
+        flow.retry(); advanceTimeBy(100)
+        assertEquals(null, flow.state.value.errorKind)
+    }
 }

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- gray -->
+    <color name="gray_50">#F7F8FA</color>
+    <color name="gray_100">#EDEEF2</color>
+    <color name="gray_200">#E0E1E6</color>
+    <color name="gray_300">#C7C9CE</color>
+    <color name="gray_400">#A4A8AE</color>
+    <color name="gray_500">#686A72</color>
+    <color name="gray_600">#44464E</color>
+    <color name="gray_700">#313236</color>
+    <color name="gray_800">#1D1E21</color>
+    <color name="gray_900">#131417</color>
+    <color name="gray_00">#FFFFFF</color>
+
+    <!-- alpha -->
+    <color name="alpha_ink_50">#0D131417</color>
+    <color name="alpha_ink_100">#1A131417</color>
+    <color name="alpha_ink_200">#33131417</color>
+    <color name="alpha_ink_300">#4C131417</color>
+    <color name="alpha_ink_500">#80131417</color>
+    <color name="alpha_inv_50">#0DFFFFFF</color>
+    <color name="alpha_inv_100">#1AFFFFFF</color>
+    <color name="alpha_inv_200">#33FFFFFF</color>
+
+    <!-- divider -->
+    <color name="divider_1">#0D131417</color>
+    <color name="divider_2">#1A131417</color>
+    <color name="divider_3">#33131417</color>
+
+    <!-- bg -->
+    <color name="bg_primary">#F7F8FA</color>
+    <color name="bg_secondary">#FFFFFF</color>
+    <color name="bg_popup">#FFFFFF</color>
+
+    <!-- text -->
+    <color name="text_primary">#131417</color>
+    <color name="text_secondary">#686A72</color>
+    <color name="text_disabled">#A4A8AE</color>
+
+    <!-- focus -->
+    <color name="focus_ring">#0B6F5D</color>
+
+    <!-- mint -->
+    <color name="mint_100">#DDF5EE</color>
+    <color name="mint_200">#B5E8DA</color>
+    <color name="mint_300">#86D7C3</color>
+    <color name="mint_400">#5CC8AD</color>
+    <color name="mint_500">#36BB9A</color>
+    <color name="mint_600">#2A9A7E</color>
+    <color name="mint_700">#0B6F5D</color>
+    <color name="mint_800">#08574A</color>
+    <color name="mint_900">#063F36</color>
+
+    <!-- brand -->
+    <color name="brand">#36BB9A</color>
+    <color name="brand_pressed">#2A9A7E</color>
+    <color name="on_brand">#131417</color>
+    <color name="brand_strong">#0B6F5D</color>
+    <color name="brand_soft">#DFF6F2</color>
+
+    <!-- sun -->
+    <color name="sun">#FFD25A</color>
+    <color name="sun_soft">#FFF5DD</color>
+    <color name="sun_strong">#7A5400</color>
+
+    <!-- pink -->
+    <color name="pink">#FF5C7C</color>
+    <color name="pink_soft">#FFE1E7</color>
+    <color name="pink_strong">#C71F47</color>
+
+    <!-- blue -->
+    <color name="blue">#4AA3FF</color>
+    <color name="blue_soft">#DCEBFE</color>
+    <color name="blue_strong">#0B58C4</color>
+
+    <!-- violet -->
+    <color name="violet">#7B68F5</color>
+    <color name="violet_soft">#E7E4FD</color>
+    <color name="violet_strong">#4F3CD6</color>
+
+    <!-- orange -->
+    <color name="orange">#FF9A4D</color>
+    <color name="orange_soft">#FFEBDA</color>
+    <color name="orange_strong">#A64A00</color>
+
+    <!-- correct -->
+    <color name="correct">#36BB9A</color>
+    <color name="correct_soft">#DFF6F2</color>
+    <color name="correct_strong">#0B6F5D</color>
+
+    <!-- wrong -->
+    <color name="wrong">#FF5C7C</color>
+    <color name="wrong_soft">#FFE1E7</color>
+    <color name="wrong_strong">#C71F47</color>
+
+    <!-- info -->
+    <color name="info_active">#02C265</color>
+    <color name="info_positive">#0064FF</color>
+    <color name="info_negative">#FE3D16</color>
+    <color name="info_autonomous">#5A46FA</color>
+
+    <!-- mission-blink -->
+    <color name="mission_blink">#FFD25A</color>
+
+    <!-- mission -->
+    <color name="mission_blink_soft">#FFF5DD</color>
+    <color name="mission_blink_strong">#7A5400</color>
+    <color name="mission_wiper_soft">#DCEBFE</color>
+    <color name="mission_wiper_strong">#0B58C4</color>
+    <color name="mission_light_soft">#E7E4FD</color>
+    <color name="mission_light_strong">#4F3CD6</color>
+    <color name="mission_turn_soft">#FFEBDA</color>
+    <color name="mission_turn_strong">#A64A00</color>
+    <color name="mission_arrive_soft">#DFF6F2</color>
+    <color name="mission_arrive_strong">#0B6F5D</color>
+
+    <!-- mission-wiper -->
+    <color name="mission_wiper">#4AA3FF</color>
+
+    <!-- mission-light -->
+    <color name="mission_light">#7B68F5</color>
+
+    <!-- mission-turn -->
+    <color name="mission_turn">#FF9A4D</color>
+
+    <!-- mission-arrive -->
+    <color name="mission_arrive">#36BB9A</color>
+
+    <!-- char-fur -->
+    <color name="char_fur">#B8A798</color>
+
+    <!-- char -->
+    <color name="char_fur_dark">#8F7F72</color>
+    <color name="char_belly">#FFF3E2</color>
+    <color name="char_cheek">#FFB4C0</color>
+    <color name="char_ink">#2A2530</color>
+    <color name="char_hat_band">#36BB9A</color>
+    <color name="char_badge">#FFD25A</color>
+
+    <!-- char-hat -->
+    <color name="char_hat">#44507A</color>
+</resources>
