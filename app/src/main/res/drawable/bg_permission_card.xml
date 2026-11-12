@@ -1,0 +1,39 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 완료: brand 2dp 테두리 -->
+    <item android:state_selected="true">
+        <layer-list>
+            <item android:top="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/divider_1" />
+                </shape>
+            </item>
+            <item android:bottom="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/gray_00" />
+                    <stroke android:width="2dp" android:color="@color/brand" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+    <!-- 기본 -->
+    <item>
+        <layer-list>
+            <item android:top="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/divider_1" />
+                </shape>
+            </item>
+            <item android:bottom="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/gray_00" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

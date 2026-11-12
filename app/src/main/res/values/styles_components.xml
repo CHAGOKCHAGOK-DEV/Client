@@ -1,0 +1,53 @@
+<resources>
+
+    <!-- 공통 텍스트: Asta Sans 생기면 fontFamily만 @font/asta_sans 로 교체 -->
+    <style name="ChagokText">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- 36 / Bold / gray-600 (권한 텍스트) -->
+    <style name="ChagokText.Bold36">
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/gray_600</item>
+    </style>
+
+    <!-- 권한 상태 칩 -->
+    <style name="ChagokChip" parent="ChagokText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingVertical">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_chip</item>
+        <item name="android:textSize">28sp</item> <!-- TODO: 피그마 칩 글자 크기 확인 -->
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- CTA 버튼: 온/오프는 enabled 로 자동 전환 -->
+    <style name="ChagokCta" parent="ChagokText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">92dp</item>
+        <item name="android:paddingHorizontal">40dp</item>
+        <item name="android:paddingVertical">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:background">@drawable/bg_cta_primary</item>
+        <item name="android:textColor">@color/gray_00</item>
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- CTA 버튼: Stroke (600 → sans-serif-medium) -->
+    <style name="ChagokCta.Stroke">
+        <item name="android:background">@drawable/bg_cta_stroke</item>
+        <item name="android:textColor">@color/mint_400</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+</resources>
