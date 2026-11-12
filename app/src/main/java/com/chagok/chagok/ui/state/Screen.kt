@@ -27,8 +27,8 @@ object ScreenTexts {
     // S-01
     const val STARTUP_TITLE = "부기장 출근 중!"
     const val STARTUP_CONNECT = "차와 연결하고 있어요…"
-    const val STARTUP_PERMISSION = "필요한 권한을 확인하고 있어요…"     // 🟡 임시
-    const val STARTUP_SETTINGS = "설정을 불러오고 있어요…"            // 🟡 임시
+    const val STARTUP_PERMISSION = "필요한 권한을 확인하고 있어요…"
+    const val STARTUP_SETTINGS = "설정을 불러오고 있어요…"
     const val STARTUP_ERROR = "차와 연결이 안 돼요"
 
     // S-02
@@ -46,7 +46,7 @@ object ScreenTexts {
     const val CONSENT_NOTICE = "정차 상태에서 확인해 주세요"
     const val CONSENT_ITEM_NICKNAME = "별명을 이용해요"
     const val CONSENT_ITEM_VOICE = "목소리는 인식 후 바로 지워요"
-    const val CONSENT_ITEM_FAMILY = "주행 기록은 가족 안에서만 써요"
+    const val CONSENT_ITEM_FAMILY = "주행 기록은 가족 안에서만 사용해요"
     const val CONSENT_ALL = "전체 동의"
     const val CONSENT_AGREE = "동의하고 계속"
     const val CONSENT_REFUSE = "동의하지 않아요"

@@ -29,6 +29,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.activity.addCallback
 import com.chagok.chagok.ui.component.ExitDialog
+import com.chagok.chagok.ui.common.intentFor
 /**
  * S-02 권한 안내 (F-01-1).
  * - 행 탭 → 시스템 권한 창(C-01). 허용 → 완료(테두리), 거부 → 거부됨
@@ -172,7 +173,7 @@ class PermissionActivity : AppCompatActivity() {
         if (navigated) return   // [다음] 탭과 1초 자동 이동이 겹쳐도 한 번만
         navigated = true
         // TODO: S-03 / S-04 / S-05 Activity가 생기면 각각 연결
-        startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_SCREEN, next.name))
+        startActivity(intentFor(next))
         overridePendingTransition(0, 0)
         finish()
     }
