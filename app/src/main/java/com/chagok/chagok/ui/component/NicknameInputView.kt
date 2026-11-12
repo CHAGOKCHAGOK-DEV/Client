@@ -1,7 +1,6 @@
 package com.chagok.chagok.ui.component
 
 import android.content.Context
-import android.graphics.Typeface
 import android.text.InputFilter
 import android.util.AttributeSet
 import android.view.Gravity

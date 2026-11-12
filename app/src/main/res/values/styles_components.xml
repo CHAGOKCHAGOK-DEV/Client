@@ -24,7 +24,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- CTA 버튼: 온/오프는 enabled 로 자동 전환 -->
+    <!-- CTA 버튼: 온/오프는 isActivated (오프여도 클릭은 됨) -->
     <style name="ChagokCta" parent="ChagokText">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">92dp</item>
@@ -41,7 +41,7 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- CTA 버튼: Stroke (600 → sans-serif-medium) -->
+    <!-- CTA 버튼: Stroke (600) -->
     <style name="ChagokCta.Stroke">
         <item name="android:background">@drawable/bg_cta_stroke</item>
         <item name="android:textColor">@color/mint_400</item>
