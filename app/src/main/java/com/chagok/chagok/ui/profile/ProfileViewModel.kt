@@ -29,6 +29,7 @@ class ProfileViewModel(
         // 화면이 바로 S-05로 넘어가도 인사가 끊기지 않게 앱 범위에서 말한다
         say = { text -> app.appScope.launch { app.appState.speak(text) } },
         editMode = savedState.get<Boolean>(ProfileActivity.EXTRA_EDIT) ?: false,
+        onProfileSaved = { app.appScope.launch { app.copilots.sync() } },
     )
 
     val state: StateFlow<ProfileUiState> = screen.state

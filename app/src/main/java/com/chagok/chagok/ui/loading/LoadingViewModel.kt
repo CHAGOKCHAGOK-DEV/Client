@@ -20,7 +20,8 @@ class LoadingViewModel(application: Application) : AndroidViewModel(application)
         scope = viewModelScope,
         app = app.appState,
         onboarding = app.onboarding,
-        // TODO: 서버 미션팩 최신 버전 확인 (GET /api/missions/packs/latest). 실패해도 진행
+        // 3/3: 설치 등록·미션팩·재전송. 실패해도 진행 (오프라인 동작)
+        missionPackSync = { app.serverSync.onStartup() },
     )
 
     val state: StateFlow<StartupUiState> = flow.state
