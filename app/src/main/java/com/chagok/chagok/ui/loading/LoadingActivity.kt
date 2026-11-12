@@ -121,7 +121,6 @@ class LoadingActivity : AppCompatActivity() {
             .start()
     }
 
-    /** 문장에서 핵심 단어만 민트로 */
     private fun highlight(fullRes: Int, keyRes: Int): CharSequence {
         val full = getString(fullRes)
         val key = getString(keyRes)
@@ -129,7 +128,7 @@ class LoadingActivity : AppCompatActivity() {
         val i = full.indexOf(key)
         if (i >= 0) {
             s.setSpan(
-                ForegroundColorSpan(getColor(R.color.brand)),
+                ForegroundColorSpan(getColor(R.color.correct)),
                 i, i + key.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
             )
         }
