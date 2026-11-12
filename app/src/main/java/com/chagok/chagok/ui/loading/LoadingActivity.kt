@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.chagok.chagok.ChagokApp
 import com.chagok.chagok.MainActivity
 import com.chagok.chagok.R
 import com.chagok.chagok.ui.state.Screen
@@ -67,8 +68,11 @@ class LoadingActivity : AppCompatActivity() {
 
         btnRetry.setOnClickListener { viewModel.retry() }
         btnLimited.setOnClickListener { viewModel.enterLimitedMode() }
-        // 피그마: 모달 노출 없이 close
-        findViewById<View>(R.id.btn_close).setOnClickListener { finishAffinity() }
+        // 피그마: 모달 노출 없이 close. 앱 종료 전에 차량 SDK 구독·연결을 해제한다 (4-4 생명주기)
+        findViewById<View>(R.id.btn_close).setOnClickListener {
+            (application as ChagokApp).appState.release()
+            finishAffinity()
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {

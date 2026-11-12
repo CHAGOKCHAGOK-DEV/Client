@@ -83,7 +83,7 @@
                 android:src="@drawable/ic_loading_spinner" />
         </LinearLayout>
 
-        <!-- 진행 바 900x28 -->
+        <!-- 진행 바 900x32 -->
         <ProgressBar
             android:id="@+id/progress"
             style="?android:attr/progressBarStyleHorizontal"
@@ -165,7 +165,7 @@
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/btn_close"
-                android:textColor="@color/mint_400"
+                android:textColor="@color/btn_secondary_text"
                 android:textSize="36sp"
                 android:textStyle="bold" />
         </LinearLayout>
