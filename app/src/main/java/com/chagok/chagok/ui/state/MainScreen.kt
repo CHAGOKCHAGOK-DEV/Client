@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import com.chagok.chagok.model.AgeGroup
 
 /** S05-01 상태 칩 */
 data class StatusChipUi(val text: String, val isError: Boolean)
@@ -94,7 +95,7 @@ class MainScreen(
     ) { (c, p, m), done, cap, ready, health ->
         MainUiState(
             statusChip = c,
-            profileChip = p?.let { "${it.nickname} 부기장 · ${it.ageGroup}" },
+            profileChip = p?.let { "${it.nickname} 부기장 · ${AgeGroup.fromCode(it.ageGroup)?.label ?: it.ageGroup}" },
             mascotMessage = m,
             todayDone = done,
             todayGoal = todayGoal,

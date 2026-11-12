@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_soft"
+    tools:context=".ui.profile.ProfileActivity">
+
+    <ImageView
+        android:id="@+id/btn_close"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/perm_close"
+        android:focusable="true"
+        android:src="@drawable/ic_close" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- ===================== 왼쪽: S04-03 말풍선 + 마스코트 ===================== -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_bubble"
+                android:layout_width="532dp"
+                android:layout_height="100dp"
+                android:background="@drawable/bg_bubble"
+                android:gravity="center"
+                android:textColor="@color/gray_500"
+                android:textSize="36sp"
+                android:textStyle="bold"
+                tools:text="은우 부기장, 반가워요!" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="21dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_bubble_tail" />
+
+            <FrameLayout
+                android:layout_width="416dp"
+                android:layout_height="416dp"
+                android:layout_marginTop="40dp"
+                android:background="@drawable/bg_illust_placeholder">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/profile_illust_placeholder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="28sp" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- ===================== 오른쪽 ===================== -->
+        <LinearLayout
+            android:layout_width="844dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="92dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:textColor="@color/gray_600"
+                android:textSize="44sp"
+                android:textStyle="bold"
+                tools:text="기본 정보를 설정해 주세요" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="44dp"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:text="@string/profile_label_nickname"
+                android:textColor="@color/gray_500"
+                android:textSize="34sp" />
+
+            <!-- S04-01 별명 입력 -->
+            <com.chagok.chagok.ui.component.NicknameInputView
+                android:id="@+id/input_nickname"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" />
+
+            <!-- 오류 문구 -->
+            <TextView
+                android:id="@+id/tv_nickname_error"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:includeFontPadding="false"
+                android:textColor="@color/pink_strong"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:visibility="invisible"
+                tools:text="한글, 영문, 숫자만 쓸 수 있어요"
+                tools:visibility="visible" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:includeFontPadding="false"
+                android:text="@string/profile_label_age"
+                android:textColor="@color/gray_500"
+                android:textSize="34sp" />
+
+            <!-- S04-02 연령대 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/chip_age_5_6"
+                    style="@style/ChagokChoiceChip"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    tools:text="5 ~ 6세" />
+
+                <TextView
+                    android:id="@+id/chip_age_7_8"
+                    style="@style/ChagokChoiceChip"
+                    android:layout_width="0dp"
+                    android:layout_marginStart="30.5dp"
+                    android:layout_weight="1"
+                    tools:text="7 ~ 8세" />
+
+                <TextView
+                    android:id="@+id/chip_age_9p"
+                    style="@style/ChagokChoiceChip"
+                    android:layout_width="0dp"
+                    android:layout_marginStart="30.5dp"
+                    android:layout_weight="1"
+                    tools:text="9세 이상" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:orientation="horizontal">
+
+                <!-- S04-04 [시작] / 수정 모드 [저장] -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_save"
+                    style="@style/ChagokCta"
+                    android:layout_width="500dp"
+                    tools:text="시작" />
+
+                <!-- 첫 실행 [나중에] / 수정 모드 [취소] -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_secondary"
+                    style="@style/ChagokCta.Stroke"
+                    android:layout_width="320dp"
+                    android:layout_marginStart="24dp"
+                    tools:text="나중에" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

@@ -51,6 +51,11 @@ object ScreenTexts {
     const val CONSENT_AGREE = "동의하고 계속"
     const val CONSENT_REFUSE = "동의하지 않아요"
 
+    // S-04
+    const val PROFILE_BUBBLE_DEFAULT = "부기장, 반가워요!"
+    const val PROFILE_ERROR_CHARS = "한글, 영문, 숫자만 쓸 수 있어요"
+    fun profileGreeting(nickname: String) = "$nickname 부기장, 반가워요!"
+
     // C-04
     const val REFUSAL_TITLE = "동의가 필요해요"
     const val REFUSAL_OK = "확인"
