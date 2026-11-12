@@ -13,7 +13,7 @@ import kotlinx.coroutines.MainScope
 class ChagokApp : Application() {
 
     /** AppState는 Main 한 스레드 전제라 MainScope 사용 */
-    private val appScope = MainScope()
+    val appScope = MainScope()
 
     val onboarding: PrefsOnboardingRepository by lazy { PrefsOnboardingRepository(this) }
 

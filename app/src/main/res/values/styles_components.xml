@@ -1,8 +1,7 @@
 <resources>
 
-    <!-- 공통 텍스트: Asta Sans 생기면 fontFamily만 @font/asta_sans 로 교체 -->
     <style name="ChagokText">
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
@@ -21,11 +20,11 @@
         <item name="android:paddingVertical">8dp</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@drawable/bg_chip</item>
-        <item name="android:textSize">28sp</item> <!-- TODO: 피그마 칩 글자 크기 확인 -->
+        <item name="android:textSize">28sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- CTA 버튼: 온/오프는 enabled 로 자동 전환 -->
+    <!-- CTA 버튼: 온/오프는 isActivated (오프여도 클릭은 됨) -->
     <style name="ChagokCta" parent="ChagokText">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">92dp</item>
@@ -42,11 +41,12 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- CTA 버튼: Stroke (600 → sans-serif-medium) -->
+    <!-- CTA 버튼: Stroke (600) -->
     <style name="ChagokCta.Stroke">
         <item name="android:background">@drawable/bg_cta_stroke</item>
         <item name="android:textColor">@color/mint_400</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
         <item name="android:textStyle">normal</item>
     </style>
 
@@ -54,6 +54,23 @@
     <style name="ChagokCta.Gray">
         <item name="android:background">@drawable/bg_cta_gray</item>
         <item name="android:textColor">@color/gray_500</item>
+    </style>
+
+    <!-- 나이 버튼. 온/오프는 setChoiceSelected() -->
+    <style name="ChagokChoiceChip" parent="ChagokText">
+        <item name="android:layout_width">262dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingBottom">28dp</item> <!-- 24 + 그림자 4 -->
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_choice_chip</item>
+        <item name="android:textColor">@color/choice_chip_text</item>
+        <item name="android:textSize">40sp</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
     </style>
 
 </resources>

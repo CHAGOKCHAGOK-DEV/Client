@@ -222,6 +222,9 @@ class AppState(
     /** 주행 종료 시 출발 상태 초기화 (trip 종료 시 자동으로도 불림) */
     fun resetReady() { _ready.value = false }
 
+    /** F-11 TTS. S-04 첫 저장 인사 등 */
+    suspend fun speak(text: String) = speech.speak(text)
+
     /** 앱 종료: 진행 중인 주행을 APP_EXIT로 끝내고 SDK 해제 */
     fun release() {
         trips.endNow(TripEndReason.APP_EXIT)

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-04 부기장 설정. 말풍선·오류·TTS 문구는 ScreenTexts(Screen.kt) -->
+    <string name="profile_illust_placeholder">눈웃음 방방\n일러스트</string>
+    <string name="profile_title">기본 정보를 설정해 주세요</string>
+    <string name="profile_title_key">정보</string>
+    <string name="profile_label_nickname">부기장 별명</string>
+    <string name="profile_label_age">연령대</string>
+    <string name="profile_start">시작</string>
+    <string name="profile_save">저장</string>
+    <string name="profile_cancel">취소</string>
+
+    <!-- NicknameInputView -->
+    <string name="nickname_hint">별명을 입력해요</string>
+    <string name="nickname_count">%1$d/%2$d</string>
+    <string name="nickname_edit">별명 수정</string>
+</resources>
