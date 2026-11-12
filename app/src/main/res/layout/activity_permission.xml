@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S-02 권한 안내 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_soft"
+    tools:context=".ui.permission.PermissionActivity">
+
+    <!-- 닫기 -->
+    <ImageView
+        android:id="@+id/btn_close"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="40dp"
+        android:layout_marginEnd="40dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/perm_close"
+        android:focusable="true"
+        android:src="@drawable/ic_close" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- ===================== 왼쪽: S02-01 마스코트 + 말풍선 ===================== -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_bubble"
+                android:layout_width="532dp"
+                android:layout_height="100dp"
+                android:background="@drawable/bg_bubble"
+                android:gravity="center"
+                android:text="@string/perm_bubble"
+                android:textColor="@color/gray_500"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="21dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_bubble_tail" />
+
+            <FrameLayout
+                android:layout_width="416dp"
+                android:layout_height="416dp"
+                android:layout_marginTop="40dp"
+                android:background="@drawable/bg_illust_placeholder">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:text="@string/perm_illust_placeholder"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="28sp" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- ===================== 오른쪽 ===================== -->
+        <LinearLayout
+            android:layout_width="844dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="92dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="@string/perm_title"
+                android:textColor="@color/gray_600"
+                android:textSize="44sp"
+                android:textStyle="bold" />
+
+            <!-- S02-02 권한 행 x3 -->
+            <include
+                android:id="@+id/card_vehicle"
+                layout="@layout/item_permission"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="44dp" />
+
+            <include
+                android:id="@+id/card_mic"
+                layout="@layout/item_permission"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" />
+
+            <include
+                android:id="@+id/card_voice"
+                layout="@layout/item_permission"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="60dp"
+                android:orientation="horizontal">
+
+                <!-- [다음]: 3종 완료 전 오프(isActivated=false). 오프여도 눌리면 경고 토스트 -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_next"
+                    style="@style/ChagokCta"
+                    android:layout_width="500dp"
+                    android:text="@string/common_next" />
+
+                <!-- S02-05 [나중에]: 거부된 권한이 있을 때만 -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_later"
+                    style="@style/ChagokCta.Stroke"
+                    android:layout_width="320dp"
+                    android:layout_marginStart="24dp"
+                    android:text="@string/perm_later" />
+            </LinearLayout>
+
+            <!-- 경고 토스트 (S02_2): 오프 상태에서 [다음] 누르면 2초. invisible로 자리를 잡아 둠 -->
+            <LinearLayout
+                android:id="@+id/toast_warning"
+                android:layout_width="500dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_perm_warning"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp"
+                android:visibility="invisible"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_warning" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:includeFontPadding="false"
+                    android:text="@string/perm_warning"
+                    android:textColor="@color/pink_strong"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
