@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dim"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/alpha_ink_300">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_modal"
+        android:clickable="true"
+        android:focusable="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="60dp"
+        android:paddingTop="60dp"
+        android:paddingBottom="64dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/exit_modal_title"
+            android:textColor="@color/gray_600"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/exit_modal_sub"
+            android:textColor="@color/gray_400"
+            android:textSize="32sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_exit_leave"
+                style="@style/ChagokCta.Gray"
+                android:layout_width="262dp"
+                android:text="@string/exit_modal_leave" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_exit_continue"
+                style="@style/ChagokCta"
+                android:layout_width="262dp"
+                android:layout_marginStart="24dp"
+                android:text="@string/exit_modal_continue" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
