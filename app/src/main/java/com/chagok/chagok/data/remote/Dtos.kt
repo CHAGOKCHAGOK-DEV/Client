@@ -41,7 +41,7 @@ data class AgreementDocument(
     val documentId: Long? = null,
     val code: String,
     val version: Int,
-    val required: Boolean = false,
+    val required: Boolean? = null,
     val state: String? = null,          // status 응답에서만: ACCEPTED / OUTDATED / NOT_ACCEPTED
 )
 

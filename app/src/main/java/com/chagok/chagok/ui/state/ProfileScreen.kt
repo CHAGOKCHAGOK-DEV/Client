@@ -36,6 +36,7 @@ data class ProfileUiState(
  *
  * @param saveProfile 로컬 저장
  * @param say 화면이 넘어가도 끝까지 말하는 TTS
+ * @param onProfileSaved 서버 저장. 첫 저장은 POST, 이후 PUT. 실패하면 다음 시작 때 재시도
  */
 class ProfileScreen(
     private val scope: CoroutineScope,
@@ -44,6 +45,7 @@ class ProfileScreen(
     private val saveProfile: (CopilotProfile) -> Unit,
     private val say: (String) -> Unit,
     private val editMode: Boolean = false,
+    private val onProfileSaved: () -> Unit = {},
 ) {
     private val saved = onboarding.profile.value.takeIf { editMode }
     private val nickname = MutableStateFlow(saved?.nickname ?: "")
@@ -74,8 +76,7 @@ class ProfileScreen(
         submitted = true
 
         saveProfile(CopilotProfile(nickname = s.nickname, ageGroup = a.code))
-        // TODO(서버): 첫 저장 POST /api/families → 기기 토큰 저장 → POST /api/families/{id}/copilots
-        //             수정 PUT /api/copilots/{id}. 실패해도 진행하고 재시도 큐에 둔다
+        onProfileSaved()
         if (!editMode) say(ScreenTexts.profileGreeting(s.nickname))
 
         scope.launch { _events.emit(UiEvent.Navigate(nextScreen())) }

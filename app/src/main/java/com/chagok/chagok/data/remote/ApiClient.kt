@@ -14,6 +14,8 @@ object ApiClient {
 
     const val BASE_URL = "https://api.hyundai-little-copoilot.store/"
 
+    private val TOKEN_IN_BODY = Regex("\"token\"\\s*:\\s*\"[^\"]*\"")
+
     /** 서버에 필드가 추가돼도 앱이 죽지 않게 모르는 키는 무시 */
     val json = Json {
         ignoreUnknownKeys = true
@@ -24,9 +26,12 @@ object ApiClient {
     fun create(context: Context, store: InstallationStore): ChagokApi {
         val debuggable = (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
-        val logging = HttpLoggingInterceptor().apply {
+        // 로그에 토큰이 찍히지 않게: 헤더는 redactHeader, 응답 본문의 "token"은 직접 가림
+        val logging = HttpLoggingInterceptor { message ->
+            android.util.Log.i("okhttp", message.replace(TOKEN_IN_BODY, "\"token\":\"██\""))
+        }.apply {
             level = if (debuggable) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
-            redactHeader("Authorization")   // 로그에 토큰이 찍히지 않게
+            redactHeader("Authorization")
         }
 
         val client = OkHttpClient.Builder()

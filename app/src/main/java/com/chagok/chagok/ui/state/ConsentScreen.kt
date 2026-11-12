@@ -35,6 +35,7 @@ class ConsentScreen(
     private val app: AppState,
     private val onboarding: OnboardingRepository,
     private val nowMs: () -> Long = { System.currentTimeMillis() },
+    private val onConsentSaved: (ConsentRecord) -> Unit = {},   // 서버 기록 (화면이 넘어가도 끝까지)
 ) {
     private val checked = MutableStateFlow<Set<ConsentItem>>(emptySet())
     private val refusalDialog = MutableStateFlow(false)
@@ -64,13 +65,13 @@ class ConsentScreen(
         if (locked || refusalDialog.value || submitted) return
         if (!allChecked(checked.value)) return
         submitted = true
-        onboarding.saveConsent(
-            ConsentRecord(
-                version = ConsentRecord.CURRENT_VERSION,
-                items = checked.value,
-                agreedAtMs = nowMs(),
-            )
+        val record = ConsentRecord(
+            version = ConsentRecord.CURRENT_VERSION,
+            items = checked.value,
+            agreedAtMs = nowMs(),
         )
+        onboarding.saveConsent(record)
+        onConsentSaved(record)
         scope.launch { _events.emit(UiEvent.Navigate(nextScreen())) }
     }
 

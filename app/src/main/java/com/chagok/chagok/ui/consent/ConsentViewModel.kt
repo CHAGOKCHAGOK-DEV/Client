@@ -10,13 +10,19 @@ import com.chagok.chagok.ui.state.ConsentUiState
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /** S-03 화면용. 실제 동작은 ConsentScreen */
 class ConsentViewModel(application: Application) : AndroidViewModel(application) {
 
     private val app = application as ChagokApp
 
-    private val screen = ConsentScreen(viewModelScope, app.appState, app.onboarding)
+    private val screen = ConsentScreen(
+        scope = viewModelScope,
+        app = app.appState,
+        onboarding = app.onboarding,
+        onConsentSaved = { record -> app.appScope.launch { app.agreements.syncConsent(record) } },
+    )
 
     val state: StateFlow<ConsentUiState> = screen.state
     val events: SharedFlow<UiEvent> = screen.events
