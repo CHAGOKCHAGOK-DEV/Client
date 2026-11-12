@@ -64,6 +64,7 @@
     <color name="sun">#FFD25A</color>
     <color name="sun_soft">#FFF5DD</color>
     <color name="sun_strong">#7A5400</color>
+    <color name="sun_text">#DFB134</color>
 
     <!-- pink -->
     <color name="pink">#FF5C7C</color>

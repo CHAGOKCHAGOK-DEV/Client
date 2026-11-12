@@ -34,8 +34,8 @@ object ScreenTexts {
     // S-02
     const val PERM_TITLE = "부기장이 일하려면 필요해요"
     const val PERM_VEHICLE = "차량 신호 읽기"
-    const val PERM_MIC = "마이크"
-    const val PERM_VOICE = "음성 안내·인식"
+    const val PERM_MIC = "마이크 사용"
+    const val PERM_VOICE = "음성 인식 기반 안내"
     const val PERM_BANNER = "권한이 없으면 시작할 수 없어요"
     const val PERM_ALL_DONE = "모두 확인됐어요!"
     const val PERM_LATER_TOAST = "권한이 있어야 시작할 수 있어요"

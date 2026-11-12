@@ -91,6 +91,13 @@ class StartupFlowTest {
             vehicle = com.chagok.chagok.sdk.vehicle.FakeVehicleGateway(
                 capability = com.chagok.chagok.model.Capability(speed = false, blink = true, wiper = true, navi = true),
             ),
+            permission = com.chagok.chagok.permission.FakePermissionChecker(
+                com.chagok.chagok.model.PermissionState(
+                    vehicle = com.chagok.chagok.model.PermissionStatus.GRANTED,
+                    mic = com.chagok.chagok.model.PermissionStatus.NEEDED,
+                    voice = com.chagok.chagok.model.PermissionStatus.NEEDED,
+                ),
+            ),
         )
         val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
         flow.start(); advanceTimeBy(100)

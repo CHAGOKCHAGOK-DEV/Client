@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import com.chagok.chagok.model.PermissionStatus
 
 /** S-01 단계 (진행 바 3칸) */
 enum class StartupStep(val index: Int) { CONNECT(1), PERMISSION(2), SETTINGS(3) }
@@ -90,8 +91,9 @@ class StartupFlow(
             )
             return
         }
-        // 필수 capability(속도)가 없으면 이 차에서는 쓸 수 없다. 다시 시도해도 같으므로 [닫기]만
-        if (!capability.speed) {
+        // 속도를 못 읽었는데 차량 권한은 허용돼 있다 → 정말 미지원. 다시 시도해도 같으므로 [닫기]만
+        // 차량 권한(CAR_SPEED)이 없어서 못 읽은 거면 S-02로 보내고, 허용 후 다시 연결한다
+        if (!capability.speed && app.permission.value.vehicle == PermissionStatus.GRANTED) {
             _state.value = _state.value.copy(
                 message = ScreenTexts.STARTUP_ERROR, error = true, errorKind = StartupError.CAR_UNSUPPORTED,
                 showRetry = false, showLimitedMode = false,

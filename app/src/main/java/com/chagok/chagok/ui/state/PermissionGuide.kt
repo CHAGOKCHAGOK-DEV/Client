@@ -42,6 +42,7 @@ class PermissionGuide(
     private val doneDelayMs: Long = 1_000,
 ) {
     private val checking = MutableStateFlow(false)
+    private var navigating = false
 
     private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 8)
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
@@ -70,7 +71,7 @@ class PermissionGuide(
             app.permission.map { it.allGranted }.distinctUntilChanged().collectLatest { ok ->
                 if (!ok) return@collectLatest
                 delay(doneDelayMs)
-                _events.emit(UiEvent.Navigate(nextScreen()))
+                goNext()
             }
         }
     }
@@ -94,12 +95,29 @@ class PermissionGuide(
         }
     }
 
+    /** [다음]: 3종 모두 완료면 바로 다음 화면. 아니면 false (화면이 경고 토스트를 띄움) */
+    fun next(): Boolean {
+        val s = state.value
+        if (s.locked) return true          // 주행 중엔 아무것도 안 함
+        if (!s.allDone) return false
+        scope.launch { goNext() }
+        return true
+    }
+
     /** [나중에] */
     fun later() {
         scope.launch {
             _events.emit(UiEvent.Toast(ScreenTexts.PERM_LATER_TOAST))
             _events.emit(UiEvent.ExitApp)
         }
+    }
+
+    /** 다음 화면으로. 권한이 없어 S-01에서 속도 구독을 못 했으면, 허용된 지금 다시 연결한다 */
+    private suspend fun goNext() {
+        if (navigating) return       // [다음] 탭과 1초 자동 이동이 겹쳐도 한 번만
+        navigating = true
+        if (!app.capability.value.speed) app.reconnectVehicle()
+        _events.emit(UiEvent.Navigate(nextScreen()))
     }
 
     private fun nextScreen(): Screen = ScreenRouter.afterOnboarding(
