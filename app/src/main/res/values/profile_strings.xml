@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-04 부기장 설정 -->
+    <string name="nickname_hint">별명을 입력해요</string>
+    <string name="nickname_count">%1$d/%2$d</string>
+    <string name="nickname_edit">별명 수정</string>
+</resources>

@@ -56,4 +56,20 @@
         <item name="android:textColor">@color/gray_500</item>
     </style>
 
+    <!-- 나이 버튼. 온/오프는 setChoiceSelected() -->
+    <style name="ChagokChoiceChip" parent="ChagokText">
+        <item name="android:layout_width">262dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingBottom">28dp</item> <!-- 24 + 그림자 4 -->
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_choice_chip</item>
+        <item name="android:textColor">@color/choice_chip_text</item>
+        <item name="android:textSize">40sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
 </resources>
