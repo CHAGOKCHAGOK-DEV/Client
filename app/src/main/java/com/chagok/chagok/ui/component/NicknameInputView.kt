@@ -105,7 +105,7 @@ class NicknameInputView @JvmOverloads constructor(
         val done = !editing && len > 0
 
         isSelected = done
-        editText.typeface = if (len > 0) BOLD else MEDIUM
+        editText.typeface = context.astaSans(if (len > 0) 700 else 600)
         count.isVisible = editing
         count.text = context.getString(R.string.nickname_count, len, MAX_LENGTH)
         editIcon.isVisible = done
@@ -115,7 +115,5 @@ class NicknameInputView @JvmOverloads constructor(
 
     companion object {
         const val MAX_LENGTH = 8
-        private val BOLD: Typeface = Typeface.create("sans-serif", Typeface.BOLD)
-        private val MEDIUM: Typeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
     }
 }

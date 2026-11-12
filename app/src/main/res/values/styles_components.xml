@@ -1,8 +1,7 @@
 <resources>
 
-    <!-- 공통 텍스트: Asta Sans 생기면 fontFamily만 @font/asta_sans 로 교체 -->
     <style name="ChagokText">
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 
@@ -21,7 +20,7 @@
         <item name="android:paddingVertical">8dp</item>
         <item name="android:gravity">center</item>
         <item name="android:background">@drawable/bg_chip</item>
-        <item name="android:textSize">28sp</item> <!-- TODO: 피그마 칩 글자 크기 확인 -->
+        <item name="android:textSize">28sp</item>
         <item name="android:textStyle">bold</item>
     </style>
 
@@ -46,7 +45,8 @@
     <style name="ChagokCta.Stroke">
         <item name="android:background">@drawable/bg_cta_stroke</item>
         <item name="android:textColor">@color/mint_400</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
         <item name="android:textStyle">normal</item>
     </style>
 
@@ -67,7 +67,8 @@
         <item name="android:background">@drawable/bg_choice_chip</item>
         <item name="android:textColor">@color/choice_chip_text</item>
         <item name="android:textSize">40sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
