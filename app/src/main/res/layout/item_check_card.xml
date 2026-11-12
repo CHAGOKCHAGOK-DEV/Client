@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="844dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_permission_card"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="32dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="32dp">
+
+    <View
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/bg_checkbox"
+        android:duplicateParentState="true" />
+
+    <TextView
+        android:id="@+id/tv_check_title"
+        style="@style/ChagokText.Bold36"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        tools:text="별명을 이용해요" />
+</LinearLayout>

@@ -1,7 +1,6 @@
 package com.chagok.chagok.ui.loading
 
 import android.animation.ObjectAnimator
-import android.content.Intent
 import android.os.Bundle
 import android.text.Spannable
 import android.text.SpannableString
@@ -18,7 +17,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.ChagokApp
-import com.chagok.chagok.MainActivity
 import com.chagok.chagok.R
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.StartupError
@@ -26,7 +24,7 @@ import com.chagok.chagok.ui.state.StartupStep
 import com.chagok.chagok.ui.state.StartupUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.chagok.chagok.ui.permission.PermissionActivity
+import com.chagok.chagok.ui.common.intentFor
 
 /**
  * S01_2 로딩중 / 로딩실패 (S-01, F-01, F-01-1).
@@ -167,10 +165,7 @@ class LoadingActivity : AppCompatActivity() {
         navigated = true
         // TODO: S-02·S-03·S-04·S-05·S-06·S-08 화면이 생기면 각 Activity로 연결.
         //       지금은 MainActivity로 가고, 정해진 화면 이름을 함께 넘긴다.
-        val intent = when (next) {
-            Screen.PERMISSION -> Intent(this, PermissionActivity::class.java)
-            else -> Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_SCREEN, next.name)
-        }
+        val intent = intentFor(next)
         startActivity(intent)
         overridePendingTransition(0, 0)
         finish()

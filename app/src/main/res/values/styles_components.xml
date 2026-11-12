@@ -50,4 +50,10 @@
         <item name="android:textStyle">normal</item>
     </style>
 
+    <!-- CTA 버튼: Gray (모달 [나가기]) -->
+    <style name="ChagokCta.Gray">
+        <item name="android:background">@drawable/bg_cta_gray</item>
+        <item name="android:textColor">@color/gray_500</item>
+    </style>
+
 </resources>

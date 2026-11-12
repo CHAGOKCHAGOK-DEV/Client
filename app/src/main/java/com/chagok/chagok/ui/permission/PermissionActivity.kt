@@ -27,6 +27,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.activity.addCallback
+import com.chagok.chagok.ui.component.ExitDialog
+import com.chagok.chagok.ui.common.intentFor
 /**
  * S-02 권한 안내 (F-01-1).
  * - 행 탭 → 시스템 권한 창(C-01). 허용 → 완료(테두리), 거부 → 거부됨
@@ -46,6 +49,7 @@ class PermissionActivity : AppCompatActivity() {
 
     private var toastJob: Job? = null
     private var navigated = false
+    private var exitDialog: ExitDialog? = null
 
     // 시스템 권한 창 결과를 AndroidPermissionChecker.request()로 돌려준다
     private var pendingResult: CompletableDeferred<Map<String, Boolean>>? = null
@@ -76,9 +80,9 @@ class PermissionActivity : AppCompatActivity() {
 
         cards.forEach { (kind, card) -> card.setOnClickListener { viewModel.onRowClick(kind) } }
         btnNext.setOnClickListener { if (!viewModel.next()) showWarning() }
-        btnLater.setOnClickListener { viewModel.later() }
-        // 🟡 설계서에 X가 없어서 [나중에]와 같게 처리
-        findViewById<View>(R.id.btn_close).setOnClickListener { viewModel.later() }
+        btnLater.setOnClickListener { showExitModal() }
+        findViewById<View>(R.id.btn_close).setOnClickListener { showExitModal() }
+        onBackPressedDispatcher.addCallback(this) { showExitModal() }
 
         checker?.requester = { perms ->
             CompletableDeferred<Map<String, Boolean>>().also {
@@ -98,6 +102,7 @@ class PermissionActivity : AppCompatActivity() {
     override fun onDestroy() {
         checker?.requester = null
         pendingResult?.cancel()
+        exitDialog?.dismiss()
         super.onDestroy()
     }
 
@@ -115,11 +120,21 @@ class PermissionActivity : AppCompatActivity() {
             // TODO: C-03 토스트 컴포넌트가 생기면 교체
             is UiEvent.Toast -> Toast.makeText(this, event.text, Toast.LENGTH_SHORT).show()
             is UiEvent.Navigate -> navigate(event.to)
-            UiEvent.ExitApp -> {
-                (application as ChagokApp).appState.release()
-                finishAffinity()
-            }
+            UiEvent.ExitApp -> exitApp()
         }
+    }
+
+    // ---------- 나가기 모달 (S02_3) ----------
+
+    private fun showExitModal() {
+        if (exitDialog?.isShowing == true) return
+        exitDialog = ExitDialog(this) { exitApp() }.also { it.show() }
+    }
+
+    /** 앱 종료 전에 차량 SDK 구독·연결을 해제한다 */
+    private fun exitApp() {
+        (application as ChagokApp).appState.release()
+        finishAffinity()
     }
 
     // ---------- 경고 토스트 (S02_2) ----------
@@ -158,7 +173,7 @@ class PermissionActivity : AppCompatActivity() {
         if (navigated) return   // [다음] 탭과 1초 자동 이동이 겹쳐도 한 번만
         navigated = true
         // TODO: S-03 / S-04 / S-05 Activity가 생기면 각각 연결
-        startActivity(Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_SCREEN, next.name))
+        startActivity(intentFor(next))
         overridePendingTransition(0, 0)
         finish()
     }
