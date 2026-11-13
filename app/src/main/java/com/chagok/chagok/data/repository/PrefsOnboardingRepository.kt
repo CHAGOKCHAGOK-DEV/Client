@@ -36,6 +36,18 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         _consented.value = ConsentRecord.isValid(record)
     }
 
+    override fun clearConsent() {
+        prefs.edit()
+            .remove(KEY_CONSENT_VERSION)
+            .remove(KEY_CONSENT_AT)
+            .remove(KEY_ITEM_NICKNAME)
+            .remove(KEY_ITEM_VOICE)
+            .remove(KEY_ITEM_FAMILY)
+            .apply()
+        _consent.value = null
+        _consented.value = false
+    }
+
     // TODO: S-04에서 명세대로 수정
     fun saveProfile(profile: CopilotProfile, intensity: MissionIntensity = _intensity.value) {
         val p = profile.copy(nickname = profile.nickname.trim())
