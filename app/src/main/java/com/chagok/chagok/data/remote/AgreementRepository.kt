@@ -18,6 +18,11 @@ class AgreementRepository(
     private val pending: PendingSyncStore,
     private val onboarding: OnboardingRepository,
 ) {
+    /** S-03 [보기]용: 현재 약관 (제목·내용 포함) */
+    suspend fun fetchCurrent(): Result<List<AgreementDocument>> {
+        installations.ensureRegistered().onFailure { return Result.failure(it) }
+        return apiCall { api.currentAgreements() }.map { it.documents }
+    }
 
     /** 동의 저장 직후 */
     suspend fun syncConsent(record: ConsentRecord): Result<Unit> {

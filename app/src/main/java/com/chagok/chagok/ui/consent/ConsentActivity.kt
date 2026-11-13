@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import com.chagok.chagok.ui.state.ScreenTexts
 import android.view.MotionEvent
 import com.chagok.chagok.ui.component.DriveLockGuard
+import com.chagok.chagok.ui.component.TermsDialog
 
 /**
  * S-03 부모 동의 (S03_1, S03_2).
@@ -41,6 +42,7 @@ class ConsentActivity : AppCompatActivity() {
 
     private var exitDialog: ExitDialog? = null
     private lateinit var driveLock: DriveLockGuard
+    private var termsDialog: TermsDialog? = null
     private var navigated = false
 
     /** 주행 중엔 화면 터치 차단 */
@@ -81,6 +83,7 @@ class ConsentActivity : AppCompatActivity() {
     override fun onDestroy() {
         exitDialog?.dismiss()
         driveLock.release()
+        termsDialog?.dismiss()
         super.onDestroy()
     }
 
@@ -100,9 +103,16 @@ class ConsentActivity : AppCompatActivity() {
         }
     }
 
-    /** [보기]: 약관 내용 모달.  */
+    /** [보기]: 약관 모달 */
     private fun showTerms(item: ConsentItem) {
-        Toast.makeText(this, "약관 내용은 준비 중이에요", Toast.LENGTH_SHORT).show()
+        if (termsDialog?.isShowing == true) return
+        val doc = viewModel.termFor(item)
+        if (doc == null) {
+            Toast.makeText(this, "약관을 불러오는 중이에요. 잠시 후 다시 눌러 주세요", Toast.LENGTH_SHORT).show()
+            viewModel.loadTerms()
+            return
+        }
+        termsDialog = TermsDialog(this, doc.title.orEmpty(), doc.content.orEmpty(), doc.effectiveAt).also { it.show() }
     }
 
     private fun showExitModal() {

@@ -2,4 +2,8 @@
 <resources>
     <string name="consent_illust_placeholder">안경 척\n일러스트</string>
     <string name="consent_view"><u>보기</u></string>
+    <string name="terms_effective">시행일 %s</string>
+    <string name="consent_notice_label">서버에 저장돼요</string>
+    <string name="consent_notice_items">별명 · 연령대 · 미션 결과</string>
+    <string name="consent_notice_voice">목소리는 우리 서버에 저장하지 않아요</string>
 </resources>
