@@ -43,13 +43,10 @@ object ScreenTexts {
     // S-03 (법무 검토 전 임시 문구)
     const val CONSENT_TITLE = "보호자님, 확인이 필요해요"
     const val CONSENT_SUB = "아이 정보 이용에 동의해 주세요"
-    const val CONSENT_NOTICE = "정차 상태에서 확인해 주세요"
-    const val CONSENT_ITEM_NICKNAME = "별명을 이용해요"
-    const val CONSENT_ITEM_VOICE = "목소리는 인식 후 바로 지워요"
-    const val CONSENT_ITEM_FAMILY = "주행 기록은 가족 안에서만 사용해요"
+    const val CONSENT_ITEM_NICKNAME = "[필수] 서비스 이용약관 동의"
+    const val CONSENT_ITEM_VOICE = "[필수] 개인정보 처리방침 확인"
+    const val CONSENT_ITEM_FAMILY = "[필수] 아동 개인정보 수집·이용 동의"
     const val CONSENT_ALL = "전체 동의"
-    const val CONSENT_AGREE = "동의하고 계속"
-    const val CONSENT_REFUSE = "동의하지 않아요"
 
     // S-04
     const val PROFILE_BUBBLE_DEFAULT = "부기장, 반가워요!"

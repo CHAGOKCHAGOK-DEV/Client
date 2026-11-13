@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="consent_illust_placeholder">안경 척\n일러스트</string>
+    <string name="consent_view"><u>보기</u></string>
 </resources>

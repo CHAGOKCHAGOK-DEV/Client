@@ -26,5 +26,23 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_weight="1"
-        tools:text="별명을 이용해요" />
+        tools:text="[필수] 서비스 이용약관 동의" />
+
+    <TextView
+        android:id="@+id/tv_check_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="-12dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="-12dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:fontFamily="@font/asta_sans"
+        android:includeFontPadding="false"
+        android:padding="12dp"
+        android:text="@string/consent_view"
+        android:textColor="@color/gray_500"
+        android:textFontWeight="500"
+        android:textSize="28sp"
+        android:visibility="gone"
+        tools:visibility="visible" />
 </LinearLayout>

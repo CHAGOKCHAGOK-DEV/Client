@@ -85,10 +85,11 @@ class ConsentActivity : AppCompatActivity() {
     }
 
     private fun render(state: ConsentUiState) {
-        state.rows.forEach { row -> cards[row.item]?.bindCheckCard(row.text, row.checked) }
+        state.rows.forEach { row ->
+            cards[row.item]?.bindCheckCard(row.text, row.checked) { showTerms(row.item) }
+        }
         cardAll.bindCheckCard(ScreenTexts.CONSENT_ALL, state.allChecked)
         btnNext.isActivated = state.agreeEnabled
-        // TODO: state.locked → C-02 주행 잠금 오버레이
     }
 
     private fun handle(event: UiEvent) {
@@ -97,6 +98,11 @@ class ConsentActivity : AppCompatActivity() {
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
+    }
+
+    /** [보기]: 약관 내용 모달.  */
+    private fun showTerms(item: ConsentItem) {
+        Toast.makeText(this, "약관 내용은 준비 중이에요", Toast.LENGTH_SHORT).show()
     }
 
     private fun showExitModal() {
