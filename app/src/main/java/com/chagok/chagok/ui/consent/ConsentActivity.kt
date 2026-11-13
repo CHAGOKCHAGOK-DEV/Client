@@ -22,6 +22,9 @@ import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.launch
 import com.chagok.chagok.ui.state.ScreenTexts
+import android.view.MotionEvent
+import com.chagok.chagok.ui.component.DriveLockGuard
+import com.chagok.chagok.ui.component.TermsDialog
 
 /**
  * S-03 부모 동의 (S03_1, S03_2).
@@ -38,11 +41,18 @@ class ConsentActivity : AppCompatActivity() {
     private lateinit var btnNext: View
 
     private var exitDialog: ExitDialog? = null
+    private lateinit var driveLock: DriveLockGuard
+    private var termsDialog: TermsDialog? = null
     private var navigated = false
+
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_consent)
+        driveLock = DriveLockGuard(this) { showExitModal() }
 
         cards = mapOf(
             ConsentItem.NICKNAME to findViewById(R.id.card_nickname),
@@ -72,14 +82,17 @@ class ConsentActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         exitDialog?.dismiss()
+        driveLock.release()
+        termsDialog?.dismiss()
         super.onDestroy()
     }
 
     private fun render(state: ConsentUiState) {
-        state.rows.forEach { row -> cards[row.item]?.bindCheckCard(row.text, row.checked) }
+        state.rows.forEach { row ->
+            cards[row.item]?.bindCheckCard(row.text, row.checked) { showTerms(row.item) }
+        }
         cardAll.bindCheckCard(ScreenTexts.CONSENT_ALL, state.allChecked)
         btnNext.isActivated = state.agreeEnabled
-        // TODO: state.locked → C-02 주행 잠금 오버레이
     }
 
     private fun handle(event: UiEvent) {
@@ -88,6 +101,18 @@ class ConsentActivity : AppCompatActivity() {
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
+    }
+
+    /** [보기]: 약관 모달 */
+    private fun showTerms(item: ConsentItem) {
+        if (termsDialog?.isShowing == true) return
+        val doc = viewModel.termFor(item)
+        if (doc == null) {
+            Toast.makeText(this, "약관을 불러오는 중이에요. 잠시 후 다시 눌러 주세요", Toast.LENGTH_SHORT).show()
+            viewModel.loadTerms()
+            return
+        }
+        termsDialog = TermsDialog(this, doc.title.orEmpty(), doc.content.orEmpty(), doc.effectiveAt).also { it.show() }
     }
 
     private fun showExitModal() {

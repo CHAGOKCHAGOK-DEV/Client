@@ -54,9 +54,9 @@ class CopilotRepository(
         if (pending.copilot) sync() else Result.success(Unit)
 
     private companion object {
-        /** 🟡 앱(설계서) AGE_9P ↔ 서버 AGE_9_10. 코드 통일되면 삭제 */
+        /** 🟡 앱(설계서) AGE_9P ↔ 서버 AGE_9_PLUS. 코드 통일되면 삭제 */
         fun serverAgeGroup(code: String): String = when (code) {
-            "AGE_9P" -> "AGE_9_10"
+            "AGE_9P" -> "AGE_9_PLUS"
             else -> code
         }
 

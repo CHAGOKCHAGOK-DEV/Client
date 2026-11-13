@@ -18,6 +18,11 @@ class AgreementRepository(
     private val pending: PendingSyncStore,
     private val onboarding: OnboardingRepository,
 ) {
+    /** S-03 [보기]용: 현재 약관 (제목·내용 포함) */
+    suspend fun fetchCurrent(): Result<List<AgreementDocument>> {
+        installations.ensureRegistered().onFailure { return Result.failure(it) }
+        return apiCall { api.currentAgreements() }.map { it.documents }
+    }
 
     /** 동의 저장 직후 */
     suspend fun syncConsent(record: ConsentRecord): Result<Unit> {
@@ -35,13 +40,28 @@ class AgreementRepository(
         return syncConsent(record)
     }
 
+    /**
+     * S-01: 서버 기준으로 다시 동의가 필요한지 확인. 필요하면 앱 동의를 지운다 → S-03으로 감.
+     * 앱에서 동의한 적 없으면 확인하지 않음 (어차피 S-03). 실패하면 앱 기록 그대로.
+     */
+    suspend fun verifyWithServer(): Result<Unit> {
+        if (!onboarding.consented.value) return Result.success(Unit)
+
+        // 못 보낸 동의가 있으면 먼저 보낸다 (안 그러면 방금 동의한 사람도 '동의 필요'로 나옴)
+        if (pending.consent) retryPending().onFailure { return Result.failure(it) }
+
+        installations.ensureRegistered().onFailure { return Result.failure(it) }
+        return apiCall { api.agreementStatus() }.map { status ->
+            if (status.consentRequired) onboarding.clearConsent()
+        }
+    }
+
     private suspend fun send(record: ConsentRecord): Result<Unit> {
         installations.ensureRegistered().onFailure { return Result.failure(it) }
 
         val docs = apiCall { api.currentAgreements() }
             .getOrElse { return Result.failure(it) }
             .documents
-            .filter { it.required != false }   // 선택 문서는 앱에서 동의받지 않았으므로 제외
         if (docs.isEmpty()) return Result.success(Unit)
 
         val occurredAt = Instant.ofEpochMilli(record.agreedAtMs)

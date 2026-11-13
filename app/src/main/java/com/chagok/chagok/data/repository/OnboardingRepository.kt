@@ -35,6 +35,8 @@ interface OnboardingRepository {
     val consent: StateFlow<ConsentRecord?>
     val profile: StateFlow<CopilotProfile?>
     fun saveConsent(record: ConsentRecord)
+    /** 서버 약관이 바뀌어 다시 동의받아야 할 때 */
+    fun clearConsent()
 }
 
 /** 개발·테스트용 */
@@ -52,6 +54,11 @@ class InMemoryOnboardingRepository(
     override fun saveConsent(record: ConsentRecord) {
         _consent.value = record
         _consented.value = ConsentRecord.isValid(record)
+    }
+
+    override fun clearConsent() {
+        _consent.value = null
+        _consented.value = false
     }
 
     fun setConsented(v: Boolean) {

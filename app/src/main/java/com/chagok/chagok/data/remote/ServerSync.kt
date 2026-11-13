@@ -19,9 +19,10 @@ class ServerSync(
     suspend fun onStartup() {
         installations.ensureRegistered().onFailure { Log.w(TAG, "설치 등록 실패", it) }
         missionPacks.sync().onFailure { Log.w(TAG, "미션팩 조회 실패", it) }
+        // 다음 화면을 정하기 전에 확인해야 하므로 기다린다 (동의 재전송도 여기서 함께)
+        agreements.verifyWithServer().onFailure { Log.w(TAG, "동의 상태 확인 실패", it) }
 
         appScope.launch {
-            agreements.retryPending().onFailure { Log.w(TAG, "동의 재전송 실패", it) }
             copilots.retryPending().onFailure { Log.w(TAG, "프로필 재전송 실패", it) }
         }
     }

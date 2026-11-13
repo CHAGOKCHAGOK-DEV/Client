@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dim"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/alpha_ink_300">
+
+    <LinearLayout
+        android:id="@+id/terms_modal"
+        android:layout_width="1100dp"
+        android:layout_height="795dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_terms_modal"
+        android:clickable="true"
+        android:focusable="false"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="56dp"
+            android:paddingTop="40dp"
+            android:paddingEnd="40dp"
+            android:paddingBottom="28dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_terms_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/asta_sans"
+                    android:includeFontPadding="false"
+                    android:textColor="@color/gray_600"
+                    android:textFontWeight="600"
+                    android:textSize="40sp"
+                    tools:text="서비스 이용약관" />
+
+                <TextView
+                    android:id="@+id/tv_terms_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="@font/asta_sans"
+                    android:includeFontPadding="false"
+                    android:textColor="@color/gray_400"
+                    android:textFontWeight="400"
+                    android:textSize="26sp"
+                    tools:text="시행일 2026년 11월 15일" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/btn_terms_close"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="@string/perm_close"
+                android:focusable="true"
+                android:src="@drawable/ic_close" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_1" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fadeScrollbars="false"
+                android:scrollbarStyle="insideOverlay">
+
+                <TextView
+                    android:id="@+id/tv_terms_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/asta_sans"
+                    android:paddingStart="56dp"
+                    android:paddingTop="36dp"
+                    android:paddingEnd="72dp"
+                    android:paddingBottom="120dp"
+                    android:textColor="@color/gray_500"
+                    android:textFontWeight="400"
+                    android:textSize="28sp"
+                    tools:text="제1조 목적\n이 약관은 ..." />
+            </ScrollView>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_gravity="bottom"
+                android:background="@drawable/bg_fade_bottom" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

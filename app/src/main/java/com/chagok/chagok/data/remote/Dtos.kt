@@ -41,7 +41,10 @@ data class AgreementDocument(
     val documentId: Long? = null,
     val code: String,
     val version: Int,
+    val title: String? = null,          // current 응답에서만
+    val content: String? = null,        // current 응답에서만. 마크다운
     val required: Boolean? = null,
+    val effectiveAt: String? = null,
     val state: String? = null,          // status 응답에서만: ACCEPTED / OUTDATED / NOT_ACCEPTED
 )
 
@@ -74,7 +77,7 @@ data class AgreementConsentResponse(val consents: List<JsonElement> = emptyList(
 @Serializable
 data class CopilotRequest(
     val nickname: String,
-    val ageGroup: String,           // AGE_5_6 / AGE_7_8 / AGE_9_10
+    val ageGroup: String,           // AGE_5_6 / AGE_7_8 / AGE_9_PLUS
     val missionIntensity: String,   // LOW / NORMAL / HIGH
 )
 

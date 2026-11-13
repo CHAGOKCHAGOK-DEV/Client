@@ -106,7 +106,7 @@ class LoadingActivity : AppCompatActivity() {
         groupLoading.visibility = View.VISIBLE
         if (ivSpinner.animation == null) ivSpinner.startAnimation(spin)
 
-        // 피그마: 1·2단계 "부기장 출근 중!", 3단계 "거의 다 왔어요!"
+        // 1·2단계 "부기장 출근 중!", 3단계 "거의 다 왔어요!"
         tvBubble.setText(
             if (step == StartupStep.SETTINGS) R.string.loading_bubble_almost else R.string.loading_bubble
         )

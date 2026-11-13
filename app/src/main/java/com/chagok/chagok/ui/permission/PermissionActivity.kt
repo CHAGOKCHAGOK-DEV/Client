@@ -30,6 +30,9 @@ import kotlinx.coroutines.launch
 import androidx.activity.addCallback
 import com.chagok.chagok.ui.component.ExitDialog
 import com.chagok.chagok.ui.common.intentFor
+import android.view.MotionEvent
+import com.chagok.chagok.ui.component.DriveLockGuard
+
 /**
  * S-02 권한 안내 (F-01-1).
  * - 행 탭 → 시스템 권한 창(C-01). 허용 → 완료(테두리), 거부 → 거부됨
@@ -50,6 +53,11 @@ class PermissionActivity : AppCompatActivity() {
     private var toastJob: Job? = null
     private var navigated = false
     private var exitDialog: ExitDialog? = null
+    private lateinit var driveLock: DriveLockGuard
+
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
 
     // 시스템 권한 창 결과를 AndroidPermissionChecker.request()로 돌려준다
     private var pendingResult: CompletableDeferred<Map<String, Boolean>>? = null
@@ -65,6 +73,7 @@ class PermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_permission)
+        driveLock = DriveLockGuard(this) { showExitModal() }
 
         cards = mapOf(
             PermissionKind.VEHICLE to findViewById(R.id.card_vehicle),
@@ -103,6 +112,7 @@ class PermissionActivity : AppCompatActivity() {
         checker?.requester = null
         pendingResult?.cancel()
         exitDialog?.dismiss()
+        driveLock.release()
         super.onDestroy()
     }
 
@@ -112,7 +122,6 @@ class PermissionActivity : AppCompatActivity() {
         tvBubble.setText(if (state.allDone) R.string.perm_bubble_done else R.string.perm_bubble)
         btnNext.isActivated = state.allDone
         if (state.allDone) hideWarning()
-        // TODO: state.locked → C-02 주행 잠금 오버레이
     }
 
     private fun handle(event: UiEvent) {

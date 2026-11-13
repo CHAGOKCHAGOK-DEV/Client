@@ -22,6 +22,8 @@ import com.chagok.chagok.ui.state.ProfileUiState
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.launch
+import android.view.MotionEvent
+import com.chagok.chagok.ui.component.DriveLockGuard
 
 /**
  * S-04 부기장 설정 (S04_1, S04_2).
@@ -40,11 +42,17 @@ class ProfileActivity : AppCompatActivity() {
 
     private var editMode = false
     private var exitDialog: ExitDialog? = null
+    private lateinit var driveLock: DriveLockGuard
     private var navigated = false
+
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        driveLock = DriveLockGuard(this) { onBackOrCancel() }
         editMode = intent.getBooleanExtra(EXTRA_EDIT, false)
 
         tvBubble = findViewById(R.id.tv_bubble)
@@ -96,7 +104,6 @@ class ProfileActivity : AppCompatActivity() {
         tvError.visibility = if (state.nicknameError != null) View.VISIBLE else View.INVISIBLE
         chips.forEach { (age, chip) -> chip.setChoiceSelected(age == state.age) }
         btnSave.isActivated = state.saveEnabled
-        // TODO: state.locked → C-02 주행 잠금 오버레이
     }
 
     private fun handle(event: UiEvent) {
