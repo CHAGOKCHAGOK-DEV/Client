@@ -2,6 +2,7 @@ package com.chagok.chagok.ui.component
 
 import android.content.Context
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
@@ -12,7 +13,7 @@ import com.chagok.chagok.R
 /**
  * 공통 모달
  * - 왼쪽(회색) / 오른쪽(초록) 버튼: 누르면 닫고 콜백
- * - 딤(모달 바깥) 탭 / 뒤로가기 → 닫기만
+ * - cancelable=true면 딤(바깥) 탭·뒤로가기로 닫힘. false면 버튼으로만 닫힘
  */
 open class ChagokDialog(
     context: Context,
@@ -22,6 +23,7 @@ open class ChagokDialog(
     private val rightText: CharSequence,
     private val onLeft: () -> Unit = {},
     private val onRight: () -> Unit = {},
+    private val cancelable: Boolean = true,
 ) : AppCompatDialog(context) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,11 +36,11 @@ open class ChagokDialog(
             setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)   // 딤은 레이아웃이 직접
         }
-        setCancelable(true)
+        setCancelable(cancelable)
 
         findViewById<TextView>(R.id.tv_dialog_title)?.text = title
         findViewById<TextView>(R.id.tv_dialog_message)?.text = message
-        findViewById<android.view.View>(R.id.dim)?.setOnClickListener { dismiss() }
+        findViewById<View>(R.id.dim)?.setOnClickListener { if (cancelable) dismiss() }
 
         findViewById<TextView>(R.id.btn_dialog_left)?.apply {
             text = leftText

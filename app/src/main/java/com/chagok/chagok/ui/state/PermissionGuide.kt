@@ -74,6 +74,12 @@ class PermissionGuide(
                 goNext()
             }
         }
+        // 차량 권한을 허용하면 바로 다시 연결해 속도 구독 시작
+        scope.launch {
+            app.permission.map { it.vehicle == PermissionStatus.GRANTED }.distinctUntilChanged().collect { granted ->
+                if (granted && !app.capability.value.speed) app.reconnectVehicle()
+            }
+        }
     }
 
     /** 행 탭: 완료된 행은 무시 */

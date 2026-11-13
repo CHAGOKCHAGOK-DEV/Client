@@ -22,7 +22,8 @@ import com.chagok.chagok.ui.state.ProfileUiState
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.launch
-import com.chagok.chagok.ui.component.ChagokDialog
+import android.view.MotionEvent
+import com.chagok.chagok.ui.component.DriveLockGuard
 
 /**
  * S-04 부기장 설정 (S04_1, S04_2).
@@ -41,12 +42,17 @@ class ProfileActivity : AppCompatActivity() {
 
     private var editMode = false
     private var exitDialog: ExitDialog? = null
-    private var driveWarning: ChagokDialog? = null
+    private lateinit var driveLock: DriveLockGuard
     private var navigated = false
+
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
+        driveLock = DriveLockGuard(this) { onBackOrCancel() }
         editMode = intent.getBooleanExtra(EXTRA_EDIT, false)
 
         tvBubble = findViewById(R.id.tv_bubble)
@@ -74,7 +80,7 @@ class ProfileActivity : AppCompatActivity() {
             chip.text = age.label
             chip.setOnClickListener { viewModel.selectAge(age) }
         }
-        btnSave.setOnClickListener { showDriveWarning() }
+        btnSave.setOnClickListener { viewModel.save() }
         findViewById<View>(R.id.btn_secondary).setOnClickListener { onBackOrCancel() }
         findViewById<View>(R.id.btn_close).setOnClickListener { onBackOrCancel() }
         onBackPressedDispatcher.addCallback(this) { onBackOrCancel() }
@@ -89,7 +95,6 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         exitDialog?.dismiss()
-        driveWarning?.dismiss()
         super.onDestroy()
     }
 
@@ -99,7 +104,6 @@ class ProfileActivity : AppCompatActivity() {
         tvError.visibility = if (state.nicknameError != null) View.VISIBLE else View.INVISIBLE
         chips.forEach { (age, chip) -> chip.setChoiceSelected(age == state.age) }
         btnSave.isActivated = state.saveEnabled
-        // TODO: state.locked → C-02 주행 잠금 오버레이
     }
 
     private fun handle(event: UiEvent) {
@@ -108,19 +112,6 @@ class ProfileActivity : AppCompatActivity() {
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
-    }
-
-    /** 미정차 경고 (S04_3). [나중에 할게요]는 화면의 [나중에]·[취소]와 같게 */
-    private fun showDriveWarning() {
-        if (driveWarning?.isShowing == true) return
-        driveWarning = ChagokDialog(
-            context = this,
-            title = getString(R.string.drive_warning_title),
-            message = getString(R.string.drive_warning_message),
-            leftText = getString(R.string.drive_warning_later),
-            rightText = getString(R.string.common_ok),
-            onLeft = { onBackOrCancel() },
-        ).also { it.show() }
     }
 
     /** 첫 실행은 나가기 모달, 수정 모드는 입력 버리고 S-05 */

@@ -32,7 +32,7 @@
             android:textStyle="bold"
             tools:text="차가 멈춘 뒤에 설정해 주세요" />
 
-        <!-- 두 줄 문구도 가운데 정렬 -->
+        <!-- 두 줄 문구 -->
         <TextView
             android:id="@+id/tv_dialog_message"
             android:layout_width="wrap_content"
@@ -41,7 +41,6 @@
             android:fontFamily="@font/asta_sans"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:lineSpacingExtra="8dp"
             android:textColor="@color/gray_400"
             android:textFontWeight="600"
             android:textSize="32sp"
@@ -57,6 +56,8 @@
                 android:id="@+id/btn_dialog_left"
                 style="@style/ChagokCta.Gray"
                 android:layout_width="262dp"
+                android:maxLines="1"
+                android:paddingHorizontal="0dp"
                 tools:text="나중에 할게요" />
 
             <androidx.appcompat.widget.AppCompatButton
@@ -64,6 +65,8 @@
                 style="@style/ChagokCta"
                 android:layout_width="262dp"
                 android:layout_marginStart="24dp"
+                android:maxLines="1"
+                android:paddingHorizontal="0dp"
                 tools:text="확인" />
         </LinearLayout>
     </LinearLayout>

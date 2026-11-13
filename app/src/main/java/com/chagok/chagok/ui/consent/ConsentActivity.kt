@@ -22,6 +22,8 @@ import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.launch
 import com.chagok.chagok.ui.state.ScreenTexts
+import android.view.MotionEvent
+import com.chagok.chagok.ui.component.DriveLockGuard
 
 /**
  * S-03 부모 동의 (S03_1, S03_2).
@@ -38,11 +40,17 @@ class ConsentActivity : AppCompatActivity() {
     private lateinit var btnNext: View
 
     private var exitDialog: ExitDialog? = null
+    private lateinit var driveLock: DriveLockGuard
     private var navigated = false
+
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_consent)
+        driveLock = DriveLockGuard(this) { showExitModal() }
 
         cards = mapOf(
             ConsentItem.NICKNAME to findViewById(R.id.card_nickname),
@@ -72,6 +80,7 @@ class ConsentActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         exitDialog?.dismiss()
+        driveLock.release()
         super.onDestroy()
     }
 
