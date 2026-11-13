@@ -31,6 +31,15 @@ class ConsentViewModel(application: Application) : AndroidViewModel(application)
 
     private val terms = MutableStateFlow<List<AgreementDocument>>(emptyList())
 
+    private companion object {
+        /** 카드 → 약관 제목에 들어 있는 단어 */
+        val TERM_KEYWORD = mapOf(
+            ConsentItem.NICKNAME to "이용약관",        // [필수] 서비스 이용약관
+            ConsentItem.VOICE_DISCARD to "처리방침",   // [필수] 개인정보 처리방침
+            ConsentItem.FAMILY_ONLY to "아동",         // [필수] 아동 개인정보 수집·이용
+        )
+    }
+
     init { loadTerms() }
 
     /** 서버 약관 불러오기. 실패하면 [보기]를 누를 때 다시 시도 */
@@ -40,11 +49,9 @@ class ConsentViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    /**
-     * (서비스 이용약관 / 개인정보 처리방침 / 아동 개인정보). 문서 code가 정해지면 code로 바꾸기
-     */
+    /** 카드에 해당하는 약관. 서버 순서와 상관없이 제목 단어로 찾는다 */
     fun termFor(item: ConsentItem): AgreementDocument? =
-        terms.value.getOrNull(ConsentItem.entries.indexOf(item))
+        terms.value.firstOrNull { it.title?.contains(TERM_KEYWORD.getValue(item)) == true }
 
     fun toggle(item: ConsentItem) = screen.toggle(item)
     fun toggleAll() = screen.toggleAll()
