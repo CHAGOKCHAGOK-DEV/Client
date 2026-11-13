@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!-- 공통 모달 (나가기, 미정차 경고 등) -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/dim"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/alpha_ink_300">
 
+    <!-- clickable=true: 모달 안을 눌렀을 때 딤까지 전달돼 닫히지 않게 -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -20,26 +22,30 @@
         android:paddingBottom="64dp">
 
         <TextView
+            android:id="@+id/tv_dialog_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:text="@string/exit_modal_title"
             android:textColor="@color/gray_600"
             android:textSize="36sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="차가 멈춘 뒤에 설정해 주세요" />
 
+        <!-- 두 줄 문구도 가운데 정렬 -->
         <TextView
+            android:id="@+id/tv_dialog_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="30dp"
             android:fontFamily="@font/asta_sans"
-            android:textFontWeight="600"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:text="@string/exit_modal_sub"
+            android:lineSpacingExtra="8dp"
             android:textColor="@color/gray_400"
-            android:textSize="32sp" />
+            android:textFontWeight="600"
+            android:textSize="32sp"
+            tools:text="운전 중에는 설정할 수 없어요.\n안전하게 정차하면 다시 눌러 주세요" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -48,17 +54,17 @@
             android:orientation="horizontal">
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btn_exit_leave"
+                android:id="@+id/btn_dialog_left"
                 style="@style/ChagokCta.Gray"
                 android:layout_width="262dp"
-                android:text="@string/exit_modal_leave" />
+                tools:text="나중에 할게요" />
 
             <androidx.appcompat.widget.AppCompatButton
-                android:id="@+id/btn_exit_continue"
+                android:id="@+id/btn_dialog_right"
                 style="@style/ChagokCta"
                 android:layout_width="262dp"
                 android:layout_marginStart="24dp"
-                android:text="@string/exit_modal_continue" />
+                tools:text="확인" />
         </LinearLayout>
     </LinearLayout>
 </FrameLayout>

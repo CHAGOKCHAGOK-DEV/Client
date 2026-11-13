@@ -22,6 +22,7 @@ import com.chagok.chagok.ui.state.ProfileUiState
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.launch
+import com.chagok.chagok.ui.component.ChagokDialog
 
 /**
  * S-04 부기장 설정 (S04_1, S04_2).
@@ -40,6 +41,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private var editMode = false
     private var exitDialog: ExitDialog? = null
+    private var driveWarning: ChagokDialog? = null
     private var navigated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,7 +74,7 @@ class ProfileActivity : AppCompatActivity() {
             chip.text = age.label
             chip.setOnClickListener { viewModel.selectAge(age) }
         }
-        btnSave.setOnClickListener { viewModel.save() }
+        btnSave.setOnClickListener { showDriveWarning() }
         findViewById<View>(R.id.btn_secondary).setOnClickListener { onBackOrCancel() }
         findViewById<View>(R.id.btn_close).setOnClickListener { onBackOrCancel() }
         onBackPressedDispatcher.addCallback(this) { onBackOrCancel() }
@@ -87,6 +89,7 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         exitDialog?.dismiss()
+        driveWarning?.dismiss()
         super.onDestroy()
     }
 
@@ -105,6 +108,19 @@ class ProfileActivity : AppCompatActivity() {
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
+    }
+
+    /** 미정차 경고 (S04_3). [나중에 할게요]는 화면의 [나중에]·[취소]와 같게 */
+    private fun showDriveWarning() {
+        if (driveWarning?.isShowing == true) return
+        driveWarning = ChagokDialog(
+            context = this,
+            title = getString(R.string.drive_warning_title),
+            message = getString(R.string.drive_warning_message),
+            leftText = getString(R.string.drive_warning_later),
+            rightText = getString(R.string.common_ok),
+            onLeft = { onBackOrCancel() },
+        ).also { it.show() }
     }
 
     /** 첫 실행은 나가기 모달, 수정 모드는 입력 버리고 S-05 */
