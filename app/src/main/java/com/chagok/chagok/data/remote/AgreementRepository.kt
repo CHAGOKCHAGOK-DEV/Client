@@ -62,7 +62,6 @@ class AgreementRepository(
         val docs = apiCall { api.currentAgreements() }
             .getOrElse { return Result.failure(it) }
             .documents
-            .filter { it.required != false }   // 선택 문서는 앱에서 동의받지 않았으므로 제외
         if (docs.isEmpty()) return Result.success(Unit)
 
         val occurredAt = Instant.ofEpochMilli(record.agreedAtMs)

@@ -77,7 +77,7 @@ data class AgreementConsentResponse(val consents: List<JsonElement> = emptyList(
 @Serializable
 data class CopilotRequest(
     val nickname: String,
-    val ageGroup: String,           // AGE_5_6 / AGE_7_8 / AGE_9_10
+    val ageGroup: String,           // AGE_5_6 / AGE_7_8 / AGE_9_PLUS
     val missionIntensity: String,   // LOW / NORMAL / HIGH
 )
 
