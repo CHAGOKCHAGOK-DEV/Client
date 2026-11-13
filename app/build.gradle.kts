@@ -78,4 +78,5 @@ dependencies {
 
     // 약관 마크다운 표시
     implementation("io.noties.markwon:core:4.6.2")
+    implementation("io.noties.markwon:ext-tables:4.6.2")
 }
