@@ -95,6 +95,7 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         exitDialog?.dismiss()
+        driveLock.release()
         super.onDestroy()
     }
 
