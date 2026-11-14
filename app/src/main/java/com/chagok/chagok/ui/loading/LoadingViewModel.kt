@@ -30,7 +30,4 @@ class LoadingViewModel(application: Application) : AndroidViewModel(application)
 
     /** [다시 시도]: 1/3부터. 진행 중 연타는 무시 */
     fun retry() = flow.retry()
-
-    /** [제한 모드로 보기] (3회째 실패부터) */
-    fun enterLimitedMode() = flow.enterLimitedMode()
 }

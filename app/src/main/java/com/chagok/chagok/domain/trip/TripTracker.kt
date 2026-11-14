@@ -15,7 +15,7 @@ import java.util.UUID
 /**
  * 주행(trip) 시작·종료.
  * - 시작: 부기장 모드 ON 상태에서 DRIVING 판정 (S-05 "주행 판정")
- * - 종료: 주차 브레이크(PARKED) / 정차 longStopMs 지속 / endNow() (앱 종료)
+ * - 종료: 주차 브레이크(PARKED) / 정차 longStopMs 지속(IDLE_TIMEOUT) / endNow() ([정차 완료] USER_STOP, 앱 종료 APP_EXIT)
  * 잠깐 정차(신호 대기)는 trip을 유지한다.
  * scope는 한 스레드에서 돌아야 한다.
  */
@@ -25,7 +25,6 @@ class TripTracker(
     mode: StateFlow<Boolean>,
     private val store: TripStore,
     private val nowMs: () -> Long,
-    private val intervalMs: () -> Long,
     private val longStopMs: Long = 5 * 60_000L,          // 🟡 열린 이슈 #3
     private val newId: () -> String = { UUID.randomUUID().toString() },
     private val onEnded: (Trip) -> Unit = {},
@@ -45,10 +44,10 @@ class TripTracker(
                 .collectLatest { (d, m) ->
                     when (d) {
                         DriveState.DRIVING -> if (_current.value == null && m) start()
-                        DriveState.PARKED -> end(TripEndReason.PARKING_BRAKE)
+                        DriveState.PARKED -> end(TripEndReason.PARKED)
                         DriveState.STOPPED -> if (_current.value != null) {
                             delay(longStopMs)               // 다시 출발하면 취소됨
-                            end(TripEndReason.LONG_STOP)
+                            end(TripEndReason.IDLE_TIMEOUT)
                         }
                     }
                 }
@@ -57,7 +56,7 @@ class TripTracker(
 
     // collectLatest가 상태 변화로 취소해도 저장은 끝까지 하도록 NonCancellable
     private suspend fun start() = withContext(NonCancellable) {
-        val trip = Trip(id = newId(), startedAtMs = nowMs(), intervalMs = intervalMs())
+        val trip = Trip(id = newId(), startedAtMs = nowMs())
         _current.value = trip
         store.save(trip)
     }
@@ -71,7 +70,7 @@ class TripTracker(
         onEnded(ended)
     }
 
-    /** 앱 종료 등 외부에서 끝낼 때 */
+    /** 외부에서 끝낼 때: [정차 완료](USER_STOP), 앱 종료(APP_EXIT) */
     fun endNow(reason: TripEndReason = TripEndReason.APP_EXIT) {
         scope.launch { end(reason) }
     }

@@ -90,7 +90,6 @@ class ConsentScreen(
         permission = app.permission.value,
         consented = true,
         hasProfile = onboarding.profile.value != null,
-        limited = app.limitedReason.value,
         drive = app.driveState.value,
     )
 

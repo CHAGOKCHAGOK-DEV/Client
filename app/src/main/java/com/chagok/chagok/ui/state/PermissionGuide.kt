@@ -130,7 +130,6 @@ class PermissionGuide(
         permission = app.permission.value,
         consented = onboarding.consented.value,
         hasProfile = onboarding.profile.value != null,
-        limited = app.limitedReason.value,
         drive = app.driveState.value,
     )
 }

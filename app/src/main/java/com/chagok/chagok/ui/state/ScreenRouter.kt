@@ -1,6 +1,5 @@
 package com.chagok.chagok.ui.state
 
-import com.chagok.chagok.domain.driving.LimitedReason
 import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.model.PermissionState
 
@@ -13,13 +12,11 @@ object ScreenRouter {
         permission: PermissionState,
         consented: Boolean,
         hasProfile: Boolean,
-        limited: LimitedReason?,
         drive: DriveState,
     ): Screen = when {
         !permission.allGranted -> Screen.PERMISSION
         !consented -> Screen.CONSENT
         !hasProfile -> Screen.PROFILE
-        limited != null -> Screen.LIMITED
         drive == DriveState.DRIVING -> Screen.DRIVING
         else -> Screen.MAIN
     }

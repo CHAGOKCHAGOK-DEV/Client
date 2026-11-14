@@ -29,7 +29,6 @@ data class StartupUiState(
     val errorKind: StartupError? = null,
     val attempts: Int = 0,                               // 실패한 연결 시도 수
     val showRetry: Boolean = false,                      // [다시 시도]
-    val showLimitedMode: Boolean = false,                // [제한 모드로 보기] (3회 실패부터)
     val destination: Screen? = null,                     // 정해지면 화면이 이동
 ) {
     val progress: String get() = "${step.index} / 3"
@@ -47,7 +46,6 @@ class StartupFlow(
     private val app: AppState,
     private val onboarding: OnboardingRepository,
     private val missionPackSync: suspend () -> Unit = {},
-    private val maxAttemptsBeforeLimited: Int = 3,
     private val stepTimeoutMs: Long = 10_000,             // 🟡 한 단계 제한 시간
 ) {
     private val _state = MutableStateFlow(StartupUiState())
@@ -71,12 +69,6 @@ class StartupFlow(
         start()
     }
 
-    /** [제한 모드로 보기] */
-    fun enterLimitedMode() {
-        app.enterLimitedMode()
-        _state.value = _state.value.copy(destination = Screen.LIMITED)
-    }
-
     private suspend fun run() {
         // 1/3 연결 (10초 넘으면 실패)
         _state.value = _state.value.copy(step = StartupStep.CONNECT, message = ScreenTexts.STARTUP_CONNECT)
@@ -87,7 +79,6 @@ class StartupFlow(
             _state.value = _state.value.copy(
                 message = ScreenTexts.STARTUP_ERROR, error = true, errorKind = StartupError.CAR_CONN,
                 attempts = attempts, showRetry = true,
-                showLimitedMode = attempts >= maxAttemptsBeforeLimited,
             )
             return
         }
@@ -96,7 +87,7 @@ class StartupFlow(
         if (!capability.speed && app.permission.value.vehicle == PermissionStatus.GRANTED) {
             _state.value = _state.value.copy(
                 message = ScreenTexts.STARTUP_ERROR, error = true, errorKind = StartupError.CAR_UNSUPPORTED,
-                showRetry = false, showLimitedMode = false,
+                showRetry = false,
             )
             return
         }
@@ -107,7 +98,7 @@ class StartupFlow(
         if (permRead == null || permRead.isFailure) {
             _state.value = _state.value.copy(
                 message = ScreenTexts.STARTUP_ERROR, error = true, errorKind = StartupError.PERM_READ,
-                showRetry = true, showLimitedMode = false,
+                showRetry = true,
             )
             return
         }
@@ -121,7 +112,6 @@ class StartupFlow(
                 permission = app.permission.value,
                 consented = onboarding.consented.value,
                 hasProfile = onboarding.profile.value != null,
-                limited = app.limitedReason.value,
                 drive = app.driveState.value,
             ),
         )

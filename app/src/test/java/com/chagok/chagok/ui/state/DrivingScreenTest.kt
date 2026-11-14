@@ -5,7 +5,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import com.chagok.chagok.model.TripEndReason
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -47,6 +50,41 @@ class DrivingScreenTest {
             ),
             seen,
         )
+    }
+
+    @Test
+    fun `정차하면 f와 정차 완료 버튼, 다시 출발하면 a`() = runTest {
+        val t = TestApp(this).apply { onboarded() }
+        val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
+        t.connectAndReady()
+        t.drive()
+        assertFalse(s.state.value.stopDoneVisible)
+
+        t.stop()
+        assertEquals(DrivingDisplay.STOPPED, s.state.value.display)
+        assertEquals(ScreenTexts.DRIVE_STOPPED, s.state.value.headline)
+        assertTrue(s.state.value.stopDoneVisible)
+
+        t.drive()
+        assertEquals(DrivingDisplay.WAITING, s.state.value.display)
+        assertFalse(s.state.value.stopDoneVisible)
+    }
+
+    @Test
+    fun `정차 완료는 정차 중에만 먹고, 누르면 주행이 끝난다`() = runTest {
+        val t = TestApp(this).apply { onboarded() }
+        val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
+        t.connectAndReady()
+        t.drive()
+
+        s.onStopDone(); runCurrent()
+        assertTrue(t.app.currentTrip.value != null)      // 주행 중엔 무시
+
+        t.stop()
+        s.onStopDone(); runCurrent()
+        assertEquals(null, t.app.currentTrip.value)
+        assertEquals(TripEndReason.USER_STOP, t.app.lastEndedTrip.value?.endReason)
+        assertEquals(DrivingDisplay.MODE_OFF, s.state.value.display)
     }
 
     @Test

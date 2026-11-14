@@ -1,13 +1,10 @@
 package com.chagok.chagok.ui.state
 
-import com.chagok.chagok.domain.driving.LimitedReason
+import com.chagok.chagok.domain.driving.VehicleHealth
 import com.chagok.chagok.model.MissionState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -17,14 +14,6 @@ import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SafetyTest {
-
-    private fun TestScope.limited(t: TestApp): Pair<LimitedScreen, MutableList<UiEvent>> {
-        val s = LimitedScreen(backgroundScope, t.app)
-        val events = mutableListOf<UiEvent>()
-        backgroundScope.launch { s.events.collect { events += it } }
-        runCurrent()
-        return s to events
-    }
 
     // ---- F-15-1 ----
 
@@ -50,9 +39,9 @@ class SafetyTest {
         t.app.connectVehicle(); advanceTimeBy(1_000)
         t.vehicle.setSpeedFeed(false)
         advanceTimeBy(4_000)
-        assertNull(t.app.limitedReason.value)
+        assertEquals(VehicleHealth.OK, t.app.vehicleHealth.value)
         advanceTimeBy(3_000)
-        assertEquals(LimitedReason.SPEED_LOST, t.app.limitedReason.value)
+        assertEquals(VehicleHealth.SPEED_LOST, t.app.vehicleHealth.value)
     }
 
     @Test
@@ -69,62 +58,34 @@ class SafetyTest {
         assertNull(t.app.missionState.value)
     }
 
-    // ---- F-15-2 · S-08 ----
+    // ---- S-06 g: 신호 확인 중 ----
 
     @Test
-    fun `다시 연결 성공하면 S-05`() = runTest {
-        val t = TestApp(this)
-        t.app.connectVehicle()
-        t.vehicle.simulateDisconnect(); advanceTimeBy(100)
-        val (s, events) = limited(t)
-        assertEquals(LimitedReason.DISCONNECTED, s.state.value.reason)
+    fun `주행 중 속도가 끊기면 g, 돌아오면 저절로 a`() = runTest {
+        val t = TestApp(this).apply { onboarded() }
+        val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
+        t.connectAndReady()
+        t.drive()
+        assertEquals(DrivingDisplay.WAITING, s.state.value.display)
 
-        s.retry(); advanceTimeBy(100)
-        assertEquals(listOf<UiEvent>(UiEvent.Navigate(Screen.MAIN)), events)   // 토스트 없이
-        assertFalse(s.state.value.connecting)
-    }
-
-    @Test
-    fun `다시 연결 실패하면 머물고 시도 횟수를 센다`() = runTest {
-        val t = TestApp(this)
-        t.vehicle.failConnect = true
-        t.app.enterLimitedMode()
-        val (s, events) = limited(t)
-
-        s.retry(); advanceTimeBy(100)
-        s.retry(); advanceTimeBy(100)
-        assertEquals(2, s.state.value.failedAttempts)
-        assertTrue(events.isEmpty())
-        assertEquals(LimitedReason.CONNECT_FAILED, s.state.value.reason)
-    }
-
-    @Test
-    fun `저절로 복구되면 토스트 후 S-05`() = runTest {
-        val t = TestApp(this)
-        t.app.connectVehicle(); advanceTimeBy(1_000)
         t.vehicle.setSpeedFeed(false); advanceTimeBy(7_000)
-        val (_, events) = limited(t)
+        assertEquals(DrivingDisplay.SIGNAL_LOST, s.state.value.display)
+        assertEquals(ScreenTexts.DRIVE_SIGNAL, s.state.value.headline)
+        assertEquals(ScreenTexts.DRIVE_SIGNAL_SUB, s.state.value.sub)
+        assertTrue(t.app.currentTrip.value != null)      // 주행 기록은 유지
 
         t.vehicle.setSpeedFeed(true); advanceTimeBy(1_000)
-        assertEquals(
-            listOf(UiEvent.Toast(ScreenTexts.LIMITED_RECOVERED), UiEvent.Navigate(Screen.MAIN)),
-            events,
-        )
+        assertEquals(DrivingDisplay.WAITING, s.state.value.display)
     }
 
     @Test
-    fun `프로필 보기는 S-04, 주행 중엔 다시 연결과 프로필 보기를 막는다`() = runTest {
-        val t = TestApp(this)
-        t.app.enterLimitedMode()
-        val (s, events) = limited(t)
-        s.openProfile(); runCurrent()
-        assertEquals(listOf<UiEvent>(UiEvent.Navigate(Screen.PROFILE)), events)
-
-        t.app.connectVehicle(); t.app.enterLimitedMode()
+    fun `주행 중 연결이 끊겨도 g`() = runTest {
+        val t = TestApp(this).apply { onboarded() }
+        val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
+        t.connectAndReady()
         t.drive()
-        assertTrue(s.state.value.locked)
-        assertFalse(s.state.value.retryEnabled)
-        s.openProfile(); s.retry(); runCurrent()
-        assertEquals(1, events.size)
+
+        t.vehicle.simulateDisconnect(); advanceTimeBy(100)
+        assertEquals(DrivingDisplay.SIGNAL_LOST, s.state.value.display)
     }
 }

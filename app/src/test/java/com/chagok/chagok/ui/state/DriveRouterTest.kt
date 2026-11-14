@@ -1,6 +1,5 @@
 package com.chagok.chagok.ui.state
 
-import com.chagok.chagok.domain.driving.LimitedReason
 import com.chagok.chagok.model.TripEndReason
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceTimeBy
@@ -8,7 +7,6 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -16,7 +14,7 @@ import org.junit.Test
 class DriveRouterTest {
 
     @Test
-    fun `주행하면 S-06, 정차해도 10초는 S-06, 그 뒤 잠깐 쉬어가요`() = runTest {
+    fun `주행하면 S-06, 신호 대기로 정차해도 S-06 그대로`() = runTest {
         val t = TestApp(this)
         val r = DriveRouter(backgroundScope, t.app)
         t.connectAndReady()
@@ -28,26 +26,46 @@ class DriveRouterTest {
 
         t.stop()
         assertEquals(Screen.DRIVING, r.route.value.screen)
-        advanceTimeBy(10_100)
-        assertEquals(Screen.SUMMARY, r.route.value.screen)
-        assertNull(r.route.value.endedTrip)            // 잠깐 정차
         assertFalse(r.lockOverlay.value)
+        advanceTimeBy(60_000)                          // 1분 서 있어도 요약은 안 뜬다
+        assertEquals(Screen.DRIVING, r.route.value.screen)
+
+        t.drive()
+        assertEquals(Screen.DRIVING, r.route.value.screen)
     }
 
     @Test
-    fun `계속 가기를 누르면 다음 출발 전까지 S-06에 머문다`() = runTest {
+    fun `정차 완료를 누르면 USER_STOP으로 S-07`() = runTest {
         val t = TestApp(this)
         val r = DriveRouter(backgroundScope, t.app)
         t.connectAndReady(); t.drive(); t.stop()
-        advanceTimeBy(10_100)
 
-        r.continueDriving(); runCurrent()
-        assertEquals(Screen.DRIVING, r.route.value.screen)
-        advanceTimeBy(30_000)
-        assertEquals(Screen.DRIVING, r.route.value.screen)
-
-        t.drive(); t.stop(); advanceTimeBy(10_100)     // 다시 출발했다 서면 다시 요약
+        t.app.finishTrip(); runCurrent()
         assertEquals(Screen.SUMMARY, r.route.value.screen)
+        assertEquals(TripEndReason.USER_STOP, r.route.value.endedTrip?.endReason)
+        assertFalse(t.app.ready.value)                 // 출발 버튼은 다시 꺼진 상태
+    }
+
+    @Test
+    fun `주행 판정 중에는 정차 완료가 먹지 않는다`() = runTest {
+        val t = TestApp(this)
+        val r = DriveRouter(backgroundScope, t.app)
+        t.connectAndReady(); t.drive()
+
+        t.app.finishTrip(); runCurrent()
+        assertEquals(Screen.DRIVING, r.route.value.screen)
+        assertTrue(t.app.currentTrip.value != null)
+    }
+
+    @Test
+    fun `정차가 5분 이어지면 IDLE_TIMEOUT으로 S-07`() = runTest {
+        val t = TestApp(this)
+        val r = DriveRouter(backgroundScope, t.app)
+        t.connectAndReady(); t.drive(); t.stop()
+
+        advanceTimeBy(300_100)
+        assertEquals(Screen.SUMMARY, r.route.value.screen)
+        assertEquals(TripEndReason.IDLE_TIMEOUT, r.route.value.endedTrip?.endReason)
     }
 
     @Test
@@ -58,7 +76,7 @@ class DriveRouterTest {
         t.park()
 
         assertEquals(Screen.SUMMARY, r.route.value.screen)
-        assertEquals(TripEndReason.PARKING_BRAKE, r.route.value.endedTrip?.endReason)
+        assertEquals(TripEndReason.PARKED, r.route.value.endedTrip?.endReason)
 
         r.backToMain(); runCurrent()
         assertEquals(Screen.MAIN, r.route.value.screen)
@@ -76,12 +94,16 @@ class DriveRouterTest {
     }
 
     @Test
-    fun `연결이 끊기면 S-08`() = runTest {
+    fun `연결이 끊겨도 화면은 옮기지 않는다`() = runTest {
         val t = TestApp(this)
         val r = DriveRouter(backgroundScope, t.app)
         t.connectAndReady()
         t.vehicle.simulateDisconnect(); advanceTimeBy(100)
-        assertEquals(Screen.LIMITED, r.route.value.screen)
-        assertEquals(LimitedReason.DISCONNECTED, r.route.value.limitedReason)
+        assertEquals(Screen.MAIN, r.route.value.screen)       // S-05 상태 칩만 바뀐다
+
+        t.app.connectVehicle(); advanceTimeBy(100)
+        t.drive()
+        t.vehicle.simulateDisconnect(); advanceTimeBy(100)
+        assertEquals(Screen.DRIVING, r.route.value.screen)    // S-06 g
     }
 }

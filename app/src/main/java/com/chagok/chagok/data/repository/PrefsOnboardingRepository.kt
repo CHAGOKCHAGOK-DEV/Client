@@ -1,7 +1,6 @@
 package com.chagok.chagok.data.repository
 
 import android.content.Context
-import com.chagok.chagok.ui.common.MissionIntensity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,9 +19,6 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
 
     private val _profile = MutableStateFlow(readProfile())
     override val profile: StateFlow<CopilotProfile?> = _profile.asStateFlow()
-
-    private val _intensity = MutableStateFlow(readIntensity())
-    val intensity: StateFlow<MissionIntensity> = _intensity.asStateFlow()
 
     override fun saveConsent(record: ConsentRecord) {
         prefs.edit()
@@ -48,16 +44,13 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         _consented.value = false
     }
 
-    // TODO: S-04에서 명세대로 수정
-    fun saveProfile(profile: CopilotProfile, intensity: MissionIntensity = _intensity.value) {
+    fun saveProfile(profile: CopilotProfile) {
         val p = profile.copy(nickname = profile.nickname.trim())
         prefs.edit()
             .putString(KEY_NICKNAME, p.nickname)
             .putString(KEY_AGE_GROUP, p.ageGroup)
-            .putString(KEY_INTENSITY, intensity.name)
             .apply()
         _profile.value = p
-        _intensity.value = intensity
     }
 
     fun clearAll() {
@@ -65,7 +58,6 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         _consent.value = null
         _consented.value = false
         _profile.value = null
-        _intensity.value = MissionIntensity.NORMAL
     }
 
     private fun readConsent(): ConsentRecord? {
@@ -88,11 +80,6 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         return CopilotProfile(name, age)
     }
 
-    private fun readIntensity(): MissionIntensity =
-        prefs.getString(KEY_INTENSITY, null)
-            ?.let { runCatching { MissionIntensity.valueOf(it) }.getOrNull() }
-            ?: MissionIntensity.NORMAL
-
     private companion object {
         const val PREFS_NAME = "onboarding"
         const val KEY_CONSENT_VERSION = "consent_version"
@@ -102,6 +89,5 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
         const val KEY_ITEM_FAMILY = "consent_family_only"
         const val KEY_NICKNAME = "nickname"
         const val KEY_AGE_GROUP = "age_group"
-        const val KEY_INTENSITY = "intensity"
     }
 }
