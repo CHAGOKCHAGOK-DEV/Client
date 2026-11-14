@@ -41,11 +41,7 @@ class DrivingActivity : AppCompatActivity() {
                 launch { viewModel.state.collect { view.render(it) } }
                 launch {
                     router.route.collect { route ->
-                        when (route.screen) {
-                            Screen.DRIVING -> Unit
-                            // TODO(S-07): SUMMARY는 S-07 화면이 생기면 intentFor가 그쪽으로 보낸다
-                            else -> navigate(route.screen)
-                        }
+                        if (route.screen != Screen.DRIVING) navigate(route.screen)   // 주행 종료 → S-07
                     }
                 }
             }
