@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-05 메인 -->
+    <string name="main_title">오늘 놀 수 있는 미션</string>
+    <string name="main_title_key">미션</string>
+    <string name="main_progress">오늘의 미션 %1$d개 중 %2$d개 완료</string>
+    <string name="main_start">부기장 출발!</string>
+    <string name="main_start_ready">출발 준비 완료!</string>
+    <string name="main_close">닫기</string>
+    <string name="main_mascot">꼬마 부기장</string>
+
+    <!-- 사이드 탭 -->
+    <string name="main_tab_mission">미션</string>
+    <string name="main_tab_record">기록·배지</string>
+    <string name="main_tab_settings">설정</string>
+
+    <!-- 미션 행 상태 칩 -->
+    <string name="mission_status_available">사용 가능</string>
+    <string name="mission_status_done">오늘 완료</string>
+    <string name="mission_status_on_drive">출발하면 시작해요</string>
+    <string name="mission_status_unsupported">이 차는 아직 안 돼요</string>
+
+    <!-- S05_2 미지원 기능 안내 -->
+    <string name="main_unsupported_title">지금은 지원하지 않는 기능이에요</string>
+    <string name="main_unsupported_message">배지와 기록은 곧 만날 수 있도록\n준비하고 있어요</string>
+
+</resources>

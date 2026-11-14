@@ -57,14 +57,13 @@ object ScreenTexts {
     const val REFUSAL_OK = "확인"
 
     // S-05
-    const val MAIN_DEFAULT = "오늘도 기장님을 잘 부탁해요!"
+    const val MAIN_DEFAULT = "자리에 앉아서 귀로 임무를!"          // 피그마 S05_1 말풍선 (부기장 수칙)
     const val MAIN_READY = "차가 출발하면 시작돼요"
     const val MAIN_DONE_TODAY = "오늘도 수고했어요!"
     const val MAIN_READY_TTS = "준비 완료! 출발해 볼까요?"
-    const val CHIP_STOPPED = "정차 중 · 연결됨"
-    const val CHIP_PARKED = "주차 중 · 연결됨"
+    const val CHIP_STOPPED = "정차 중 · 차와 연결됨"
+    const val CHIP_PARKED = "주차 중 · 차와 연결됨"
     const val CHIP_DISCONNECTED = "차량 연결 끊김"
-    const val BADGE_TOAST = "배지는 2차에서 만나요"
 
     // S-06
     const val DRIVE_WAITING = "주행 중이에요"

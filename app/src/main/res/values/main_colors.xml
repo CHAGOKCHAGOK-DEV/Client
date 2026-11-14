@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-05 메인: 미션 타일·칩 색 (피그마 S05_미션행) -->
+    <color name="mission_tile_blinker">#FFF4D6</color>
+    <color name="mission_tile_turn">#FFE9D6</color>
+    <color name="mission_tile_windshield">#D6EBFF</color>
+    <color name="mission_tile_dest">#FFE1E7</color>
+    <color name="mission_tile_off">#ECEEF3</color>
+    <color name="mission_chip_available">#DDF5EF</color>
+    <color name="progress_track">#E3E8EE</color>
+    <color name="status_dot_ok">#02C265</color>
+</resources>

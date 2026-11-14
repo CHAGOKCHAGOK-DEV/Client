@@ -88,18 +88,43 @@ class MainScreenTest {
     }
 
     @Test
-    fun `배지 탭은 토스트, 연결이 끊겨도 화면은 그대로이고 칩과 출발 버튼만 바뀐다`() = runTest {
+    fun `연결이 끊겨도 화면은 그대로이고 칩과 출발 버튼만 바뀐다`() = runTest {
         val t = TestApp(this)
         val s = screen(t)
         val events = mutableListOf<UiEvent>()
         backgroundScope.launch { s.events.collect { events += it } }
         t.app.connectVehicle(); advanceTimeBy(100)
 
-        s.onBadgeTab(); runCurrent()
         t.vehicle.simulateDisconnect(); advanceTimeBy(100)
 
-        assertEquals(listOf<UiEvent>(UiEvent.Toast(ScreenTexts.BADGE_TOAST)), events)   // 이동 없음
+        assertTrue(events.isEmpty())                     // 이동 없음
         assertEquals(StatusChipUi(ScreenTexts.CHIP_DISCONNECTED, true), s.state.value.statusChip)
         assertFalse(s.state.value.startEnabled)
+    }
+
+    @Test
+    fun `목록은 깜빡이 소리, 다음 회전, 비 오는 날 순서이고 오늘 한 미션은 오늘 완료`() = runTest {
+        val t = TestApp(this).apply { onboarded() }
+        val s = screen(t)
+        t.app.connectVehicle(); advanceTimeBy(100)
+
+        assertEquals(
+            listOf(MissionCode.BLINK, MissionCode.NEXT_TURN, MissionCode.WIPER),
+            s.state.value.missions.map { it.code },
+        )
+        assertEquals(listOf("깜빡이 소리", "다음 회전", "비 오는 날"), s.state.value.missions.map { it.title })
+        assertTrue(s.state.value.missions.all { it.status == MissionRowStatus.AVAILABLE })
+        assertEquals("은", s.state.value.profileInitial)
+
+        t.store.save(
+            MissionResult(
+                id = "r1", tripId = null, code = MissionCode.WIPER, expectedAnswer = Answer.YES,
+                givenAnswer = Answer.YES, state = MissionState.DONE, correct = true, retryCount = 0,
+                triggeredAtMs = testScheduler.currentTime, askedAtMs = null, answeredAtMs = null,
+            )
+        )
+        runCurrent()
+        assertEquals(MissionRowStatus.DONE_TODAY, s.state.value.missions.single { it.code == MissionCode.WIPER }.status)
+        assertEquals(MissionRowStatus.AVAILABLE, s.state.value.missions.single { it.code == MissionCode.BLINK }.status)
     }
 }

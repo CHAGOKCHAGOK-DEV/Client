@@ -13,13 +13,14 @@ import com.chagok.chagok.R
 /**
  * 공통 모달
  * - 왼쪽(회색) / 오른쪽(초록) 버튼: 누르면 닫고 콜백
+ * - leftText = null이면 오른쪽 버튼 하나만 넓게 보여 준다 (S05_2 안내 모달)
  * - cancelable=true면 딤(바깥) 탭·뒤로가기로 닫힘. false면 버튼으로만 닫힘
  */
 open class ChagokDialog(
     context: Context,
     private val title: CharSequence,
     private val message: CharSequence,
-    private val leftText: CharSequence,
+    private val leftText: CharSequence?,
     private val rightText: CharSequence,
     private val onLeft: () -> Unit = {},
     private val onRight: () -> Unit = {},
@@ -43,13 +44,28 @@ open class ChagokDialog(
         findViewById<View>(R.id.dim)?.setOnClickListener { if (cancelable) dismiss() }
 
         findViewById<TextView>(R.id.btn_dialog_left)?.apply {
-            text = leftText
-            setOnClickListener { dismiss(); onLeft() }
+            if (leftText == null) {
+                visibility = View.GONE
+            } else {
+                text = leftText
+                setOnClickListener { dismiss(); onLeft() }
+            }
         }
         findViewById<TextView>(R.id.btn_dialog_right)?.apply {
+            if (leftText == null) {
+                // 버튼 두 개(262 + 24 + 262) 자리를 하나가 채운다
+                layoutParams = (layoutParams as ViewGroup.MarginLayoutParams).apply {
+                    width = (SINGLE_BUTTON_WIDTH_DP * resources.displayMetrics.density).toInt()
+                    marginStart = 0
+                }
+            }
             text = rightText
             isActivated = true   // CTA 온 상태 (bg_cta_primary는 activated일 때 초록)
             setOnClickListener { dismiss(); onRight() }
         }
+    }
+
+    private companion object {
+        const val SINGLE_BUTTON_WIDTH_DP = 548
     }
 }

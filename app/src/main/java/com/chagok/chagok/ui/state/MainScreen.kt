@@ -2,8 +2,10 @@ package com.chagok.chagok.ui.state
 
 import com.chagok.chagok.data.repository.OnboardingRepository
 import com.chagok.chagok.domain.driving.VehicleHealth
+import com.chagok.chagok.model.AgeGroup
 import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.model.MissionCode
+import com.chagok.chagok.model.MissionResult
 import com.chagok.chagok.model.MissionState
 import com.chagok.chagok.ui.common.AppState
 import com.chagok.chagok.ui.common.supports
@@ -12,18 +14,29 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
-import com.chagok.chagok.model.AgeGroup
 
 /** S05-01 상태 칩 */
 data class StatusChipUi(val text: String, val isError: Boolean)
 
-/** S05-08 미션 가능 목록 한 줄 */
-data class MissionAvailabilityUi(val code: MissionCode, val title: String, val available: Boolean)
+/** 미션 행 상태 (피그마 S05_미션행의 상태 4가지) */
+enum class MissionRowStatus {
+    AVAILABLE,     // 사용 가능
+    DONE_TODAY,    // 오늘 완료
+    ON_DRIVE,      // 출발하면 시작해요 (주행 중 조건이 맞아야 시작하는 미션. 아직 해당 미션 없음)
+    UNSUPPORTED,   // 이 차는 아직 안 돼요
+}
+
+/** S05-08 미션 목록 한 줄 */
+data class MissionAvailabilityUi(val code: MissionCode, val title: String, val status: MissionRowStatus) {
+    /** 이 차에서 되는 미션인가 */
+    val available: Boolean get() = status != MissionRowStatus.UNSUPPORTED
+}
 
 /** S-05가 그릴 값 */
 data class MainUiState(
     val statusChip: StatusChipUi,
     val profileChip: String?,              // S05-02 "은우 부기장 · 7~8세" (프로필 없으면 null)
+    val profileInitial: String?,           // 프로필 칩 동그라미 안 첫 글자 "은"
     val mascotMessage: String,             // S05-03
     val todayDone: Int,                    // S05-04 "오늘의 미션 5개 중 2개 완료"
     val todayGoal: Int,
@@ -31,15 +44,15 @@ data class MainUiState(
     val startOn: Boolean,                  // S05-07 [부기장 출발!] 토글 상태
     val startEnabled: Boolean,             // 연결 끊김이면 비활성
 ) {
-    /** 진행 링 퍼센트 (목표 초과 시 100) */
+    /** 진행 바 퍼센트 (목표 초과 시 100) */
     val todayPercent: Int get() = if (todayGoal <= 0) 0 else minOf(100, todayDone * 100 / todayGoal)
 }
 
-/** 미션 이름 (S-05 목록, S-07 요약에서 같이 쓰면 된다) */
+/** 미션 이름 (S-05 목록, S-06 이름 칩, S-07 요약에서 같이 쓴다) */
 fun MissionCode.title(): String = when (this) {
-    MissionCode.BLINK -> "깜빡이 맞히기"
-    MissionCode.WIPER -> "와이퍼"
-    MissionCode.NEXT_TURN -> "다음 방향"
+    MissionCode.BLINK -> "깜빡이 소리"
+    MissionCode.WIPER -> "비 오는 날"
+    MissionCode.NEXT_TURN -> "다음 회전"
     MissionCode.NEAR_DEST -> "곧 도착"
 }
 
@@ -47,6 +60,8 @@ fun MissionCode.title(): String = when (this) {
  * S-05 메인 (F-01, F-02).
  * 오늘 진행 = 오늘 날짜(zone 기준)에 시작된 미션 중 DONE(정답·오답 모두) 수.
  * 건너뜀(SKIPPED)·만료(EXPIRED)는 아이가 실제로 한 게 아니라서 세지 않는다.
+ *
+ * @param homeMissions 목록에 보여 줄 미션과 순서 (피그마 S05_1: 깜빡이 소리 · 다음 회전 · 비 오는 날)
  */
 class MainScreen(
     private val scope: CoroutineScope,
@@ -55,14 +70,16 @@ class MainScreen(
     private val speak: suspend (String) -> Unit,
     private val nowMs: () -> Long,
     private val zone: ZoneId = ZoneId.of("Asia/Seoul"),
-    private val todayGoal: Int = 5,                      // 🟡 열린 이슈 #7
+    private val todayGoal: Int = 5,                      // 열린 이슈 #7: 상수
+    private val homeMissions: List<MissionCode> = listOf(MissionCode.BLINK, MissionCode.NEXT_TURN, MissionCode.WIPER),
 ) {
     private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 8)
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
-    private val todayDone: Flow<Int> = app.missionStore.results.map { list ->
+    /** 오늘 완료(DONE)한 미션 결과 */
+    private val todayDone: Flow<List<MissionResult>> = app.missionStore.results.map { list ->
         val today = Instant.ofEpochMilli(nowMs()).atZone(zone).toLocalDate()
-        list.count {
+        list.filter {
             it.state == MissionState.DONE &&
                 Instant.ofEpochMilli(it.triggeredAtMs).atZone(zone).toLocalDate() == today
         }
@@ -93,19 +110,31 @@ class MainScreen(
         app.ready,
         app.vehicleHealth,
     ) { (c, p, m), done, cap, ready, health ->
+        val doneCodes = done.map { it.code }.toSet()
         MainUiState(
             statusChip = c,
-            profileChip = p?.let { "${it.nickname} 부기장 · ${AgeGroup.fromCode(it.ageGroup)?.label ?: it.ageGroup}" },
+            profileChip = p?.let { "${it.nickname} 부기장 · ${ageLabel(it.ageGroup)}" },
+            profileInitial = p?.nickname?.take(1),
             mascotMessage = m,
-            todayDone = done,
+            todayDone = done.size,
             todayGoal = todayGoal,
-            missions = MissionCode.entries.map { MissionAvailabilityUi(it, it.title(), cap.supports(it)) },
+            missions = homeMissions.map { code ->
+                val status = when {
+                    !cap.supports(code) -> MissionRowStatus.UNSUPPORTED
+                    code in doneCodes -> MissionRowStatus.DONE_TODAY
+                    else -> MissionRowStatus.AVAILABLE
+                }
+                MissionAvailabilityUi(code, code.title(), status)
+            },
             startOn = ready,
             startEnabled = health != VehicleHealth.DISCONNECTED,
         )
     }.stateIn(
         scope, SharingStarted.Eagerly,
-        MainUiState(StatusChipUi(ScreenTexts.CHIP_PARKED, false), null, ScreenTexts.MAIN_DEFAULT, 0, todayGoal, emptyList(), false, false),
+        MainUiState(
+            StatusChipUi(ScreenTexts.CHIP_PARKED, false), null, null, ScreenTexts.MAIN_DEFAULT,
+            0, todayGoal, emptyList(), startOn = false, startEnabled = false,
+        ),
     )
 
     /** [부기장 출발!] 토글. 켜지면 준비 완료 음성 1회 */
@@ -119,6 +148,7 @@ class MainScreen(
     /** 프로필 칩 / 설정 탭 → S-04 수정 모드 */
     fun onProfileClick() { _events.tryEmit(UiEvent.Navigate(Screen.PROFILE)) }
 
-    /** 배지 탭 → 2차 안내 */
-    fun onBadgeTab() { _events.tryEmit(UiEvent.Toast(ScreenTexts.BADGE_TOAST)) }
+    /** 칩 표기는 "7~8세" (S-04 버튼의 "7 ~ 8세"에서 띄어쓰기를 뺀다) */
+    private fun ageLabel(code: String): String =
+        (AgeGroup.fromCode(code)?.label ?: code).replace(" ~ ", "~")
 }
