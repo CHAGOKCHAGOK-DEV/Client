@@ -3,7 +3,6 @@
     <!-- S-02 권한 안내 -->
     <string name="perm_bubble">부기장이 일하려면 필요해요</string>
     <string name="perm_bubble_done">모두 확인됐어요!</string>
-    <string name="perm_illust_placeholder">인사하는\n일러스트</string>
     <string name="perm_title">필요한 권한을 확인해 주세요</string>
     <string name="perm_title_key">권한</string>
     <string name="perm_recheck">다음</string>

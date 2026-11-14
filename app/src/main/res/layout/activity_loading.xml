@@ -39,29 +39,22 @@
             android:importantForAccessibility="no"
             android:src="@drawable/ic_bubble_tail" />
 
-        <!-- 일러스트 자리 420x420 (달려가는 부기) -->
-        <FrameLayout
-            android:layout_width="420dp"
-            android:layout_height="420dp"
+        <!-- 달려가는 꼬부 (피그마 꼬부_캐릭터_출근중 466x328). 그림만 바꾸려면 img_bugi_running.png 교체 -->
+        <ImageView
+            android:layout_width="466dp"
+            android:layout_height="328dp"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="64dp"
-            android:background="@drawable/bg_illust_placeholder">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:text="@string/loading_illust_placeholder"
-                android:textColor="@color/text_secondary"
-                android:textSize="28sp" />
-        </FrameLayout>
+            android:layout_marginStart="66dp"
+            android:layout_marginTop="73dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/img_bugi_running" />
 
         <!-- 상태 문구 + 회전 아이콘 (진행 바 왼쪽 끝에 맞춤) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="96dp"
+            android:layout_marginTop="114dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 

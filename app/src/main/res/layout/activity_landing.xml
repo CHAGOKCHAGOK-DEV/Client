@@ -3,18 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/brand"
+    android:background="@color/bg_primary"
     tools:context=".ui.landing.LandingActivity">
 
-    <!-- 로고 자리. 로고 나오면 android:src 추가하고 background 삭제 -->
+    <!-- 앱 아이콘 + 꼬마부기장 글자 (피그마 S01_1 240x316). 바꾸려면 img_landing_logo.png 교체 -->
     <ImageView
         android:id="@+id/iv_landing_logo"
-        android:layout_width="@dimen/landing_logo_size"
-        android:layout_height="@dimen/landing_logo_size"
+        android:layout_width="240dp"
+        android:layout_height="316dp"
         android:layout_gravity="center"
-        android:background="@color/mint_500"
         android:contentDescription="@string/app_name"
-        android:padding="16dp"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:src="@drawable/img_landing_logo" />
 
 </FrameLayout>
