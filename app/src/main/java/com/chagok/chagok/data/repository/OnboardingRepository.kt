@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /** 부기장 프로필 중 A 화면(S-05 칩, S-06 칩)에 필요한 값 */
 data class CopilotProfile(
     val nickname: String,
-    val ageGroup: String,            // TODO: 명세에서 빠짐, S-04에서 제거
+    val ageGroup: String,            // AgeGroup 코드 (AGE_5_6 / AGE_7_8 / AGE_9P). 미션 대본을 고른다
 )
 
 /** S-03 동의 항목 (화면 순서) */

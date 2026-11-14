@@ -46,6 +46,8 @@ class AppState(
     val tripStore: TripStore = InMemoryTripStore(),
     speedTimeoutMs: Long = 5_000,               // 데이터 미수신 판단 5초 (초기값)
     longStopMs: Long = 5 * 60_000L,             // 🟡 열린 이슈 #3
+    private val ageGroup: () -> AgeGroup? = { null },   // S-04 연령대. 미션 대본이 연령대별로 다르다
+    missions: Set<MissionCode> = MissionCode.entries.toSet(),   // 켤 미션 (기본 13개 전부)
 ) {
     val missionStore: MissionResultStore = store
 
@@ -115,13 +117,15 @@ class AppState(
         nowMs = nowMs,
         intervalMs = { MissionTiming.INTERVAL_MS },
         isNaviSpeaking = { naviSpeaking.value },
+        // 주행 기록 중 + 신호 정상. 달리는 중/정차 중 어느 때 묻는지는 미션마다 엔진이 본다 (정차 미션 F-07·09·10)
         enabled = {
-            trips.current.value != null &&
-                driveState.value == DriveState.DRIVING &&
-                vehicleHealth.value == VehicleHealth.OK
+            trips.current.value != null && vehicleHealth.value == VehicleHealth.OK
         },
         isSupported = { code -> _capability.value.supports(code) },
         tripId = { trips.current.value?.id },
+        ageGroup = ageGroup,
+        speedKmh = speed,
+        missions = missions,
     )
     val missionState: StateFlow<MissionState?> = engine.state
     val missionCurrent: StateFlow<MissionCode?> = engine.current
@@ -136,8 +140,8 @@ class AppState(
             store = tripStore,
             nowMs = nowMs,
             longStopMs = longStopMs,
-            onEnded = {
-                engine.onTripEnded()
+            onEnded = { ended ->
+                engine.onTripEnded(ended.endReason)     // 주차로 끝나면 F-13 오늘의 리포트
                 _ready.value = false        // 주행이 끝나면 출발 버튼은 다시 꺼진 상태로
             },
         )
@@ -205,10 +209,9 @@ class AppState(
 
 /** 이 차에서 해당 미션이 되는가 (S-05 미션 가능 목록, 엔진 후보 차단) */
 fun Capability.supports(code: MissionCode): Boolean = when (code) {
-    MissionCode.BLINK -> blink
-    MissionCode.WIPER -> wiper
-    MissionCode.NEXT_TURN -> navi
-    MissionCode.NEAR_DEST -> navi
-    // 🟡 엔진 미구현(이슈 7·8). 붙이기 전까지는 목록에서 "이 차는 아직 안 돼요"
-    else -> false
+    MissionCode.BLINK, MissionCode.BLINK_LEARN, MissionCode.BLINK_MEMORY -> blink
+    MissionCode.WIPER, MissionCode.RAIN_STOP -> wiper
+    MissionCode.NEXT_TURN, MissionCode.NEAR_DEST -> navi
+    MissionCode.SPEED_GUESS, MissionCode.SPEED_CHANGE, MissionCode.SIGNAL_WAIT,
+    MissionCode.WAIT_BET, MissionCode.DEPART, MissionCode.TODAY_REPORT -> speed
 }

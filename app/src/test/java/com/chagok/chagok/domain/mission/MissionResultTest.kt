@@ -76,7 +76,7 @@ class MissionResultTest {
         val r = store.results.first().single()
         assertEquals(MissionOutcome.WRONG, r.outcome)
         assertEquals(Answer.NO, r.givenAnswer)
-        assertEquals(MissionDefinitions.WIPER.wrongMessage, speech.spoken.last())
+        assertEquals(MissionDefinitions.WIPER.script(null).wrongMessage, speech.spoken.last())
     }
 
     @Test

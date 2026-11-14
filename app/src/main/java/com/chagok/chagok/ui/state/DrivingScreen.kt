@@ -1,6 +1,7 @@
 package com.chagok.chagok.ui.state
 
 import com.chagok.chagok.data.repository.OnboardingRepository
+import com.chagok.chagok.domain.mission.MissionDefinitions
 import com.chagok.chagok.domain.driving.VehicleHealth
 import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.model.MissionCode
@@ -131,14 +132,27 @@ class DrivingScreen(
         scope.launch { speak(ScreenTexts.DRIVE_TOUCH_TTS) }
     }
 
+    /** 방금 판정한 미션의 값(속도·횟수·기다린 초) → 결과 문구용 */
+    private fun judgedFacts(): MissionFacts {
+        val v = app.missionJudged.value?.values.orEmpty()
+        return MissionFacts(
+            speedKmh = v[MissionDefinitions.SPEED]?.toIntOrNull(),
+            speedDiffKmh = v[MissionDefinitions.SPEED_DIFF]?.toIntOrNull(),
+            rightBlinks = v[MissionDefinitions.RIGHT_COUNT]?.toIntOrNull(),
+            leftBlinks = v[MissionDefinitions.LEFT_COUNT]?.toIntOrNull(),
+            waitedSec = v[MissionDefinitions.WAITED_SEC]?.toIntOrNull(),
+            waitWasShort = v[MissionDefinitions.WAIT_SHORT]?.toBooleanStrictOrNull(),
+        )
+    }
+
     private fun texts(display: DrivingDisplay, code: MissionCode?): Pair<String, String> = when (display) {
         DrivingDisplay.WAITING -> ScreenTexts.DRIVE_WAITING to ScreenTexts.DRIVE_WAITING_SUB
         DrivingDisplay.SPEAKING ->
             code?.let { DrivingTexts.speaking(it) } ?: (ScreenTexts.DRIVE_SPEAKING to ScreenTexts.DRIVE_SPEAKING_SUB)
         DrivingDisplay.LISTENING ->
             ScreenTexts.DRIVE_LISTENING to (code?.let { DrivingTexts.listenHint(it) } ?: "")
-        DrivingDisplay.CORRECT -> code?.let { DrivingTexts.correct(it) } ?: (ScreenTexts.DRIVE_WAITING to "")
-        DrivingDisplay.WRONG -> code?.let { DrivingTexts.wrong(it) } ?: (ScreenTexts.DRIVE_WAITING to "")
+        DrivingDisplay.CORRECT -> code?.let { DrivingTexts.correct(it, judgedFacts()) } ?: (ScreenTexts.DRIVE_WAITING to "")
+        DrivingDisplay.WRONG -> code?.let { DrivingTexts.wrong(it, judgedFacts()) } ?: (ScreenTexts.DRIVE_WAITING to "")
         DrivingDisplay.MODE_OFF -> ScreenTexts.DRIVE_MODE_OFF to ScreenTexts.DRIVE_MODE_OFF_SUB
         DrivingDisplay.STOPPED -> ScreenTexts.DRIVE_STOPPED to ScreenTexts.DRIVE_STOPPED_SUB
         DrivingDisplay.SIGNAL_LOST -> ScreenTexts.DRIVE_SIGNAL to ScreenTexts.DRIVE_SIGNAL_SUB

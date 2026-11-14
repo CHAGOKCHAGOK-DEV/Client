@@ -1,6 +1,7 @@
 package com.chagok.chagok
 
 import android.app.Application
+import com.chagok.chagok.model.AgeGroup
 import com.chagok.chagok.data.repository.PrefsOnboardingRepository
 import com.chagok.chagok.sdk.AppGraph
 import com.chagok.chagok.ui.common.AppState
@@ -28,7 +29,13 @@ class ChagokApp : Application() {
 
     val onboarding: PrefsOnboardingRepository by lazy { PrefsOnboardingRepository(this) }
 
-    val appState: AppState by lazy { AppGraph.create(this, appScope, useFake = USE_FAKE) }
+    val appState: AppState by lazy {
+        AppGraph.create(
+            this, appScope, useFake = USE_FAKE,
+            // 미션을 묻는 순간의 연령대. S-04에서 바꾸면 다음 미션부터 바뀐다
+            ageGroup = { AgeGroup.fromCode(onboarding.profile.value?.ageGroup) },
+        )
+    }
 
     /** S-05 / S-06 / S-07 자동 전환. 화면이 바뀌어도 [메인으로] 기록이 남도록 앱에 하나만 둔다 */
     val driveRouter: DriveRouter by lazy { DriveRouter(appScope, appState) }

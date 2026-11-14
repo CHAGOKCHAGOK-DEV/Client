@@ -2,6 +2,7 @@ package com.chagok.chagok.ui.state
 
 import com.chagok.chagok.data.repository.OnboardingRepository
 import com.chagok.chagok.domain.driving.VehicleHealth
+import com.chagok.chagok.domain.mission.MissionDefinitions
 import com.chagok.chagok.model.AgeGroup
 import com.chagok.chagok.model.DriveState
 import com.chagok.chagok.model.MissionCode
@@ -49,21 +50,7 @@ data class MainUiState(
 }
 
 /** 미션 이름 (S-05 목록, S-06 이름 칩, S-07 요약에서 같이 쓴다) */
-fun MissionCode.title(): String = when (this) {
-    MissionCode.BLINK -> "깜빡이 소리"
-    MissionCode.WIPER -> "비 오는 날"
-    MissionCode.NEXT_TURN -> "다음 회전"
-    MissionCode.NEAR_DEST -> "곧 도착"
-    MissionCode.BLINK_LEARN -> "깜빡이 배우기"
-    MissionCode.RAIN_STOP -> "비가 그쳤어요"
-    MissionCode.SPEED_GUESS -> "빠를까 느릴까"
-    MissionCode.SIGNAL_WAIT -> "신호 대기"
-    MissionCode.DEPART -> "부기장 출동"
-    MissionCode.BLINK_MEMORY -> "깜빡이 기억 게임"
-    MissionCode.WAIT_BET -> "기다리기 내기"
-    MissionCode.SPEED_CHANGE -> "빨라졌을까 느려졌을까"
-    MissionCode.TODAY_REPORT -> "오늘의 리포트"
-}
+fun MissionCode.title(): String = MissionDefinitions.of(this).name
 
 /**
  * S-05 메인 (F-01, F-02).

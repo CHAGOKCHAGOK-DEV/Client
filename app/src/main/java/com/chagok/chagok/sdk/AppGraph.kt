@@ -10,6 +10,7 @@ import com.chagok.chagok.sdk.pleos.PleosVehicleGateway
 import com.chagok.chagok.sdk.speech.FakeSpeechPort
 import com.chagok.chagok.sdk.speech.SpeechPort
 import com.chagok.chagok.sdk.vehicle.FakeVehicleGateway
+import com.chagok.chagok.model.AgeGroup
 import com.chagok.chagok.ui.common.AppState
 import kotlinx.coroutines.CoroutineScope
 
@@ -25,6 +26,7 @@ object AppGraph {
         useFake: Boolean = false,
         // F-11·F-12: 실제 TTS/STT. useFake면 로그만 찍는 가짜
         speech: SpeechPort = if (useFake) FakeSpeechPort() else PleosSpeechPort(context),
+        ageGroup: () -> AgeGroup? = { null },   // S-04 연령대 (미션 대본 선택)
     ): AppState = AppState(
         scope = scope,
         vehicle = if (useFake) FakeVehicleGateway() else PleosVehicleGateway(context),
@@ -33,5 +35,6 @@ object AppGraph {
         store = InMemoryMissionResultStore(),
         permissionChecker = AndroidPermissionChecker(context),
         nowMs = { System.currentTimeMillis() },
+        ageGroup = ageGroup,
     )
 }
