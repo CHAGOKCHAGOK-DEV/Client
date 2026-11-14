@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="landing_logo_size">128dp</dimen>
 
     <style name="Theme.Bugi.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/brand</item>
+        <item name="windowSplashScreenBackground">@color/bg_primary</item>   <!-- 랜딩(S01_1)과 같은 바탕 -->
         <item name="windowSplashScreenAnimatedIcon">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/Theme.Chagok</item>
     </style>

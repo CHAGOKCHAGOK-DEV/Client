@@ -51,21 +51,14 @@
                 android:importantForAccessibility="no"
                 android:src="@drawable/ic_bubble_tail" />
 
-            <FrameLayout
+            <!-- 궁금한 꼬부 (피그마 S03도 꼬부_캐릭터_궁금). 그림만 바꾸려면 img_bugi_curious.png 교체 -->
+            <ImageView
                 android:layout_width="416dp"
                 android:layout_height="416dp"
                 android:layout_marginTop="40dp"
-                android:background="@drawable/bg_illust_placeholder">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="@string/consent_illust_placeholder"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="28sp" />
-            </FrameLayout>
+                android:importantForAccessibility="no"
+                android:scaleType="fitCenter"
+                android:src="@drawable/img_bugi_curious" />
         </LinearLayout>
 
         <!-- ===================== 오른쪽 ===================== -->
