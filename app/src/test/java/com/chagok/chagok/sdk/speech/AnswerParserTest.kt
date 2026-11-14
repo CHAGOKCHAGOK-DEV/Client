@@ -51,4 +51,33 @@ class AnswerParserTest {
         assertEquals(Answer.ANY, AnswerParser.parse("기장님 고마워요", AnswerKind.FREE))
         assertEquals(Answer.NONE, AnswerParser.parse(" ", AnswerKind.FREE))
     }
+
+    @Test fun `두 단어 판정은 앞 단어 OPTION_A, 뒤 단어 OPTION_B`() {
+        fun p(t: String, k: AnswerKind) = AnswerParser.parse(t, k)
+        assertEquals(Answer.OPTION_A, p("와이퍼!", AnswerKind.WIPER_LIGHT))
+        assertEquals(Answer.OPTION_B, p("라이트일걸", AnswerKind.WIPER_LIGHT))
+        assertEquals(Answer.OPTION_A, p("뒤차", AnswerKind.BACKCAR_SKY))
+        assertEquals(Answer.OPTION_B, p("하늘이요", AnswerKind.BACKCAR_SKY))
+        assertEquals(Answer.OPTION_A, p("돌기 전", AnswerKind.BEFORE_AFTER))
+        assertEquals(Answer.OPTION_B, p("돈 다음", AnswerKind.BEFORE_AFTER))
+        assertEquals(Answer.OPTION_A, p("비 그쳤어", AnswerKind.STOPPED_POURING))
+        assertEquals(Answer.OPTION_A, p("이제 안 와", AnswerKind.STOPPED_POURING))   // "와"가 섞여도
+        assertEquals(Answer.OPTION_B, p("많이 와", AnswerKind.STOPPED_POURING))
+        assertEquals(Answer.OPTION_A, p("빨라", AnswerKind.FAST_SLOW))
+        assertEquals(Answer.OPTION_B, p("천천히", AnswerKind.FAST_SLOW))
+        assertEquals(Answer.OPTION_B, p("느려졌어", AnswerKind.FAST_SLOW))
+        assertEquals(Answer.OPTION_A, p("멈춰", AnswerKind.STOP_GO))
+        assertEquals(Answer.OPTION_B, p("가", AnswerKind.STOP_GO))
+        assertEquals(Answer.OPTION_A, p("초록불", AnswerKind.GREEN_RED))
+        assertEquals(Answer.OPTION_B, p("빨간불", AnswerKind.GREEN_RED))
+        assertEquals(Answer.OPTION_A, p("금방", AnswerKind.SOON_LONG))
+        assertEquals(Answer.OPTION_A, p("30초 안에", AnswerKind.SOON_LONG))
+        assertEquals(Answer.OPTION_B, p("오래 기다릴 거야", AnswerKind.SOON_LONG))
+    }
+
+    @Test fun `두 단어를 다 말하거나 아무것도 없으면 NONE`() {
+        assertEquals(Answer.NONE, AnswerParser.parse("와이퍼랑 라이트", AnswerKind.WIPER_LIGHT))
+        assertEquals(Answer.NONE, AnswerParser.parse("몰라", AnswerKind.GREEN_RED))
+        assertEquals(Answer.NONE, AnswerParser.parse("갈까", AnswerKind.STOP_GO))    // 짧은 "가"는 그 말만 했을 때
+    }
 }

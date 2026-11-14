@@ -32,6 +32,7 @@ class AppStateTest {
         store = store,
         permissionChecker = FakePermissionChecker(),
         nowMs = { testScheduler.currentTime },
+        missions = com.chagok.chagok.ui.state.BASIC_MISSIONS,
     )
 
     @Test

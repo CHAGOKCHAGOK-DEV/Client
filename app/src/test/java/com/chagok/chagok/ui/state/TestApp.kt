@@ -4,6 +4,7 @@ import com.chagok.chagok.data.repository.CopilotProfile
 import com.chagok.chagok.data.repository.InMemoryMissionResultStore
 import com.chagok.chagok.data.repository.InMemoryOnboardingRepository
 import com.chagok.chagok.model.Capability
+import com.chagok.chagok.model.MissionCode
 import com.chagok.chagok.permission.FakePermissionChecker
 import com.chagok.chagok.sdk.navigation.FakeNaviGateway
 import com.chagok.chagok.sdk.speech.Answer
@@ -28,6 +29,7 @@ class TestApp(
         vehicle = vehicle, navi = navi, speech = speech, store = store,
         permissionChecker = permission,
         nowMs = { scope.testScheduler.currentTime },
+        missions = BASIC_MISSIONS,
     )
 
     fun onboarded() {
@@ -62,3 +64,9 @@ class TestApp(
 }
 
 fun noWiper() = Capability(speed = true, blink = true, wiper = false, navi = true)
+
+/**
+ * 화면 테스트는 처음 만든 미션 4개만 켠다.
+ * 출동(F-08)·정차 미션(F-07·09·10)이 끼면 화면 순서 확인이 흔들려서. 새 미션은 MissionEngineTest에서 본다
+ */
+val BASIC_MISSIONS = setOf(MissionCode.BLINK, MissionCode.WIPER, MissionCode.NEXT_TURN, MissionCode.NEAR_DEST)
