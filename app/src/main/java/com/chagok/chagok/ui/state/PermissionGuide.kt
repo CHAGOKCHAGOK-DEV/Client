@@ -20,7 +20,7 @@ data class PermissionRowUi(
 data class PermissionUiState(
     val rows: List<PermissionRowUi>,
     val showDeniedBanner: Boolean,     // S02-03
-    val showLater: Boolean,            // S02-05 [나중에]: 거부가 있을 때만
+    val laterEnabled: Boolean,         // S02-05 [나중에]: 모두 완료면 비활성
     val recheckEnabled: Boolean,       // S02-04 [다시 확인]: 확인 중엔 비활성
     val allDone: Boolean,              // "모두 확인됐어요!" 표시
     val locked: Boolean,               // C-02 주행 잠금 오버레이
@@ -29,9 +29,10 @@ data class PermissionUiState(
 /**
  * S-02 권한 안내 (F-01-1).
  * - 행 탭 → 시스템 권한 창(C-01). AndroidPermissionChecker.requester가 화면에 연결돼 있어야 뜬다.
- * - 3종 모두 완료 → "모두 확인됐어요!" 1초 후 다음 화면
+ * - 3종 모두 완료 → "모두 확인됐어요!" + [다음] 활성. 자동 이동 없음, [다음]을 눌러야 간다
+ * - 설정 앱에서 바꾸고 돌아오면(onResume) refresh()로 다시 읽기
  * - [다시 확인] → 행을 0.7초 "확인 중…"으로 보여 준 뒤 다시 읽기
- * - [나중에] → 토스트 후 앱 종료
+ * - ✕ / [나중에] → 나가기 모달(C-04). 모두 완료면 [나중에] 비활성
  * - 주행 판정이 나면 잠금(C-02), 정차하면 자동 해제
  */
 class PermissionGuide(
@@ -39,7 +40,6 @@ class PermissionGuide(
     private val app: AppState,
     private val onboarding: OnboardingRepository,
     private val recheckMs: Long = 700,
-    private val doneDelayMs: Long = 1_000,
 ) {
     private val checking = MutableStateFlow(false)
     private var navigating = false
@@ -58,22 +58,14 @@ class PermissionGuide(
                     row(PermissionKind.VOICE, ScreenTexts.PERM_VOICE, p.voice),
                 ),
                 showDeniedBanner = p.anyDenied,
-                showLater = p.anyDenied,
+                laterEnabled = !p.allGranted,
                 recheckEnabled = !chk,
                 allDone = p.allGranted,
                 locked = locked,
             )
-        }.stateIn(scope, SharingStarted.Eagerly, PermissionUiState(emptyList(), false, false, true, false, false))
+        }.stateIn(scope, SharingStarted.Eagerly, PermissionUiState(emptyList(), false, true, true, false, false))
 
     init {
-        // 모두 완료되면 1초 뒤 다음 화면 (그사이 다시 거부되면 취소)
-        scope.launch {
-            app.permission.map { it.allGranted }.distinctUntilChanged().collectLatest { ok ->
-                if (!ok) return@collectLatest
-                delay(doneDelayMs)
-                goNext()
-            }
-        }
         // 차량 권한을 허용하면 바로 다시 연결해 속도 구독 시작
         scope.launch {
             app.permission.map { it.vehicle == PermissionStatus.GRANTED }.distinctUntilChanged().collect { granted ->
@@ -88,6 +80,11 @@ class PermissionGuide(
         val row = state.value.rows.firstOrNull { it.kind == kind } ?: return
         if (row.status == PermissionStatus.GRANTED || row.status == PermissionStatus.CHECKING) return
         scope.launch { app.permissionChecker.request(kind) }
+    }
+
+    /** 화면 복귀(onResume): 설정 앱에서 바꾼 권한을 다시 읽는다 */
+    fun refresh() {
+        scope.launch { app.permissionChecker.refresh() }
     }
 
     /** [다시 확인] */
@@ -120,7 +117,7 @@ class PermissionGuide(
 
     /** 다음 화면으로. 권한이 없어 S-01에서 속도 구독을 못 했으면, 허용된 지금 다시 연결한다 */
     private suspend fun goNext() {
-        if (navigating) return       // [다음] 탭과 1초 자동 이동이 겹쳐도 한 번만
+        if (navigating) return       // [다음] 연속 탭은 한 번만
         navigating = true
         if (!app.capability.value.speed) app.reconnectVehicle()
         _events.emit(UiEvent.Navigate(nextScreen()))

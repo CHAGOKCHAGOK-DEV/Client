@@ -29,4 +29,7 @@ class PermissionViewModel(application: Application) : AndroidViewModel(applicati
 
     /** S02-05 [나중에] → 토스트 후 앱 종료 */
     fun later() = guide.later()
+
+    /** 화면 복귀 시 권한 다시 읽기 (설정 앱에서 바꾸고 돌아온 경우) */
+    fun refresh() = guide.refresh()
 }

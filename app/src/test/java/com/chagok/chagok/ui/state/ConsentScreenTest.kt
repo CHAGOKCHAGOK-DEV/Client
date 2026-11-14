@@ -28,7 +28,7 @@ class ConsentScreenTest {
     }
 
     @Test
-    fun `처음엔 모두 꺼져 있고 동의하고 계속은 비활성, 동의하지 않아요는 항상 가능`() = runTest {
+    fun `처음엔 모두 꺼져 있고 다음은 비활성, 나중에는 활성`() = runTest {
         val t = TestApp(this)
         val (s, _) = open(t)
         val st = s.state.value
@@ -36,9 +36,10 @@ class ConsentScreenTest {
         assertTrue(st.rows.none { it.checked })
         assertFalse(st.allChecked)
         assertFalse(st.agreeEnabled)
+        assertTrue(st.laterEnabled)
 
-        s.refuse(); runCurrent()
-        assertTrue(s.state.value.showRefusalDialog)
+        s.toggleAll(); runCurrent()
+        assertFalse(s.state.value.laterEnabled)                  // 모두 체크면 [나중에] 비활성
     }
 
     @Test
@@ -105,25 +106,6 @@ class ConsentScreenTest {
     }
 
     @Test
-    fun `동의하지 않아요 - C-04를 띄우고 저장 안 함, 확인 누르면 S-03 그대로`() = runTest {
-        val t = TestApp(this)
-        val (s, events) = open(t)
-        s.toggle(ConsentItem.NICKNAME)
-        s.refuse(); runCurrent()
-        assertTrue(s.state.value.showRefusalDialog)
-        assertNull(t.onboarding.consent.value)
-        assertFalse(t.onboarding.consented.value)
-
-        s.toggle(ConsentItem.VOICE_DISCARD); runCurrent()
-        assertEquals(listOf(true, false, false), s.state.value.rows.map { it.checked })
-
-        s.dismissRefusal(); runCurrent()
-        assertFalse(s.state.value.showRefusalDialog)
-        assertEquals(listOf(true, false, false), s.state.value.rows.map { it.checked })
-        assertTrue(events.isEmpty())
-    }
-
-    @Test
     fun `주행 중이면 잠금, 입력 무시하고 체크는 유지, 정차하면 풀림`() = runTest {
         val t = TestApp(this)
         val (s, events) = open(t)
@@ -132,10 +114,9 @@ class ConsentScreenTest {
         t.drive()
         assertTrue(s.state.value.locked)
 
-        s.agree(); s.toggleAll(); s.refuse(); runCurrent()
+        s.agree(); s.toggleAll(); runCurrent()
         assertNull(t.onboarding.consent.value)
         assertTrue(s.state.value.rows.all { it.checked })
-        assertFalse(s.state.value.showRefusalDialog)
         assertTrue(events.isEmpty())
 
         t.stop()

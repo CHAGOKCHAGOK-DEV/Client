@@ -52,10 +52,6 @@ object ScreenTexts {
     const val PROFILE_ERROR_CHARS = "한글, 영문, 숫자만 쓸 수 있어요"
     fun profileGreeting(nickname: String) = "$nickname 부기장, 반가워요!"
 
-    // C-04
-    const val REFUSAL_TITLE = "동의가 필요해요"
-    const val REFUSAL_OK = "확인"
-
     // S-05
     const val MAIN_DEFAULT = "자리에 앉아서 귀로 임무를!"          // 피그마 S05_1 말풍선 (부기장 수칙)
     const val MAIN_READY = "차가 출발하면 시작돼요"

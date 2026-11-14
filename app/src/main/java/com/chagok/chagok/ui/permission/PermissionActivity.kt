@@ -7,7 +7,6 @@ import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -17,6 +16,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.ChagokApp
 import com.chagok.chagok.MainActivity
 import com.chagok.chagok.R
+import com.chagok.chagok.ui.component.ChagokToast
 import com.chagok.chagok.model.PermissionKind
 import com.chagok.chagok.permission.AndroidPermissionChecker
 import com.chagok.chagok.ui.component.bindPermissionCard
@@ -74,7 +74,7 @@ class PermissionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_permission)
-        driveLock = DriveLockGuard(this) { showExitModal() }
+        driveLock = DriveLockGuard(this)
 
         cards = mapOf(
             PermissionKind.VEHICLE to findViewById(R.id.card_vehicle),
@@ -118,6 +118,11 @@ class PermissionActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refresh()   // 설정 앱에서 권한을 바꾸고 돌아오면 행을 다시 읽는다
+    }
+
     override fun onDestroy() {
         checker?.requester = null
         pendingResult?.cancel()
@@ -131,13 +136,14 @@ class PermissionActivity : AppCompatActivity() {
 
         tvBubble.setText(if (state.allDone) R.string.perm_bubble_done else R.string.perm_bubble)
         btnNext.isActivated = state.allDone
+        btnLater.isEnabled = state.laterEnabled          // 모두 완료면 [나중에] 비활성 (흐리게)
+        btnLater.alpha = if (state.laterEnabled) 1f else DISABLED_ALPHA
         if (state.allDone) hideWarning()
     }
 
     private fun handle(event: UiEvent) {
         when (event) {
-            // TODO: C-03 토스트 컴포넌트가 생기면 교체
-            is UiEvent.Toast -> Toast.makeText(this, event.text, Toast.LENGTH_SHORT).show()
+            is UiEvent.Toast -> ChagokToast.show(this, event.text)
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
@@ -189,9 +195,8 @@ class PermissionActivity : AppCompatActivity() {
     }
 
     private fun navigate(next: Screen) {
-        if (navigated) return   // [다음] 탭과 1초 자동 이동이 겹쳐도 한 번만
+        if (navigated) return   // [다음] 연속 탭은 한 번만
         navigated = true
-        // TODO: S-03 / S-04 / S-05 Activity가 생기면 각각 연결
         startActivity(intentFor(next))
         overridePendingTransition(0, 0)
         finish()
@@ -199,5 +204,6 @@ class PermissionActivity : AppCompatActivity() {
 
     companion object {
         private const val WARNING_MS = 2_000L
+        private const val DISABLED_ALPHA = 0.4f
     }
 }

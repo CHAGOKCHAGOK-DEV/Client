@@ -2,23 +2,22 @@ package com.chagok.chagok.ui.summary
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
-import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDialog
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.ChagokApp
 import com.chagok.chagok.R
 import com.chagok.chagok.ui.common.intentFor
+import com.chagok.chagok.ui.component.DriveLockGuard
 import com.chagok.chagok.ui.component.iconRes
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.ScreenTexts
@@ -49,13 +48,14 @@ class SummaryActivity : AppCompatActivity() {
     private lateinit var tvFooter: TextView
     private lateinit var btnMain: TextView
 
-    private var lockDialog: AppCompatDialog? = null
+    private lateinit var driveLock: DriveLockGuard
     private var renderedRows: List<SummaryRow>? = null
     private var navigated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_summary)
+        driveLock = DriveLockGuard(this)   // S07_h: 요약 중 다시 달리면 C-02
 
         tvBubble = findViewById(R.id.tv_bubble)
         chipIdle = findViewById(R.id.chip_idle)
@@ -83,8 +83,12 @@ class SummaryActivity : AppCompatActivity() {
         }
     }
 
+    /** 주행 중엔 화면 터치 차단 */
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean =
+        driveLock.interceptTouch(ev) || super.dispatchTouchEvent(ev)
+
     override fun onDestroy() {
-        lockDialog?.dismiss()
+        driveLock.release()
         super.onDestroy()
     }
 
@@ -102,8 +106,6 @@ class SummaryActivity : AppCompatActivity() {
         }
         chipOffline.visibility = if (state.offlineNotice) View.VISIBLE else View.GONE
         tvFooter.text = state.footer
-
-        if (state.locked) showLock() else hideLock()
     }
 
     private fun renderRows(rows: List<SummaryRow>) {
@@ -129,34 +131,10 @@ class SummaryActivity : AppCompatActivity() {
         }
     }
 
-    /** S07_h: C-02 잠금. 버튼 없이 덮고, 정차가 확정되면 닫힌다 */
-    private fun showLock() {
-        if (lockDialog?.isShowing == true || isFinishing) return
-        lockDialog = AppCompatDialog(this).apply {
-            supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
-            setContentView(R.layout.dialog_chagok)
-            window?.apply {
-                setBackgroundDrawableResource(android.R.color.transparent)
-                setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-                clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)   // 딤은 레이아웃이 직접
-            }
-            setCancelable(false)
-            findViewById<TextView>(R.id.tv_dialog_title)?.text = ScreenTexts.LOCK_TITLE
-            findViewById<TextView>(R.id.tv_dialog_message)?.text = ScreenTexts.LOCK_SUB
-            (findViewById<View>(R.id.btn_dialog_right)?.parent as? View)?.visibility = View.GONE
-            show()
-        }
-    }
-
-    private fun hideLock() {
-        lockDialog?.dismiss()
-        lockDialog = null
-    }
-
     private fun navigate(next: Screen) {
         if (navigated) return
         navigated = true
-        hideLock()
+        driveLock.release()
         startActivity(intentFor(next))
         overridePendingTransition(0, 0)
         finish()
