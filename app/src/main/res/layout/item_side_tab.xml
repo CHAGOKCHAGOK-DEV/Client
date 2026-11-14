@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S-05 사이드 탭 하나. bindSideTab()으로 채운다 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="150dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_side_tab"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="8dp"
+    android:paddingTop="16dp"
+    android:paddingBottom="20dp">
+
+    <ImageView
+        android:id="@+id/iv_tab_icon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:importantForAccessibility="no"
+        tools:src="@drawable/ic_tab_mission" />
+
+    <TextView
+        android:id="@+id/tv_tab_label"
+        style="@style/ChagokText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:maxLines="1"
+        android:textColor="@color/side_tab_text"
+        android:textFontWeight="600"
+        android:textSize="26sp"
+        tools:text="미션" />
+</LinearLayout>
