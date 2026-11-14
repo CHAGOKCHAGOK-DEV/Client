@@ -2,7 +2,22 @@ package com.chagok.chagok.model
 
 import com.chagok.chagok.sdk.speech.Answer
 
-enum class MissionCode { BLINK, WIPER, NEXT_TURN, NEAR_DEST }
+enum class MissionCode {
+    BLINK,          // F-01 깜빡이 소리
+    WIPER,          // F-03 비 오는 날
+    NEXT_TURN,      // F-05 다음 회전
+    NEAR_DEST,      // F-12 곧 도착
+    // ↓ 화면(S-06·S-05)만 준비됨. 트리거·판정은 이슈 7·8에서 엔진에 붙인다
+    BLINK_LEARN,    // F-02 깜빡이 배우기
+    RAIN_STOP,      // F-04 비가 그쳤어요
+    SPEED_GUESS,    // F-06 빠를까 느릴까
+    SIGNAL_WAIT,    // F-07 신호 대기
+    DEPART,         // F-08 부기장 출동 (틀림 없음)
+    BLINK_MEMORY,   // F-09 깜빡이 기억 게임
+    WAIT_BET,       // F-10 기다리기 내기
+    SPEED_CHANGE,   // F-11 빨라졌을까 느려졌을까
+    TODAY_REPORT,   // F-13 오늘의 리포트 (듣는 중 없음)
+}
 
 enum class MissionState {
     CANDIDATE, HOLD,                 // 대기
@@ -20,6 +35,9 @@ data class MissionCandidate(
 ) {
     val key: String get() = "${code.name}@$triggeredAtMs"
 }
+
+/** 방금 판정한 미션 (S-06 결과 화면: 정답이면 d, 틀리거나 무응답이면 틀림 화면) */
+data class JudgedMission(val code: MissionCode, val correct: Boolean)
 
 /** 저장 데이터의 result 값 */
 enum class MissionOutcome { CORRECT, WRONG, SKIPPED, EXPIRED }

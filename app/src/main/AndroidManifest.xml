@@ -103,6 +103,15 @@
                 android:name="distractionOptimized"
                 android:value="true" />
         </activity>
+
+        <!-- S-06 주행 중: 주행 중에 보이는 화면이라 distractionOptimized 필수 -->
+        <activity
+            android:name=".ui.driving.DrivingActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
     </application>
 
 </manifest>

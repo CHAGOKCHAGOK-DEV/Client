@@ -54,6 +54,15 @@ fun MissionCode.title(): String = when (this) {
     MissionCode.WIPER -> "비 오는 날"
     MissionCode.NEXT_TURN -> "다음 회전"
     MissionCode.NEAR_DEST -> "곧 도착"
+    MissionCode.BLINK_LEARN -> "깜빡이 배우기"
+    MissionCode.RAIN_STOP -> "비가 그쳤어요"
+    MissionCode.SPEED_GUESS -> "빠를까 느릴까"
+    MissionCode.SIGNAL_WAIT -> "신호 대기"
+    MissionCode.DEPART -> "부기장 출동"
+    MissionCode.BLINK_MEMORY -> "깜빡이 기억 게임"
+    MissionCode.WAIT_BET -> "기다리기 내기"
+    MissionCode.SPEED_CHANGE -> "빨라졌을까 느려졌을까"
+    MissionCode.TODAY_REPORT -> "오늘의 리포트"
 }
 
 /**

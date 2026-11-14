@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S-06 주행 중. 가로 1700x1184 기준. 주행 중엔 버튼·입력 없음 (정차 중에만 [정차 완료]) -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drive_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/drive_bg_waiting"
+    android:clickable="true"
+    android:focusable="true"
+    tools:context=".ui.driving.DrivingActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <!-- 미션 이름 칩 (b·c·d에서만) -->
+        <TextView
+            android:id="@+id/tv_mission_name"
+            style="@style/ChagokText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="110dp"
+            android:background="@drawable/bg_chip_shadow"
+            android:maxLines="1"
+            android:paddingHorizontal="36dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="18dp"
+            android:textColor="@color/gray_600"
+            android:textFontWeight="600"
+            android:textSize="36sp"
+            tools:text="깜빡이 소리" />
+
+        <!-- S06-01 상태 아이콘 타일 (320). 이미지는 오른쪽 아래 배지·그림자까지 334 캔버스라 7만큼 밀어 가운데 맞춤 -->
+        <ImageView
+            android:id="@+id/iv_tile"
+            android:layout_width="334dp"
+            android:layout_height="334dp"
+            android:layout_marginTop="45dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitXY"
+            android:translationX="7dp"
+            tools:src="@drawable/img_mission_tile_blinker" />
+
+        <!-- S06-02 제목 -->
+        <TextView
+            android:id="@+id/tv_headline"
+            style="@style/ChagokText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="26dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/gray_600"
+            android:textSize="92sp"
+            android:textStyle="bold"
+            tools:text="부기장이 말하고 있어요" />
+
+        <TextView
+            android:id="@+id/tv_sub"
+            style="@style/ChagokText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/gray_500"
+            android:textFontWeight="500"
+            android:textSize="52sp"
+            tools:text="질문은 소리로만 들려요" />
+
+        <!-- S06-04 [정차 완료]: 정차(f)일 때만 -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stop_done"
+            style="@style/ChagokCta"
+            android:layout_width="640dp"
+            android:layout_height="128dp"
+            android:layout_marginTop="58dp"
+            android:text="@string/drive_stop_done"
+            android:textSize="44sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <!-- S06-03 모드 칩 -->
+        <LinearLayout
+            android:id="@+id/chip_mode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="98dp"
+            android:background="@drawable/bg_chip"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="34dp"
+            android:paddingTop="22dp"
+            android:paddingEnd="44dp"
+            android:paddingBottom="22dp">
+
+            <View
+                android:id="@+id/dot_mode"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/bg_circle"
+                android:backgroundTint="@color/status_dot_ok" />
+
+            <TextView
+                android:id="@+id/tv_mode"
+                style="@style/ChagokText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:maxLines="1"
+                android:textColor="@color/gray_600"
+                android:textSize="37sp"
+                android:textStyle="bold"
+                tools:text="은우 부기장 모드 켜짐" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 정답 파티클 (정지 이미지). 화면 위쪽 700만, 제목을 가리지 않음 -->
+    <ImageView
+        android:id="@+id/iv_particles"
+        android:layout_width="match_parent"
+        android:layout_height="700dp"
+        android:importantForAccessibility="no"
+        android:scaleType="fitCenter"
+        android:src="@drawable/img_particles"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+</FrameLayout>

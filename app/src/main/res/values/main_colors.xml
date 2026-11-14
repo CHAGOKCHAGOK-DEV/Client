@@ -5,6 +5,11 @@
     <color name="mission_tile_turn">#FFE9D6</color>
     <color name="mission_tile_windshield">#D6EBFF</color>
     <color name="mission_tile_dest">#FFE1E7</color>
+    <color name="mission_tile_sign">#FFE1E1</color>
+    <color name="mission_tile_gauge">#E3F5EC</color>
+    <color name="mission_tile_trafficlight">#E6E8EE</color>
+    <color name="mission_tile_car">#D9F5EE</color>
+    <color name="mission_tile_clock">#DCEBFF</color>
     <color name="mission_tile_off">#ECEEF3</color>
     <color name="mission_chip_available">#DDF5EF</color>
     <color name="progress_track">#E3E8EE</color>

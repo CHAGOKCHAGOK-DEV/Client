@@ -19,6 +19,15 @@ fun MissionCode.iconRes(): Int = when (this) {
     MissionCode.WIPER -> R.drawable.ic_mission_windshield
     MissionCode.NEXT_TURN -> R.drawable.ic_mission_turn
     MissionCode.NEAR_DEST -> R.drawable.ic_mission_dest
+    MissionCode.BLINK_LEARN -> R.drawable.ic_mission_sign
+    MissionCode.RAIN_STOP -> R.drawable.ic_mission_sunwiper
+    MissionCode.SPEED_GUESS -> R.drawable.ic_mission_gauge
+    MissionCode.SIGNAL_WAIT -> R.drawable.ic_mission_trafficlight
+    MissionCode.DEPART -> R.drawable.ic_mission_car
+    MissionCode.BLINK_MEMORY -> R.drawable.ic_mission_star
+    MissionCode.WAIT_BET -> R.drawable.ic_mission_clock
+    MissionCode.SPEED_CHANGE -> R.drawable.ic_mission_flame
+    MissionCode.TODAY_REPORT -> R.drawable.ic_mission_trophy
 }
 
 /** 아이콘 타일 배경색 (아이콘 색에서 뽑은 연한 색) */
@@ -28,6 +37,15 @@ fun MissionCode.tileColorRes(): Int = when (this) {
     MissionCode.WIPER -> R.color.mission_tile_windshield
     MissionCode.NEXT_TURN -> R.color.mission_tile_turn
     MissionCode.NEAR_DEST -> R.color.mission_tile_dest
+    MissionCode.BLINK_LEARN -> R.color.mission_tile_sign
+    MissionCode.RAIN_STOP -> R.color.mission_tile_windshield
+    MissionCode.SPEED_GUESS -> R.color.mission_tile_gauge
+    MissionCode.SIGNAL_WAIT -> R.color.mission_tile_trafficlight
+    MissionCode.DEPART -> R.color.mission_tile_car
+    MissionCode.BLINK_MEMORY -> R.color.mission_tile_blinker
+    MissionCode.WAIT_BET -> R.color.mission_tile_clock
+    MissionCode.SPEED_CHANGE -> R.color.mission_tile_turn
+    MissionCode.TODAY_REPORT -> R.color.mission_tile_blinker
 }
 
 /**

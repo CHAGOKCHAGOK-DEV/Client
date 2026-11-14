@@ -65,17 +65,22 @@ object ScreenTexts {
     const val CHIP_PARKED = "주차 중 · 차와 연결됨"
     const val CHIP_DISCONNECTED = "차량 연결 끊김"
 
-    // S-06
-    const val DRIVE_WAITING = "주행 중이에요"
-    const val DRIVE_SPEAKING = "부기장이 말하는 중"
-    const val DRIVE_LISTENING = "듣고 있어요"
-    const val DRIVE_RESULT = "좋았어요!"
-    const val DRIVE_MODE_OFF_SUB = "부기장 모드 꺼짐 · 정차한 뒤 켜요"
-    const val DRIVE_TOUCH_TTS = "정차 후에 눌러요"
-    const val DRIVE_STOPPED = "잠깐 멈췄어요"                          // f 정차 중
+    // S-06 (피그마 S06 a~g, S06F 미션 화면)
+    const val DRIVE_WAITING = "주행 중이에요"                          // a
+    const val DRIVE_WAITING_SUB = "부기장이 다음 미션을 기다려요"
+    const val DRIVE_SPEAKING = "부기장이 말하고 있어요"                // b
+    const val DRIVE_SPEAKING_SUB = "질문은 소리로만 들려요"
+    const val DRIVE_LISTENING = "듣고 있어요"                          // c (부제는 미션별)
+    const val DRIVE_MODE_OFF = "부기장이 쉬고 있어요"                  // e
+    const val DRIVE_MODE_OFF_SUB = "정차한 뒤 출발 버튼을 눌러요"
+    const val DRIVE_STOPPED = "잠깐 멈췄어요"                          // f
+    const val DRIVE_STOPPED_SUB = "미션은 계속할 수 있어요"
     const val DRIVE_STOP_DONE = "정차 완료"                           // S06-04
-    const val DRIVE_SIGNAL = "차량 신호 확인 중"                       // g 신호 확인 중
-    const val DRIVE_SIGNAL_SUB = "미션은 잠시 쉬어요 · 돌아오면 자동 재개"
+    const val DRIVE_SIGNAL = "차량 신호를 확인하고 있어요"             // g
+    const val DRIVE_SIGNAL_SUB = "미션은 잠시 쉬어요"
+    const val DRIVE_TOUCH_TTS = "정차 후에 눌러요"
+    const val DRIVE_MODE_ON_CHIP = "부기장 모드 켜짐"
+    const val DRIVE_MODE_OFF_CHIP = "부기장 모드 꺼짐"
 
     // C-02
     const val LOCK_TITLE = "주행 중이에요"

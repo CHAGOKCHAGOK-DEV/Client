@@ -91,7 +91,15 @@ class MainActivity : AppCompatActivity() {
                 launch { viewModel.events.collect { handle(it) } }
             }
         }
-        // TODO(S-06·S-07): DriveRouter.route를 구독해 주행 판정이면 S-06, 주행 종료면 S-07로 이동
+
+        // 주행 판정이 나면 S-06으로 (모드가 꺼져 있어도 e 상태로 간다)
+        val router = (application as ChagokApp).driveRouter
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                router.route.collect { if (it.screen == Screen.DRIVING) navigate(Screen.DRIVING) }
+            }
+        }
+        // TODO(S-07): 주행이 끝나면(route = SUMMARY) S-07로
     }
 
     override fun onDestroy() {

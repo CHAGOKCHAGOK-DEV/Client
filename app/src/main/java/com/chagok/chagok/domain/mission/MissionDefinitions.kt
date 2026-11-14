@@ -25,7 +25,7 @@ object MissionDefinitions {
         code = MissionCode.BLINK,
         question = "부기장님! 기장님이 깜빡이를 켰나요?",
         correctMessage = "정확해요! 기장님이 깜빡이를 켰어요.",
-        wrongMessage = "앗, 기장님이 켰어요. 다음엔 더 잘 볼 수 있어요!",
+        wrongMessage = "앗, 기장님이 켰어요. 다음엔 더 잘 들어봐요!",
         validMs = 30_000L,
     )
 
@@ -63,6 +63,8 @@ object MissionDefinitions {
         MissionCode.WIPER -> WIPER
         MissionCode.NEXT_TURN -> NEXT_TURN
         MissionCode.NEAR_DEST -> NEAR_DEST
+        // 🟡 대본·판정은 이슈 7·8. 아직 엔진이 이 미션들을 만들지 않으므로 여기 오면 버그
+        else -> error("미션 정의가 아직 없어요: $code")
     }
 
     /** NEAR_DEST 시작 조건. ETA 0은 경로 없음으로 본다 */

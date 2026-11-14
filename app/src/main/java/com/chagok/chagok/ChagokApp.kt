@@ -4,6 +4,7 @@ import android.app.Application
 import com.chagok.chagok.data.repository.PrefsOnboardingRepository
 import com.chagok.chagok.sdk.AppGraph
 import com.chagok.chagok.ui.common.AppState
+import com.chagok.chagok.ui.state.DriveRouter
 import kotlinx.coroutines.MainScope
 import com.chagok.chagok.data.remote.ApiClient
 import com.chagok.chagok.data.remote.ChagokApi
@@ -27,6 +28,9 @@ class ChagokApp : Application() {
     val onboarding: PrefsOnboardingRepository by lazy { PrefsOnboardingRepository(this) }
 
     val appState: AppState by lazy { AppGraph.create(this, appScope, useFake = USE_FAKE) }
+
+    /** S-05 / S-06 / S-07 자동 전환. 화면이 바뀌어도 [메인으로] 기록이 남도록 앱에 하나만 둔다 */
+    val driveRouter: DriveRouter by lazy { DriveRouter(appScope, appState) }
 
     // ---------- 서버 ----------
     val installationStore: InstallationStore by lazy { InstallationStore(this) }

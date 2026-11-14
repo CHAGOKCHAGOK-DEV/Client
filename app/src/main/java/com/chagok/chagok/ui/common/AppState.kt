@@ -125,6 +125,7 @@ class AppState(
     )
     val missionState: StateFlow<MissionState?> = engine.state
     val missionCurrent: StateFlow<MissionCode?> = engine.current
+    val missionJudged: StateFlow<JudgedMission?> = engine.judged
 
     // ---- 주행 기록 ----
     init {
@@ -208,4 +209,6 @@ fun Capability.supports(code: MissionCode): Boolean = when (code) {
     MissionCode.WIPER -> wiper
     MissionCode.NEXT_TURN -> navi
     MissionCode.NEAR_DEST -> navi
+    // 🟡 엔진 미구현(이슈 7·8). 붙이기 전까지는 목록에서 "이 차는 아직 안 돼요"
+    else -> false
 }
