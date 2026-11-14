@@ -92,14 +92,15 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 주행 판정이 나면 S-06으로 (모드가 꺼져 있어도 e 상태로 간다)
+        // 주행 판정이 나면 S-06으로 (모드가 꺼져 있어도 e 상태로 간다). 끝난 주행 요약이 남아 있으면 S-07로
         val router = (application as ChagokApp).driveRouter
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                router.route.collect { if (it.screen == Screen.DRIVING) navigate(Screen.DRIVING) }
+                router.route.collect {
+                    if (it.screen == Screen.DRIVING || it.screen == Screen.SUMMARY) navigate(it.screen)
+                }
             }
         }
-        // TODO(S-07): 주행이 끝나면(route = SUMMARY) S-07로
     }
 
     override fun onDestroy() {

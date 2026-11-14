@@ -55,6 +55,7 @@ data class MissionResult(
     val triggeredAtMs: Long,
     val askedAtMs: Long?,
     val answeredAtMs: Long?,
+    val interrupted: Boolean = false, // 묻거나 듣는 중에 주행이 끝나 SKIPPED 처리됨 (S-07 요약에서 뺀다)
 ) {
     val outcome: MissionOutcome get() = when (state) {
         MissionState.SKIPPED -> MissionOutcome.SKIPPED

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-07 결과 행 아이콘 타일 (피그마 #F2F8FF) -->
+    <color name="summary_icon_tile">#F2F8FF</color>
+</resources>

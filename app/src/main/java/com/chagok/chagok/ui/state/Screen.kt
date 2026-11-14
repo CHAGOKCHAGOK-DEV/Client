@@ -82,6 +82,17 @@ object ScreenTexts {
     const val DRIVE_MODE_ON_CHIP = "부기장 모드 켜짐"
     const val DRIVE_MODE_OFF_CHIP = "부기장 모드 꺼짐"
 
+    // S-07 주행 종료 요약 (피그마 S07 a~f). 고정 문구는 summary_strings.xml
+    const val SUMMARY_BUBBLE = "같이 달려서 즐거웠어요!"              // a·e·f
+    const val SUMMARY_BUBBLE_ALL = "모두 해냈어요!"                     // b
+    const val SUMMARY_BUBBLE_NONE = "다음엔 더 잘할 수 있어요!"         // c
+    const val SUMMARY_BUBBLE_EMPTY = "다음 주행에서 만나요!"            // d
+    const val SUMMARY_LINE_EMPTY = "이번 주행에서는 미션이 없었어요"
+    const val SUMMARY_SUCCESS = "성공"
+    const val SUMMARY_NEXT_TIME = "다음에!"
+    const val SUMMARY_FOOTER = "배지·경험치는 곧 만나요 (2차)"
+    const val SUMMARY_FOOTER_RECENT = "최근 5개만 보여요 · 배지·경험치는 곧 만나요 (2차)"
+
     // C-02
     const val LOCK_TITLE = "주행 중이에요"
     const val LOCK_SUB = "차를 멈추면 계속할 수 있어요"

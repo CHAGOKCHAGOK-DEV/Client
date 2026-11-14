@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S-07 주행 종료 요약 (피그마 S07_a~h). 가로 1700x1184 기준 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_soft"
+    tools:context=".ui.summary.SummaryActivity">
+
+    <!-- ===================== 왼쪽: 말풍선 + 일러스트 ===================== -->
+    <LinearLayout
+        android:layout_width="483dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="141dp"
+        android:layout_marginTop="304dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_bubble"
+            style="@style/ChagokText"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/bg_bubble"
+            android:gravity="center"
+            android:maxLines="1"
+            android:textColor="@color/gray_500"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            tools:text="같이 달려서 즐거웠어요!" />
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="21dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_bubble_tail" />
+
+        <!-- 인사하는 꼬부 (피그마 꼬부_일러스트 > 꼬부_캐릭터_인사). 그림만 바꾸려면 img_bugi_summary.png 교체 -->
+        <ImageView
+            android:layout_width="416dp"
+            android:layout_height="416dp"
+            android:layout_marginTop="19dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter"
+            android:src="@drawable/img_bugi_summary" />
+    </LinearLayout>
+
+    <!-- ===================== 오른쪽: 제목 · 요약 · 목록 · 메인으로 ===================== -->
+    <LinearLayout
+        android:layout_width="844dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="716dp"
+        android:layout_marginTop="140dp"
+        android:orientation="vertical">
+
+        <!-- S07_f 정차 5분 자동 종료 안내 칩 -->
+        <LinearLayout
+            android:id="@+id/chip_idle"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_marginBottom="28dp"
+            android:background="@drawable/bg_summary_notice"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="26dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_mission_clock" />
+
+            <TextView
+                style="@style/ChagokText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="@string/summary_idle"
+                android:textColor="@color/gray_600"
+                android:textFontWeight="600"
+                android:textSize="28sp" />
+        </LinearLayout>
+
+        <TextView
+            style="@style/ChagokText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/summary_title"
+            android:textColor="@color/gray_600"
+            android:textSize="44sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_summary_line"
+            style="@style/ChagokText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:maxLines="1"
+            android:textColor="@color/gray_500"
+            android:textFontWeight="500"
+            android:textSize="32sp"
+            tools:text="이번 주행 미션 4개 중 3개 성공" />
+
+        <!-- 결과 행 (item_summary_row, 최대 5개) -->
+        <LinearLayout
+            android:id="@+id/list_rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:orientation="vertical" />
+
+        <!-- S07_d 미션 0개: 목록 대신 빈 상태 카드 -->
+        <LinearLayout
+            android:id="@+id/card_empty"
+            android:layout_width="match_parent"
+            android:layout_height="184dp"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_summary_soft"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="40dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_mission_car" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="28dp"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/ChagokText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/summary_empty_title"
+                    android:textColor="@color/gray_600"
+                    android:textSize="34sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    style="@style/ChagokText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/summary_empty_sub"
+                    android:textColor="@color/gray_500"
+                    android:textSize="30sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- S07_g 인터넷 연결 없음 안내 칩 -->
+        <LinearLayout
+            android:id="@+id/chip_offline"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_summary_notice"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="20dp"
+            android:paddingEnd="26dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_signal" />
+
+            <TextView
+                style="@style/ChagokText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:text="@string/summary_offline"
+                android:textColor="@color/gray_600"
+                android:textFontWeight="600"
+                android:textSize="28sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_footer"
+            style="@style/ChagokText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:textColor="@color/gray_400"
+            android:textSize="28sp"
+            tools:text="배지·경험치는 곧 만나요 (2차)" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_main"
+            style="@style/ChagokCta"
+            android:layout_width="match_parent"
+            android:layout_marginTop="28dp"
+            android:text="@string/summary_main" />
+    </LinearLayout>
+</FrameLayout>

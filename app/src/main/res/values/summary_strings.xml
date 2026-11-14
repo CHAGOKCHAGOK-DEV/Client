@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-07 고정 문구. 바뀌는 문구(말풍선·요약 한 줄·칩)는 ScreenTexts.SUMMARY_* -->
+    <string name="summary_title">오늘도 수고했어요!</string>
+    <string name="summary_idle">오래 멈춰 있어서 마무리했어요</string>
+    <string name="summary_empty_title">이번에는 만난 미션이 없었어요</string>
+    <string name="summary_empty_sub">짧게 달렸어요. 다음 주행에서 만나요</string>
+    <string name="summary_offline">인터넷이 연결되면 기록을 저장할게요</string>
+    <string name="summary_main">메인으로</string>
+</resources>

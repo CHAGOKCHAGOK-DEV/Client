@@ -7,6 +7,7 @@ import com.chagok.chagok.ui.consent.ConsentActivity
 import com.chagok.chagok.ui.driving.DrivingActivity
 import com.chagok.chagok.ui.permission.PermissionActivity
 import com.chagok.chagok.ui.state.Screen
+import com.chagok.chagok.ui.summary.SummaryActivity
 import com.chagok.chagok.ui.profile.ProfileActivity
 
 /** 화면 → Activity. 새 화면이 생기면 여기에만 추가하면 된다 */
@@ -15,6 +16,6 @@ fun Activity.intentFor(screen: Screen): Intent = when (screen) {
     Screen.CONSENT -> Intent(this, ConsentActivity::class.java)
     Screen.PROFILE -> Intent(this, ProfileActivity::class.java)
     Screen.DRIVING -> Intent(this, DrivingActivity::class.java)
-    // TODO(S-07): SUMMARY Activity가 생기면 추가. 그 전까지는 S-05로
+    Screen.SUMMARY -> Intent(this, SummaryActivity::class.java)
     else -> Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_SCREEN, screen.name)
 }

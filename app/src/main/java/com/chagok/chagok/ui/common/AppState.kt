@@ -137,7 +137,7 @@ class AppState(
             nowMs = nowMs,
             longStopMs = longStopMs,
             onEnded = {
-                engine.reset()
+                engine.onTripEnded()
                 _ready.value = false        // 주행이 끝나면 출발 버튼은 다시 꺼진 상태로
             },
         )

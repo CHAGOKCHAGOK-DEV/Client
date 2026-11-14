@@ -15,6 +15,7 @@ import com.chagok.chagok.data.remote.CopilotRepository
 import com.chagok.chagok.data.remote.MissionPackRepository
 import com.chagok.chagok.data.remote.PendingSyncStore
 import com.chagok.chagok.data.remote.ServerSync
+import com.chagok.chagok.data.remote.NetworkMonitor
 
 /**
  * 앱 전체에서 한 개만 쓰는 객체를 들고 있는 곳 (AppGraph 주석: "Application.onCreate 등에서 한 번만").
@@ -40,6 +41,7 @@ class ChagokApp : Application() {
     val missionPacks: MissionPackRepository by lazy { MissionPackRepository(this, api) }
     val agreements: AgreementRepository by lazy { AgreementRepository(api, installations, pendingSync, onboarding) }
     val copilots: CopilotRepository by lazy { CopilotRepository(api, installations, pendingSync, onboarding) }
+    val network: NetworkMonitor by lazy { NetworkMonitor(this, appScope) }
     val serverSync: ServerSync by lazy { ServerSync(appScope, installations, missionPacks, agreements, copilots) }
 
     companion object {

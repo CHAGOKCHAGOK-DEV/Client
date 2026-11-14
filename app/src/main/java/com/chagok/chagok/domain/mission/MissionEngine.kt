@@ -47,6 +47,7 @@ class MissionEngine(
 
     private var pending: MissionCandidate? = null   // 대기 후보 최대 1개
     private var running = false
+    private var tripEndedWhileRunning = false       // 묻거나 듣는 중에 주행이 끝났는지
     private var signalOn = false
     private var distToTurn: Int? = null
     private var lastEndMs: Long? = null
@@ -161,6 +162,15 @@ class MissionEngine(
      * 주행이 끝나면 호출. 대기 후보는 EXPIRED로 버리고 간격 타이머도 초기화한다.
      * 진행 중인 미션은 끝까지 마친다 (아이 말을 끊지 않기).
      */
+    /**
+     * 주행(trip)이 끝나면 호출. 진행 중인 미션은 말을 끊지 않고 끝까지 하되,
+     * 결과는 SKIPPED로 저장하고 S-07 요약에서 뺀다 (S07 엣지케이스 "진행 중 미션 중 종료").
+     */
+    fun onTripEnded() {
+        if (running) tripEndedWhileRunning = true
+        reset()
+    }
+
     fun reset() {
         pending?.let { saveEnded(it, MissionState.EXPIRED) }
         pending = null
@@ -172,6 +182,7 @@ class MissionEngine(
 
     private suspend fun run(c: MissionCandidate) {
         running = true
+        tripEndedWhileRunning = false
         _current.value = c.code
         val def = MissionDefinitions.of(c.code)
         var retry = 0
@@ -222,14 +233,18 @@ class MissionEngine(
         retry: Int, askedAt: Long?, answeredAt: Long?,
     ) {
         lastEndMs = nowMs()
+        val interrupted = tripEndedWhileRunning
+        tripEndedWhileRunning = false
+        val savedState = if (interrupted) MissionState.SKIPPED else state
         store.save(
             MissionResult(
                 id = UUID.randomUUID().toString(), tripId = c.tripId, code = c.code, expectedAnswer = c.expectedAnswer,
-                givenAnswer = given, state = state, correct = correct, retryCount = retry,
+                givenAnswer = given, state = savedState, correct = correct && !interrupted, retryCount = retry,
                 triggeredAtMs = c.triggeredAtMs, askedAtMs = askedAt, answeredAtMs = answeredAt,
+                interrupted = interrupted,
             )
         )
-        _state.value = state
+        _state.value = savedState
     }
 
     private fun saveEnded(c: MissionCandidate, state: MissionState) {

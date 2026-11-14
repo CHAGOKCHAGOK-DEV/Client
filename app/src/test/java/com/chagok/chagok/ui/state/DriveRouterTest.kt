@@ -83,6 +83,22 @@ class DriveRouterTest {
     }
 
     @Test
+    fun `요약 중 다시 달리면 S-07에 남고 잠금, 멈추면 풀린다`() = runTest {
+        val t = TestApp(this)
+        val r = DriveRouter(backgroundScope, t.app)
+        t.connectAndReady(); t.drive()
+        t.park()
+        assertEquals(Screen.SUMMARY, r.route.value.screen)
+
+        t.drive()
+        assertEquals(Screen.SUMMARY, r.route.value.screen)
+        assertTrue(r.lockOverlay.value)
+        t.stop()
+        assertEquals(Screen.SUMMARY, r.route.value.screen)
+        assertFalse(r.lockOverlay.value)
+    }
+
+    @Test
     fun `모드 없이 주행하고 서면 요약 없이 S-05`() = runTest {
         val t = TestApp(this)
         val r = DriveRouter(backgroundScope, t.app)

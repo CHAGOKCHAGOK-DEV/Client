@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Vehicle SDK: 주행 정보 및 주행거리 -->
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
@@ -107,6 +108,14 @@
         <!-- S-06 주행 중: 주행 중에 보이는 화면이라 distractionOptimized 필수 -->
         <activity
             android:name=".ui.driving.DrivingActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <!-- S-07 주행 종료 요약: 요약 중 다시 달릴 수 있어(C-02 잠금) distractionOptimized -->
+        <activity
+            android:name=".ui.summary.SummaryActivity"
             android:exported="false">
             <meta-data
                 android:name="distractionOptimized"
