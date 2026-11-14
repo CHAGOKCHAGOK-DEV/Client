@@ -32,6 +32,7 @@ import com.chagok.chagok.ui.component.ExitDialog
 import com.chagok.chagok.ui.common.intentFor
 import android.view.MotionEvent
 import com.chagok.chagok.ui.component.DriveLockGuard
+import android.widget.ImageView
 
 /**
  * S-02 권한 안내 (F-01-1).
@@ -80,6 +81,15 @@ class PermissionActivity : AppCompatActivity() {
             PermissionKind.MIC to findViewById(R.id.card_mic),
             PermissionKind.VOICE to findViewById(R.id.card_voice),
         )
+        // 권한 카드 아이콘
+        val icons = mapOf(
+            PermissionKind.VEHICLE to R.drawable.ic_perm_vehicle,
+            PermissionKind.MIC to R.drawable.ic_perm_mic,
+            PermissionKind.VOICE to R.drawable.ic_perm_voice,
+        )
+        cards.forEach { (kind, card) ->
+            card.findViewById<ImageView>(R.id.iv_permission_icon).setImageResource(icons.getValue(kind))
+        }
         tvBubble = findViewById(R.id.tv_bubble)
         btnNext = findViewById(R.id.btn_next)
         btnLater = findViewById(R.id.btn_later)
