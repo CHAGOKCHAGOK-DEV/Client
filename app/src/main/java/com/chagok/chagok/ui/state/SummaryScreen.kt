@@ -40,19 +40,23 @@ data class SummaryUiState(
  * - 묻지도 못하고 버린 후보(EXPIRED), 묻거나 듣는 중에 주행이 끝난 미션(interrupted)은 넣지 않는다
  * - [메인으로]: 첫 탭만 받는다. 출발 버튼 끄고(ready=false) S-05
  *
- * - g: 인터넷이 없으면 안내 칩. 경고 아님, [메인으로]는 그대로
- *   🟡 실제 trip 업로드(POST /api/trips)는 서버 API가 생기면 붙인다. 지금은 연결 상태만 본다
+ * - g: 이번 주행 기록을 아직 서버에 못 보냈으면 안내 칩. 경고 아님, [메인으로]는 그대로
+ *   인터넷이 없거나, 보내 봤는데 실패해서 기기에 남아 있으면(pendingTrips) 보인다. 보내지면 사라진다
  */
 class SummaryScreen(
     scope: CoroutineScope,
     private val app: AppState,
     private val router: DriveRouter,
     online: Flow<Boolean> = flowOf(true),
+    pendingTrips: Flow<Set<String>> = flowOf(emptySet()),
 ) {
     val state: StateFlow<SummaryUiState> = combine(
-        app.lastEndedTrip, app.missionStore.results, app.uiLocked, online,
-    ) { trip, results, locked, isOnline ->
-        summarize(trip, results).copy(locked = locked, offlineNotice = !isOnline)
+        app.lastEndedTrip, app.missionStore.results, app.uiLocked, online, pendingTrips,
+    ) { trip, results, locked, isOnline, pending ->
+        summarize(trip, results).copy(
+            locked = locked,
+            offlineNotice = trip != null && (!isOnline || trip.id in pending),
+        )
     }.stateIn(scope, SharingStarted.Eagerly, summarize(app.lastEndedTrip.value, emptyList()))
 
     private var leaving = false

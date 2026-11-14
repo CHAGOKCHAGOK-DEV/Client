@@ -13,7 +13,7 @@ class SummaryViewModel(application: Application) : AndroidViewModel(application)
 
     private val app = application as ChagokApp
 
-    private val screen = SummaryScreen(viewModelScope, app.appState, app.driveRouter, app.network.online)
+    private val screen = SummaryScreen(viewModelScope, app.appState, app.driveRouter, app.network.online, app.tripSync.pending)
 
     val state: StateFlow<SummaryUiState> = screen.state
 

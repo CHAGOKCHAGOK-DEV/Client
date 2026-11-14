@@ -87,3 +87,34 @@ data class CopilotResponse(
     val ageGroup: String,
     val missionIntensity: String,
 )
+// ---------- 주행 종료 동기화 (POST /api/v1/trips/sync) ----------
+
+@Serializable
+data class TripSyncRequest(
+    val tripId: String,                 // UUID
+    val missionPackCode: String,
+    val missionPackVersion: Int,
+    val status: String,                 // COMPLETED / INTERRUPTED
+    val endReason: String,              // PARKING_BRAKE / STOP_TIMEOUT / MANUAL_STOP / APP_INTERRUPTED / SDK_DISCONNECTED / UNKNOWN
+    val startedAt: String,              // ISO-8601 (밀리초까지)
+    val endedAt: String,
+    val missionResults: List<TripSyncResult>,
+)
+
+@Serializable
+data class TripSyncResult(
+    val resultId: String,               // UUID
+    val missionCode: String,            // 미션팩에 있는 코드만 받는다
+    val status: String,                 // COMPLETED / EXPIRED / CANCELLED
+    val participated: Boolean,          // 아이가 대답했는가
+    val correct: Boolean? = null,       // participated=false면 반드시 null
+    val startedAt: String,
+    val endedAt: String,
+)
+
+@Serializable
+data class TripSyncResponse(
+    val tripId: String,
+    val syncedAt: String? = null,
+    val missionResultCount: Int = 0,
+)

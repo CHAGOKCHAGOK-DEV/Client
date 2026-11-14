@@ -53,4 +53,10 @@ interface ChagokApi {
 
     @PUT("api/v1/copilot")
     suspend fun updateCopilot(@Body body: CopilotRequest): ApiResponse<CopilotResponse>
+
+    // ---------- 주행 종료 ----------
+
+    /** 끝난 주행과 미션 결과 업로드. 같은 내용을 다시 보내도 처음 기록을 돌려준다 (멱등) */
+    @POST("api/v1/trips/sync")
+    suspend fun syncTrip(@Body body: TripSyncRequest): ApiResponse<TripSyncResponse>
 }

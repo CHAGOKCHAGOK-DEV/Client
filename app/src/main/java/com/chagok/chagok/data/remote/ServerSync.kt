@@ -15,6 +15,7 @@ class ServerSync(
     private val missionPacks: MissionPackRepository,
     private val agreements: AgreementRepository,
     private val copilots: CopilotRepository,
+    private val tripSync: TripSyncRepository,
 ) {
     suspend fun onStartup() {
         installations.ensureRegistered().onFailure { Log.w(TAG, "설치 등록 실패", it) }
@@ -24,6 +25,7 @@ class ServerSync(
 
         appScope.launch {
             copilots.retryPending().onFailure { Log.w(TAG, "프로필 재전송 실패", it) }
+            tripSync.flush()       // 전에 못 보낸 주행 기록
         }
     }
 
