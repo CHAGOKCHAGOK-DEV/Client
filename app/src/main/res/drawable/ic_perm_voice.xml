@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 권한 카드 아이콘: 음성 인식 기반 안내 (44x44) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+
+    <!-- 스피커 몸통 (채움 + 테두리) -->
+    <path
+        android:pathData="M2.51709,14.5423H12.9578L26.3815,2.61011V41.3898L12.9578,29.4576H2.51709V14.5423Z"
+        android:strokeWidth="3"
+        android:strokeLineJoin="round">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="-3.44901" android:startY="12.305" android:endX="21.2787" android:endY="27.5221">
+                <item android:offset="0" android:color="#FF96CAF6" />
+                <item android:offset="1" android:color="#FF6BBAFA" />
+            </gradient>
+        </aapt:attr>
+        <aapt:attr name="android:strokeColor">
+            <gradient android:type="linear" android:startX="-3.44901" android:startY="12.305" android:endX="21.2787" android:endY="27.5221">
+                <item android:offset="0" android:color="#FF96CAF6" />
+                <item android:offset="1" android:color="#FF6BBAFA" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 소리 곡선 (선) -->
+    <path
+        android:pathData="M36.8223,11.5593C42.7884,18.5198 42.7884,25.4802 36.8223,32.4407"
+        android:strokeWidth="3.25"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient android:type="linear" android:startX="35.7036" android:startY="16.7797" android:endX="41.8152" android:endY="18.0893">
+                <item android:offset="0" android:color="#FFFDCE65" />
+                <item android:offset="1" android:color="#FFFEC442" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

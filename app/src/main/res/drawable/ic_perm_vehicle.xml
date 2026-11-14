@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 권한 카드 아이콘: 차량 신호 읽기 (44x44) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+
+    <!-- 지붕 -->
+    <path android:pathData="M6.875,16.5L11.6875,4.125C12.1458,3.20833 13.0625,2.75 14.4375,2.75H29.5625C30.9375,2.75 31.8542,3.20833 32.3125,4.125L37.125,16.5H6.875Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="-0.6875" android:startY="6.1875" android:endX="6.71221" android:endY="22.4669">
+                <item android:offset="0" android:color="#FF71DBB8" />
+                <item android:offset="1" android:color="#FF4CE0AF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 창문 -->
+    <path
+        android:fillAlpha="0.9"
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12.375,15.125L15.125,6.875H28.875L31.625,15.125H12.375Z" />
+
+    <!-- 차체 -->
+    <path android:pathData="M36.4375,15.125H7.5625C3.38585,15.125 0,18.5108 0,22.6875V28.1875C0,32.3642 3.38585,35.75 7.5625,35.75H36.4375C40.6142,35.75 44,32.3642 44,28.1875V22.6875C44,18.5108 40.6142,15.125 36.4375,15.125Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="-11" android:startY="20.2812" android:endX="0.323345" android:endY="44.4377">
+                <item android:offset="0" android:color="#FF71DBB8" />
+                <item android:offset="1" android:color="#FF4CE0AF" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 왼쪽 라이트 -->
+    <path android:pathData="M8.25,28.5312C9.95863,28.5312 11.3438,27.1461 11.3438,25.4375C11.3438,23.7289 9.95863,22.3438 8.25,22.3438C6.54137,22.3438 5.15625,23.7289 5.15625,25.4375C5.15625,27.1461 6.54137,28.5312 8.25,28.5312Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="3.60938" android:startY="23.8906" android:endX="8.02902" android:endY="28.3103">
+                <item android:offset="0" android:color="#FFFFF6C1" />
+                <item android:offset="1" android:color="#FFFFEF96" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 오른쪽 라이트 -->
+    <path android:pathData="M35.75,28.5312C37.4586,28.5312 38.8438,27.1461 38.8438,25.4375C38.8438,23.7289 37.4586,22.3438 35.75,22.3438C34.0414,22.3438 32.6562,23.7289 32.6562,25.4375C32.6562,27.1461 34.0414,28.5312 35.75,28.5312Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="31.1094" android:startY="23.8906" android:endX="35.529" android:endY="28.3103">
+                <item android:offset="0" android:color="#FFFFF6C1" />
+                <item android:offset="1" android:color="#FFFFEF96" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 왼쪽 바퀴 -->
+    <path android:pathData="M11,33H9.625C7.34683,33 5.5,34.8468 5.5,37.125C5.5,39.4032 7.34683,41.25 9.625,41.25H11C13.2782,41.25 15.125,39.4032 15.125,37.125C15.125,34.8468 13.2782,33 11,33Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="3.09375" android:startY="35.0625" android:endX="8.91728" android:endY="41.8566">
+                <item android:offset="0" android:color="#FF424B74" />
+                <item android:offset="1" android:color="#FF37416D" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 오른쪽 바퀴 -->
+    <path android:pathData="M34.375,33H33C30.7218,33 28.875,34.8468 28.875,37.125C28.875,39.4032 30.7218,41.25 33,41.25H34.375C36.6532,41.25 38.5,39.4032 38.5,37.125C38.5,34.8468 36.6532,33 34.375,33Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="26.4688" android:startY="35.0625" android:endX="32.2923" android:endY="41.8566">
+                <item android:offset="0" android:color="#FF424B74" />
+                <item android:offset="1" android:color="#FF37416D" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
