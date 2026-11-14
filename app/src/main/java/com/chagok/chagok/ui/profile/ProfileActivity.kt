@@ -3,7 +3,6 @@ package com.chagok.chagok.ui.profile
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.ChagokApp
 import com.chagok.chagok.R
+import com.chagok.chagok.ui.component.ChagokToast
 import com.chagok.chagok.model.AgeGroup
 import com.chagok.chagok.ui.common.intentFor
 import com.chagok.chagok.ui.component.ExitDialog
@@ -52,7 +52,7 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
-        driveLock = DriveLockGuard(this) { onBackOrCancel() }
+        driveLock = DriveLockGuard(this)
         editMode = intent.getBooleanExtra(EXTRA_EDIT, false)
 
         tvBubble = findViewById(R.id.tv_bubble)
@@ -109,7 +109,7 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun handle(event: UiEvent) {
         when (event) {
-            is UiEvent.Toast -> Toast.makeText(this, event.text, Toast.LENGTH_SHORT).show()   // TODO: C-03
+            is UiEvent.Toast -> ChagokToast.show(this, event.text)
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }

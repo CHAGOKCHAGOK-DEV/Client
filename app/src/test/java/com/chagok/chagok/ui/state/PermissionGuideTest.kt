@@ -17,7 +17,7 @@ import org.junit.Test
 class PermissionGuideTest {
 
     @Test
-    fun `행을 눌러 3종 모두 허용하면 1초 뒤 다음 화면`() = runTest {
+    fun `행을 눌러 3종 모두 허용해도 자동으로 안 넘어가고, 다음을 눌러야 간다`() = runTest {
         val t = TestApp(this)
         val g = PermissionGuide(backgroundScope, t.app, t.onboarding)
         val events = mutableListOf<UiEvent>()
@@ -28,10 +28,11 @@ class PermissionGuideTest {
         runCurrent()
         assertTrue(g.state.value.allDone)
         assertTrue(g.state.value.rows.all { it.status == PermissionStatus.GRANTED })
+        assertFalse(g.state.value.laterEnabled)                                    // 모두 완료면 [나중에] 비활성
 
-        advanceTimeBy(900); runCurrent()
+        advanceTimeBy(5_000); runCurrent()
         assertEquals(emptyList<UiEvent>(), events)
-        advanceTimeBy(200); runCurrent()
+        assertTrue(g.next()); runCurrent()
         assertEquals(listOf<UiEvent>(UiEvent.Navigate(Screen.CONSENT)), events)   // 동의 기록 없음
     }
 
@@ -46,7 +47,7 @@ class PermissionGuideTest {
         assertFalse(g.state.value.showDeniedBanner)
         g.onRowClick(PermissionKind.MIC); runCurrent()
         assertTrue(g.state.value.showDeniedBanner)
-        assertTrue(g.state.value.showLater)
+        assertTrue(g.state.value.laterEnabled)
 
         g.later(); runCurrent()
         assertEquals(listOf(UiEvent.Toast(ScreenTexts.PERM_LATER_TOAST), UiEvent.ExitApp), events)

@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -25,6 +24,7 @@ import com.chagok.chagok.ui.state.MainUiState
 import com.chagok.chagok.ui.state.MissionAvailabilityUi
 import com.chagok.chagok.ui.state.Screen
 import com.chagok.chagok.ui.state.UiEvent
+import com.chagok.chagok.ui.component.ChagokToast
 import kotlinx.coroutines.launch
 
 /**
@@ -152,7 +152,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun handle(event: UiEvent) {
         when (event) {
-            is UiEvent.Toast -> Toast.makeText(this, event.text, Toast.LENGTH_SHORT).show()   // TODO: C-03
+            is UiEvent.Toast -> ChagokToast.show(this, event.text)
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }

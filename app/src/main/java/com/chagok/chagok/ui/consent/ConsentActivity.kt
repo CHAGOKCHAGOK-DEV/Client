@@ -3,7 +3,6 @@ package com.chagok.chagok.ui.consent
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.chagok.chagok.ChagokApp
 import com.chagok.chagok.R
+import com.chagok.chagok.ui.component.ChagokToast
 import com.chagok.chagok.data.repository.ConsentItem
 import com.chagok.chagok.ui.common.intentFor
 import com.chagok.chagok.ui.component.ExitDialog
@@ -39,6 +39,7 @@ class ConsentActivity : AppCompatActivity() {
     private lateinit var cards: Map<ConsentItem, View>
     private lateinit var cardAll: View
     private lateinit var btnNext: View
+    private lateinit var btnLater: View
 
     private var exitDialog: ExitDialog? = null
     private lateinit var driveLock: DriveLockGuard
@@ -52,7 +53,7 @@ class ConsentActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_consent)
-        driveLock = DriveLockGuard(this) { showExitModal() }
+        driveLock = DriveLockGuard(this)
 
         cards = mapOf(
             ConsentItem.NICKNAME to findViewById(R.id.card_nickname),
@@ -68,7 +69,8 @@ class ConsentActivity : AppCompatActivity() {
         cards.forEach { (item, card) -> card.setOnClickListener { viewModel.toggle(item) } }
         cardAll.setOnClickListener { viewModel.toggleAll() }
         btnNext.setOnClickListener { viewModel.agree() }
-        findViewById<View>(R.id.btn_later).setOnClickListener { showExitModal() }
+        btnLater = findViewById(R.id.btn_later)
+        btnLater.setOnClickListener { showExitModal() }
         findViewById<View>(R.id.btn_close).setOnClickListener { showExitModal() }
         onBackPressedDispatcher.addCallback(this) { showExitModal() }
 
@@ -93,11 +95,13 @@ class ConsentActivity : AppCompatActivity() {
         }
         cardAll.bindCheckCard(ScreenTexts.CONSENT_ALL, state.allChecked)
         btnNext.isActivated = state.agreeEnabled
+        btnLater.isEnabled = state.laterEnabled          // 모두 체크면 [나중에] 비활성 (흐리게)
+        btnLater.alpha = if (state.laterEnabled) 1f else DISABLED_ALPHA
     }
 
     private fun handle(event: UiEvent) {
         when (event) {
-            is UiEvent.Toast -> Toast.makeText(this, event.text, Toast.LENGTH_SHORT).show()   // TODO: C-03
+            is UiEvent.Toast -> ChagokToast.show(this, event.text)
             is UiEvent.Navigate -> navigate(event.to)
             UiEvent.ExitApp -> exitApp()
         }
@@ -108,7 +112,7 @@ class ConsentActivity : AppCompatActivity() {
         if (termsDialog?.isShowing == true) return
         val doc = viewModel.termFor(item)
         if (doc == null) {
-            Toast.makeText(this, "약관을 불러오는 중이에요. 잠시 후 다시 눌러 주세요", Toast.LENGTH_SHORT).show()
+            ChagokToast.show(this, "약관을 불러오는 중이에요. 잠시 후 다시 눌러 주세요")
             viewModel.loadTerms()
             return
         }
@@ -135,5 +139,6 @@ class ConsentActivity : AppCompatActivity() {
 
     companion object {
         private const val TITLE_KEY = "정보 이용"
+        private const val DISABLED_ALPHA = 0.4f
     }
 }

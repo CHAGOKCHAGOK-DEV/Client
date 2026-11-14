@@ -25,11 +25,14 @@ data class ConsentUiState(
     val rows: List<ConsentRowUi>,
     val allChecked: Boolean,
     val agreeEnabled: Boolean,
-    val showRefusalDialog: Boolean,    // C-04
+    val laterEnabled: Boolean,         // S03-08 [나중에]: 모두 체크면 비활성
     val locked: Boolean,               // C-02
 )
 
-/** S-03 부모 동의 + C-04 동의 거부 창. 주행 중엔 입력 무시 (체크는 유지) */
+/**
+ * S-03 부모 동의. 주행 중엔 입력 무시 (체크는 유지, C-02).
+ * ✕ / [나중에]는 화면이 나가기 모달(C-04)을 띄운다. 모두 체크면 [나중에] 비활성.
+ */
 class ConsentScreen(
     private val scope: CoroutineScope,
     private val app: AppState,
@@ -38,31 +41,30 @@ class ConsentScreen(
     private val onConsentSaved: (ConsentRecord) -> Unit = {},   // 서버 기록 (화면이 넘어가도 끝까지)
 ) {
     private val checked = MutableStateFlow<Set<ConsentItem>>(emptySet())
-    private val refusalDialog = MutableStateFlow(false)
     private var submitted = false
 
     private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 8)
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
     val state: StateFlow<ConsentUiState> =
-        combine(checked, refusalDialog, app.uiLocked) { c, dialog, locked -> build(c, dialog, locked) }
-            .stateIn(scope, SharingStarted.Eagerly, build(emptySet(), false, app.uiLocked.value))
+        combine(checked, app.uiLocked) { c, locked -> build(c, locked) }
+            .stateIn(scope, SharingStarted.Eagerly, build(emptySet(), app.uiLocked.value))
 
     private val locked: Boolean get() = app.uiLocked.value
 
     fun toggle(item: ConsentItem) {
-        if (locked || refusalDialog.value) return
+        if (locked) return
         checked.value = if (item in checked.value) checked.value - item else checked.value + item
     }
 
     fun toggleAll() {
-        if (locked || refusalDialog.value) return
+        if (locked) return
         checked.value = if (allChecked(checked.value)) emptySet() else ConsentItem.entries.toSet()
     }
 
     /** 저장 후 프로필 없으면 S-04, 있으면 S-05 */
     fun agree() {
-        if (locked || refusalDialog.value || submitted) return
+        if (locked || submitted) return
         if (!allChecked(checked.value)) return
         submitted = true
         val record = ConsentRecord(
@@ -75,17 +77,6 @@ class ConsentScreen(
         scope.launch { _events.emit(UiEvent.Navigate(nextScreen())) }
     }
 
-    /** 저장하지 않고 C-04만 띄운다 */
-    fun refuse() {
-        if (locked) return
-        refusalDialog.value = true
-    }
-
-    fun dismissRefusal() {
-        if (locked) return
-        refusalDialog.value = false
-    }
-
     private fun nextScreen(): Screen = ScreenRouter.afterOnboarding(
         permission = app.permission.value,
         consented = true,
@@ -93,11 +84,11 @@ class ConsentScreen(
         drive = app.driveState.value,
     )
 
-    private fun build(c: Set<ConsentItem>, dialog: Boolean, locked: Boolean) = ConsentUiState(
+    private fun build(c: Set<ConsentItem>, locked: Boolean) = ConsentUiState(
         rows = ConsentItem.entries.map { ConsentRowUi(it, it.text(), it in c) },
         allChecked = allChecked(c),
         agreeEnabled = allChecked(c),
-        showRefusalDialog = dialog,
+        laterEnabled = !allChecked(c),
         locked = locked,
     )
 
