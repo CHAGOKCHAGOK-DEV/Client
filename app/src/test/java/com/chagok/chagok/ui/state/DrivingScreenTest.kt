@@ -5,7 +5,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
+import com.chagok.chagok.model.MissionCode
 import com.chagok.chagok.model.TripEndReason
+import com.chagok.chagok.sdk.speech.Answer
+import com.chagok.chagok.sdk.speech.FakeSpeechPort
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -22,12 +25,14 @@ class DrivingScreenTest {
         t.drive()
 
         assertEquals(DrivingDisplay.MODE_OFF, s.state.value.display)
+        assertEquals(ScreenTexts.DRIVE_MODE_OFF, s.state.value.headline)
         assertEquals(ScreenTexts.DRIVE_MODE_OFF_SUB, s.state.value.sub)
         assertEquals("은우 부기장 모드 꺼짐", s.state.value.modeChip)
+        assertEquals(null, s.state.value.mission)
     }
 
     @Test
-    fun `미션 진행에 따라 a-b-c-d, 결과는 2초 뒤 a`() = runTest {
+    fun `미션 진행에 따라 a-b-c-정답, 결과는 2초 뒤 a`() = runTest {
         val t = TestApp(this).apply { onboarded() }
         val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
         val seen = mutableListOf<DrivingDisplay>()
@@ -39,17 +44,52 @@ class DrivingScreenTest {
 
         t.vehicle.setWiper(true)
         advanceTimeBy(2_500)                    // 질문 0.5초 + 듣기 0.3초 + 결과 멘트 0.5초
-        assertEquals(DrivingDisplay.RESULT, s.state.value.display)
+        assertEquals(DrivingDisplay.CORRECT, s.state.value.display)
+        assertEquals(MissionCode.WIPER, s.state.value.mission)
+        assertEquals("맞아요!", s.state.value.headline)
         advanceTimeBy(2_100)
         assertEquals(DrivingDisplay.WAITING, s.state.value.display)
 
         assertEquals(
             listOf(
                 DrivingDisplay.MODE_OFF, DrivingDisplay.WAITING, DrivingDisplay.SPEAKING,
-                DrivingDisplay.LISTENING, DrivingDisplay.RESULT, DrivingDisplay.WAITING,
+                DrivingDisplay.LISTENING, DrivingDisplay.CORRECT, DrivingDisplay.WAITING,
             ),
             seen,
         )
+    }
+
+    @Test
+    fun `말하는 중·듣는 중엔 미션 이름과 대답 안내, 틀리면 WRONG`() = runTest {
+        val t = TestApp(this, speech = FakeSpeechPort(nextAnswer = Answer.NO)).apply { onboarded() }
+        val s = DrivingScreen(backgroundScope, t.app, t.onboarding, speak = {})
+        val seen = mutableListOf<DrivingUiState>()
+        backgroundScope.launch { s.state.collect { if (seen.lastOrNull()?.display != it.display) seen += it } }
+        t.connectAndReady()
+        t.drive()
+
+        t.vehicle.setWiper(true)
+        advanceTimeBy(5_000)                    // 질문 → 듣기("아니") → 오답 멘트 → 2초 뒤 대기
+
+        assertEquals(
+            listOf(
+                DrivingDisplay.MODE_OFF, DrivingDisplay.WAITING, DrivingDisplay.SPEAKING,
+                DrivingDisplay.LISTENING, DrivingDisplay.WRONG, DrivingDisplay.WAITING,
+            ),
+            seen.map { it.display },
+        )
+        val speaking = seen.first { it.display == DrivingDisplay.SPEAKING }
+        assertEquals(MissionCode.WIPER, speaking.mission)
+        assertEquals(ScreenTexts.DRIVE_SPEAKING, speaking.headline)
+
+        val listening = seen.first { it.display == DrivingDisplay.LISTENING }
+        assertEquals(DrivingTexts.listenHint(MissionCode.WIPER), listening.sub)
+
+        val wrong = seen.first { it.display == DrivingDisplay.WRONG }
+        assertEquals(MissionCode.WIPER, wrong.mission)
+        assertEquals(DrivingTexts.wrong(MissionCode.WIPER), wrong.headline to wrong.sub)
+
+        assertEquals(null, seen.last().mission)
     }
 
     @Test

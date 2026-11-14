@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-06 상태별 배경 (피그마 S06 a~g, S06F 미션 화면) -->
+    <color name="drive_bg_waiting">#E4F8F3</color>
+    <color name="drive_bg_speaking">#E8F1FF</color>
+    <color name="drive_bg_listening">#EFEDFE</color>
+    <color name="drive_bg_correct">#FFF7E0</color>
+    <color name="drive_bg_wrong">#FFE8DA</color>
+    <color name="drive_bg_mode_off">#F2F3F7</color>
+    <color name="drive_bg_stopped">#E8F1FF</color>
+    <color name="drive_bg_signal">#FFF1E3</color>
+</resources>

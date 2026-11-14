@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- S-06 주행 중 -->
+    <string name="drive_stop_done">정차 완료</string>
+</resources>

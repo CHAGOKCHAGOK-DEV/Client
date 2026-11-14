@@ -41,6 +41,10 @@ class MissionEngine(
     private val _current = MutableStateFlow<MissionCode?>(null)
     val current: StateFlow<MissionCode?> = _current.asStateFlow()
 
+    private val _judged = MutableStateFlow<JudgedMission?>(null)
+    /** 방금 판정한 미션. JUDGING으로 바뀌기 직전에 채운다 (다음 판정 때까지 유지) */
+    val judged: StateFlow<JudgedMission?> = _judged.asStateFlow()
+
     private var pending: MissionCandidate? = null   // 대기 후보 최대 1개
     private var running = false
     private var signalOn = false
@@ -187,6 +191,7 @@ class MissionEngine(
             if (given == Answer.NONE) {
                 if (c.code == MissionCode.NEAR_DEST) {
                     // 곧 도착은 무응답이어도 완료로 친다 (설계서 미션 카탈로그)
+                    _judged.value = JudgedMission(c.code, correct = false)
                     _state.value = MissionState.JUDGING
                     speech.speak(def.wrongMessage)
                     finish(c, MissionState.DONE, Answer.NONE, false, retry, askedAt, null)
@@ -196,9 +201,10 @@ class MissionEngine(
                 return
             }
 
-            _state.value = MissionState.JUDGING
             val judged = judgedCandidate(c)
             val correct = MissionDefinitions.isCorrect(judged, given)
+            _judged.value = JudgedMission(c.code, correct)
+            _state.value = MissionState.JUDGING
             speech.speak(if (correct) def.correctMessage else def.wrongMessage)
             finish(judged, MissionState.DONE, given, correct, retry, askedAt, nowMs())
         } finally {
