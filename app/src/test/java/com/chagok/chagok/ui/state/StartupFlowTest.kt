@@ -50,7 +50,7 @@ class StartupFlowTest {
     }
 
     @Test
-    fun `연결 실패 3번째부터 제한 모드 버튼, 누르면 S-08`() = runTest {
+    fun `연결 실패가 반복돼도 다시 시도만 있고 다른 화면으로 가지 않는다`() = runTest {
         val t = TestApp(this)
         t.vehicle.failConnect = true
         val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
@@ -58,17 +58,14 @@ class StartupFlowTest {
         flow.start(); advanceTimeBy(100)
         assertTrue(flow.state.value.error)
         assertTrue(flow.state.value.showRetry)
-        assertFalse(flow.state.value.showLimitedMode)
         assertEquals(ScreenTexts.STARTUP_ERROR, flow.state.value.message)
 
         flow.retry(); advanceTimeBy(100)
-        assertFalse(flow.state.value.showLimitedMode)
         flow.retry(); advanceTimeBy(100)
         assertEquals(3, flow.state.value.attempts)
-        assertTrue(flow.state.value.showLimitedMode)
-
-        flow.enterLimitedMode(); advanceTimeBy(100)
-        assertEquals(Screen.LIMITED, flow.state.value.destination)
+        assertTrue(flow.state.value.showRetry)
+        assertEquals(StartupError.CAR_CONN, flow.state.value.errorKind)
+        assertEquals(null, flow.state.value.destination)
     }
 
     @Test

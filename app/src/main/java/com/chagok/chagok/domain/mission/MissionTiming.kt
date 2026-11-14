@@ -14,11 +14,14 @@ data class TimingContext(
     val distToTurnM: Int?,            // 다음 회전까지 거리
     val naviSpeaking: Boolean,        // 내비 음성 안내 재생 중
     val lastMissionEndMs: Long?,      // 직전 미션 종료 시각
-    val intervalMs: Long,             // 프로필 강도 (5분/3분/2분)
+    val intervalMs: Long,             // 미션 사이 최소 간격
 )
 
 object MissionTiming {
     const val TURN_HOLD_M = 300       // 🟡 다음 회전 300m 이내면 보류
+
+    /** 미션 사이 최소 간격. 모든 사용자 3분 고정 (열린 이슈 #18) */
+    const val INTERVAL_MS = 3 * 60_000L
 
     fun decide(c: MissionCandidate, ctx: TimingContext): TimingDecision {
         if (ctx.turnSignalOn) return TimingDecision.HOLD

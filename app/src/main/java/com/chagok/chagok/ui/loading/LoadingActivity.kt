@@ -43,7 +43,6 @@ class LoadingActivity : AppCompatActivity() {
     private lateinit var tvFailTitle: TextView
     private lateinit var tvFailSub: TextView
     private lateinit var btnRetry: TextView
-    private lateinit var btnLimited: TextView
 
     private lateinit var spin: Animation
     private var navigated = false
@@ -61,12 +60,10 @@ class LoadingActivity : AppCompatActivity() {
         tvFailTitle = findViewById(R.id.tv_fail_title)
         tvFailSub = findViewById(R.id.tv_fail_sub)
         btnRetry = findViewById(R.id.btn_retry)
-        btnLimited = findViewById(R.id.btn_limited)
 
         spin = AnimationUtils.loadAnimation(this, R.anim.rotate_cw_infinite)
 
         btnRetry.setOnClickListener { viewModel.retry() }
-        btnLimited.setOnClickListener { viewModel.enterLimitedMode() }
         // 피그마: 모달 노출 없이 close. 앱 종료 전에 차량 SDK 구독·연결을 해제한다 (4-4 생명주기)
         findViewById<View>(R.id.btn_close).setOnClickListener {
             (application as ChagokApp).appState.release()
@@ -84,11 +81,9 @@ class LoadingActivity : AppCompatActivity() {
         val next = state.destination
         when {
             next != null -> {
-                if (next != Screen.LIMITED) {
-                    showLoading(StartupStep.SETTINGS)
-                    animateProgress(PROGRESS_MAX)
-                    delay(BAR_ANIM_MS) // 바가 다 찬 걸 보여 주고 바로 이동
-                }
+                showLoading(StartupStep.SETTINGS)
+                animateProgress(PROGRESS_MAX)
+                delay(BAR_ANIM_MS) // 바가 다 찬 걸 보여 주고 바로 이동
                 navigate(next)
             }
             state.error -> showFail(state)
@@ -154,8 +149,6 @@ class LoadingActivity : AppCompatActivity() {
         tvFailTitle.setText(title)
         tvFailSub.setText(sub)
         btnRetry.visibility = if (state.showRetry) View.VISIBLE else View.GONE
-        // 3회째 연결 실패부터
-        btnLimited.visibility = if (state.showLimitedMode) View.VISIBLE else View.GONE
     }
 
     // ---------- 이동 ----------
@@ -163,7 +156,7 @@ class LoadingActivity : AppCompatActivity() {
     private fun navigate(next: Screen) {
         if (navigated) return
         navigated = true
-        // TODO: S-02·S-03·S-04·S-05·S-06·S-08 화면이 생기면 각 Activity로 연결.
+        // TODO: S-05·S-06·S-07 화면이 생기면 각 Activity로 연결.
         //       지금은 MainActivity로 가고, 정해진 화면 이름을 함께 넘긴다.
         val intent = intentFor(next)
         startActivity(intent)

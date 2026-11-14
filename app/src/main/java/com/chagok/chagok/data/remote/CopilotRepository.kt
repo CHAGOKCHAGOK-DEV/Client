@@ -1,7 +1,6 @@
 package com.chagok.chagok.data.remote
 
 import com.chagok.chagok.data.repository.PrefsOnboardingRepository
-import com.chagok.chagok.ui.common.MissionIntensity
 
 /**
  * S-04 부기장 프로필 서버 저장. 로컬에 저장된 프로필을 서버에 반영한다.
@@ -28,7 +27,7 @@ class CopilotRepository(
         val body = CopilotRequest(
             nickname = profile.nickname,
             ageGroup = serverAgeGroup(profile.ageGroup),
-            missionIntensity = serverIntensity(onboarding.intensity.value),
+            missionIntensity = SERVER_INTENSITY,
         )
 
         var result = if (pending.copilotCreated) {
@@ -60,11 +59,7 @@ class CopilotRepository(
             else -> code
         }
 
-        /** 앱 RELAXED/NORMAL/ACTIVE ↔ 서버 LOW/NORMAL/HIGH */
-        fun serverIntensity(i: MissionIntensity): String = when (i) {
-            MissionIntensity.RELAXED -> "LOW"
-            MissionIntensity.NORMAL -> "NORMAL"
-            MissionIntensity.ACTIVE -> "HIGH"
-        }
+        /** 미션 강도 선택은 없앴다 (간격 3분 고정). 서버 필드가 남아 있어 NORMAL로 보낸다 */
+        const val SERVER_INTENSITY = "NORMAL"
     }
 }

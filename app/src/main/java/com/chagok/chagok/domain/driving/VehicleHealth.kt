@@ -11,14 +11,6 @@ enum class VehicleHealth {
     SPEED_LOST,     // 연결은 됐는데 속도 값이 N초 이상 안 옴 -> 주행 판정 신뢰 불가, 미션 전체 중지
 }
 
-/** S-08 안전 제한 모드로 가야 하는 이유. null이면 정상 */
-enum class LimitedReason {
-    CONNECT_FAILED,   // S-01에서 3회 연결 실패
-    DISCONNECTED,     // 쓰던 중 연결 끊김
-    SPEED_LOST,       // 속도 미수신
-    NO_MISSIONS,      // capability가 전부 미지원
-}
-
 object SignalWatchdog {
     /**
      * 값이 timeoutMs 동안 안 오면 false.

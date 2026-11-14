@@ -33,7 +33,7 @@ class TripTrackerTest {
         val ended = mutableListOf<Trip>()
         var n = 0
         val t = TripTracker(
-            backgroundScope, drive, m, store, { testScheduler.currentTime }, { 180_000L },
+            backgroundScope, drive, m, store, { testScheduler.currentTime },
             longStopMs = 300_000L, newId = { "trip-${++n}" }, onEnded = { ended += it },
         )
         runCurrent()
@@ -48,8 +48,8 @@ class TripTrackerTest {
 
         e.drive.value = DriveState.PARKED; runCurrent()
         assertNull(e.tracker.current.value)
-        assertEquals(TripEndReason.PARKING_BRAKE, e.ended.single().endReason)
-        assertEquals(TripEndReason.PARKING_BRAKE, e.store.trips.value.single().endReason)
+        assertEquals(TripEndReason.PARKED, e.ended.single().endReason)
+        assertEquals(TripEndReason.PARKED, e.store.trips.value.single().endReason)
     }
 
     @Test
@@ -71,7 +71,20 @@ class TripTrackerTest {
         e.drive.value = DriveState.STOPPED
         advanceTimeBy(300_001); runCurrent()
         assertNull(e.tracker.current.value)
-        assertEquals(TripEndReason.LONG_STOP, e.tracker.lastEnded.value?.endReason)
+        assertEquals(TripEndReason.IDLE_TIMEOUT, e.tracker.lastEnded.value?.endReason)
+    }
+
+    @Test
+    fun `정차 완료 버튼이면 USER_STOP으로 끝나고, 5분 타이머는 다시 울리지 않는다`() = runTest {
+        val e = env()
+        e.drive.value = DriveState.DRIVING; runCurrent()
+        e.drive.value = DriveState.STOPPED; runCurrent()
+        e.tracker.endNow(TripEndReason.USER_STOP); runCurrent()
+        assertNull(e.tracker.current.value)
+        assertEquals(TripEndReason.USER_STOP, e.tracker.lastEnded.value?.endReason)
+
+        advanceTimeBy(300_001); runCurrent()
+        assertEquals(TripEndReason.USER_STOP, e.ended.single().endReason)
     }
 
     @Test

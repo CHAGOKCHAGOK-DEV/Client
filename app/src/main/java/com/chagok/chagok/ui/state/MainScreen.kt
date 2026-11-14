@@ -108,13 +108,6 @@ class MainScreen(
         MainUiState(StatusChipUi(ScreenTexts.CHIP_PARKED, false), null, ScreenTexts.MAIN_DEFAULT, 0, todayGoal, emptyList(), false, false),
     )
 
-    init {
-        // S-05 "SDK 연결 끊김 → 제한 모드 안내 → S-08", 지원 미션 0개도 S-08
-        scope.launch {
-            app.limitedReason.filterNotNull().collect { _events.emit(UiEvent.Navigate(Screen.LIMITED)) }
-        }
-    }
-
     /** [부기장 출발!] 토글. 켜지면 준비 완료 음성 1회 */
     fun onStartToggle() {
         if (!state.value.startEnabled && !state.value.startOn) return

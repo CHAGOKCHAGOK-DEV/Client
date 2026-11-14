@@ -22,5 +22,4 @@
 
     <string name="btn_retry">다시 시도</string>
     <string name="btn_close">닫기</string>
-    <string name="btn_limited">제한 모드로 보기</string>
 </resources>

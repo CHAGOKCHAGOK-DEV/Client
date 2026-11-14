@@ -4,11 +4,11 @@ import com.chagok.chagok.data.repository.InMemoryTripStore
 import com.chagok.chagok.data.repository.MissionResultStore
 import com.chagok.chagok.data.repository.TripStore
 import com.chagok.chagok.domain.driving.DriveStateDetector
-import com.chagok.chagok.domain.driving.LimitedReason
 import com.chagok.chagok.domain.driving.TurnSignalTracker
 import com.chagok.chagok.domain.driving.VehicleHealth
 import com.chagok.chagok.domain.driving.vehicleHealthFlow
 import com.chagok.chagok.domain.mission.MissionEngine
+import com.chagok.chagok.domain.mission.MissionTiming
 import com.chagok.chagok.domain.trip.TripTracker
 import com.chagok.chagok.model.*
 import com.chagok.chagok.permission.PermissionChecker
@@ -27,21 +27,12 @@ data class VehicleSnapshot(
     val sdkConnected: Boolean = false,
 )
 
-/** 미션 강도 (S-04). 기본은 보통 3분 */
-enum class MissionIntensity(val intervalMs: Long) {
-    RELAXED(5 * 60_000L),   // 느긋하게
-    NORMAL(3 * 60_000L),    // 보통
-    ACTIVE(2 * 60_000L),    // 활발하게
-}
-
 /**
  * 앱 전역 상태 모음. UI는 여기 있는 StateFlow만 구독한다.
  * scope는 한 스레드(Main)에서 돌아야 한다.
  *
  * 다른 담당자가 채울 연결 지점:
- * - setIntensity(): 프로필(S-04) 강도
  * - setNaviSpeaking(): 오디오 포커스(내비 안내 재생 중)
- * - enterLimitedMode(CONNECT_FAILED): S-01에서 3회 실패 시 (StartupFlow가 호출)
  */
 class AppState(
     scope: CoroutineScope,
@@ -79,7 +70,10 @@ class AppState(
         VehicleSnapshot(speed, brake, signal, wiper, connected)
     }.stateIn(scope, SharingStarted.Eagerly, VehicleSnapshot())
 
-    /** 연결·속도 수신 상태. OK가 아니면 미션 전체 중지 */
+    /**
+     * 연결·속도 수신 상태. OK가 아니면 미션 전체 중지.
+     * 화면 이동은 없다: S-05는 상태 칩·출발 버튼, S-06은 g "차량 신호 확인 중"으로만 알리고 돌아오면 자동 재개.
+     */
     val vehicleHealth: StateFlow<VehicleHealth> =
         vehicleHealthFlow(vehicle.connected, speed, speedTimeoutMs)
             .stateIn(scope, SharingStarted.Eagerly, VehicleHealth.DISCONNECTED)
@@ -96,28 +90,6 @@ class AppState(
     private val _capability = MutableStateFlow(Capability())
     val capability: StateFlow<Capability> = _capability.asStateFlow()
 
-    private val everConnected = MutableStateFlow(false)
-    private val connectFailed = MutableStateFlow(false)
-
-    /**
-     * S-08로 가야 하는 이유. null이면 정상.
-     * 연결을 한 번도 안 한 상태(앱 시작 직후)는 제한 모드로 보지 않는다.
-     */
-    // 연결 여부는 vehicle.connected를 직접 본다. vehicleHealth는 한 단계 늦게 바뀌어서
-    // 연결 직후 잠깐 DISCONNECTED로 남아 있다 (S-08이 깜빡 뜨는 문제)
-    val limitedReason: StateFlow<LimitedReason?> = combine(
-        connectFailed, everConnected, vehicle.connected, vehicleHealth, _capability,
-    ) { failed, ever, connected, health, cap ->
-        when {
-            failed -> LimitedReason.CONNECT_FAILED
-            !ever -> null
-            !connected -> LimitedReason.DISCONNECTED
-            health == VehicleHealth.SPEED_LOST -> LimitedReason.SPEED_LOST
-            !cap.blink && !cap.wiper && !cap.navi -> LimitedReason.NO_MISSIONS
-            else -> null
-        }
-    }.stateIn(scope, SharingStarted.Eagerly, null)
-
     // ---- 출발 버튼(ready)과 부기장 모드(mode) ----
     private val _ready = MutableStateFlow(false)
     val ready: StateFlow<Boolean> = _ready.asStateFlow()
@@ -127,9 +99,6 @@ class AppState(
     /** 부기장 모드: 출발 버튼을 눌렀거나 자동시작이 켜져 있으면 ON (S-06 e 상태 판단용) */
     val mode: StateFlow<Boolean> = combine(_ready, autoStartFlag) { r, a -> r || a }
         .stateIn(scope, SharingStarted.Eagerly, false)
-
-    private val _intensity = MutableStateFlow(MissionIntensity.NORMAL)
-    val intensity: StateFlow<MissionIntensity> = _intensity.asStateFlow()
 
     // ---- 미션 (F-09) ----
     // trip보다 먼저 만들어야 trip 종료 콜백에서 engine.reset()을 부를 수 있다
@@ -144,7 +113,7 @@ class AppState(
         speech = speech,
         store = missionStore,
         nowMs = nowMs,
-        intervalMs = { _intensity.value.intervalMs },
+        intervalMs = { MissionTiming.INTERVAL_MS },
         isNaviSpeaking = { naviSpeaking.value },
         enabled = {
             trips.current.value != null &&
@@ -165,15 +134,14 @@ class AppState(
             mode = mode,
             store = tripStore,
             nowMs = nowMs,
-            intervalMs = { _intensity.value.intervalMs },
             longStopMs = longStopMs,
             onEnded = {
                 engine.reset()
                 _ready.value = false        // 주행이 끝나면 출발 버튼은 다시 꺼진 상태로
             },
         )
-        // F-15-3 데이터 미수신: 대기 중인 미션을 버린다
-        limitedReason.filterNotNull().onEach { engine.reset() }.launchIn(scope)
+        // F-15-3 데이터 미수신(연결 끊김·속도 미수신): 대기 중인 미션을 버린다
+        vehicleHealth.filter { it != VehicleHealth.OK }.onEach { engine.reset() }.launchIn(scope)
     }
 
     /** 진행 중인 주행 (없으면 null) */
@@ -191,20 +159,13 @@ class AppState(
     suspend fun connectVehicle(): Result<Capability> =
         vehicle.connect()
             .map { it.copy(navi = navi.connect()) }
-            .onSuccess {
-                _capability.value = it
-                everConnected.value = true
-                connectFailed.value = false
-            }
+            .onSuccess { _capability.value = it }
 
-    /** S-08 [다시 연결]: 구독을 풀고 다시 연결해 capability를 새로 받는다 */
+    /** 다시 연결: 구독을 풀고 다시 연결해 capability를 새로 받는다 (S-02에서 권한 허용 뒤) */
     suspend fun reconnectVehicle(): Result<Capability> {
         vehicle.release()
         return connectVehicle()
     }
-
-    /** S-01에서 3회 실패 후 [제한 모드로 보기] */
-    fun enterLimitedMode() { connectFailed.value = true }
 
     /** S-05 [부기장 출발!] 토글. 연결이 끊기면 켤 수 없다 */
     fun toggleReady() {
@@ -214,10 +175,17 @@ class AppState(
 
     fun setAutoStart(on: Boolean) { autoStartFlag.value = on }
 
-    fun setIntensity(v: MissionIntensity) { _intensity.value = v }
-
     /** 오디오 포커스 담당이 호출: 내비 음성 안내 재생 중이면 true */
     fun setNaviSpeaking(on: Boolean) { naviSpeaking.value = on }
+
+    /**
+     * S-06 [정차 완료]: 주행을 USER_STOP으로 끝낸다 → S-07.
+     * 버튼은 정차 중에만 보이지만, 주행 판정 중이면 여기서도 한 번 더 막는다.
+     */
+    fun finishTrip() {
+        if (driveState.value == DriveState.DRIVING) return
+        trips.endNow(TripEndReason.USER_STOP)
+    }
 
     /** 주행 종료 시 출발 상태 초기화 (trip 종료 시 자동으로도 불림) */
     fun resetReady() { _ready.value = false }

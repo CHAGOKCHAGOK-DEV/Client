@@ -88,7 +88,7 @@ class MainScreenTest {
     }
 
     @Test
-    fun `배지 탭은 토스트, 연결이 끊기면 S-08로`() = runTest {
+    fun `배지 탭은 토스트, 연결이 끊겨도 화면은 그대로이고 칩과 출발 버튼만 바뀐다`() = runTest {
         val t = TestApp(this)
         val s = screen(t)
         val events = mutableListOf<UiEvent>()
@@ -98,9 +98,8 @@ class MainScreenTest {
         s.onBadgeTab(); runCurrent()
         t.vehicle.simulateDisconnect(); advanceTimeBy(100)
 
-        assertEquals(
-            listOf(UiEvent.Toast(ScreenTexts.BADGE_TOAST), UiEvent.Navigate(Screen.LIMITED)),
-            events,
-        )
+        assertEquals(listOf<UiEvent>(UiEvent.Toast(ScreenTexts.BADGE_TOAST)), events)   // 이동 없음
+        assertEquals(StatusChipUi(ScreenTexts.CHIP_DISCONNECTED, true), s.state.value.statusChip)
+        assertFalse(s.state.value.startEnabled)
     }
 }

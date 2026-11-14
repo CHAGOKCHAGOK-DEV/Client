@@ -26,7 +26,7 @@ class MissionEngine(
     private val speech: SpeechPort,
     private val store: MissionResultStore,
     private val nowMs: () -> Long,
-    private val intervalMs: () -> Long = { 180_000L },          // 프로필 강도 연결 전 기본 3분
+    private val intervalMs: () -> Long = { MissionTiming.INTERVAL_MS },   // 3분 고정. 테스트에서만 바꾼다
     private val isNaviSpeaking: () -> Boolean = { false },      // 오디오 포커스 연결 전 기본값
     private val enabled: () -> Boolean = { true },              // 부기장 모드 ON일 때만
     private val isSupported: (MissionCode) -> Boolean = { true },  // capability: 이 차에서 되는 미션만

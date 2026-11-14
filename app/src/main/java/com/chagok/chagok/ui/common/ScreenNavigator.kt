@@ -13,6 +13,6 @@ fun Activity.intentFor(screen: Screen): Intent = when (screen) {
     Screen.PERMISSION -> Intent(this, PermissionActivity::class.java)
     Screen.CONSENT -> Intent(this, ConsentActivity::class.java)
     Screen.PROFILE -> Intent(this, ProfileActivity::class.java)
-    // TODO: S-04·S-05·S-06·S-08 Activity가 생기면 추가
+    // TODO: S-05·S-06·S-07 Activity가 생기면 추가
     else -> Intent(this, MainActivity::class.java).putExtra(MainActivity.EXTRA_SCREEN, screen.name)
 }
