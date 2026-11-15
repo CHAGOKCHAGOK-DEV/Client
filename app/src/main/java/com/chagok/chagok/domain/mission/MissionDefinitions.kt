@@ -20,6 +20,8 @@ data class AgeScript(
     val answerKind: AnswerKind,
     val correctMessage: String,
     val wrongMessage: String,      // 오답 멘트 (무응답이어도 완료로 치는 미션은 무응답 멘트)
+    val thresholdKph: Float? = null,   // F-06 빠름 기준 속도 (미션팩 thresholdKph)
+    val comparisonMs: Long? = null,    // F-11 몇 초 전 속도와 비교할지 (미션팩 comparisonSeconds)
 )
 
 /** 언제 물을 수 있는 미션인가 */
@@ -37,7 +39,15 @@ data class MissionDefinition(
     val minIntervalMs: Long? = null,    // 같은 미션 사이 최소 간격 (F-06 15분). null이면 공통 3분만
     val askWhen: AskWhen = AskWhen.DRIVING,
     val noAnswerCompletes: Boolean = false,   // 무응답이어도 완료(DONE)로 친다 (F-08, F-12)
+    /**
+     * 미션팩의 숫자 설정 (trigger.*, resolution.*). 예: "trigger.minOnMs" → 60000.
+     * 비어 있으면 앱에 넣어 둔 기본값을 쓴다
+     */
+    val params: Map<String, Double> = emptyMap(),
 ) {
+    /** 미션팩 숫자 설정. 없으면 null */
+    fun param(key: String): Double? = params[key]
+
     /** 연령대 대본. 연령대를 모르면 7~8세 */
     fun script(age: AgeGroup?): AgeScript = scripts[age ?: DEFAULT_AGE] ?: scripts.getValue(DEFAULT_AGE)
 
@@ -51,6 +61,29 @@ private fun scripts(a56: AgeScript, a78: AgeScript, a9: AgeScript) =
     mapOf(AgeGroup.AGE_5_6 to a56, AgeGroup.AGE_7_8 to a78, AgeGroup.AGE_9_PLUS to a9)
 
 object MissionDefinitions {
+
+    // ---------------- 미션팩 (GET /api/v1/mission-packs/current) ----------------
+
+    @Volatile private var fromPack: Map<MissionCode, MissionDefinition> = emptyMap()
+    @Volatile private var packCodes: Set<MissionCode>? = null
+
+    /**
+     * 서버 미션팩으로 대본·기준값·간격을 바꾼다. 팩에 없는 미션은 끈다.
+     * 팩에서 못 읽은 미션은 앱 기본값을 그대로 쓴다 (defs에 없으면 기본값)
+     */
+    fun applyPack(defs: Map<MissionCode, MissionDefinition>, codes: Set<MissionCode>) {
+        fromPack = defs
+        packCodes = codes
+    }
+
+    /** 앱 기본값으로 (테스트용) */
+    fun resetPack() {
+        fromPack = emptyMap()
+        packCodes = null
+    }
+
+    /** 미션팩에 있는 미션인가. 팩을 아직 못 받았으면 모두 켠다 */
+    fun isEnabled(code: MissionCode): Boolean = packCodes?.contains(code) ?: true
 
     const val BLINK_LOOKBACK_MS = 30_000L   // 직전 30초 안에 깜빡이 기록이 있으면 정답 YES
 
@@ -155,7 +188,8 @@ object MissionDefinitions {
     )
 
     /** F-06 빠름 기준 속도 */
-    fun speedThreshold(age: AgeGroup?): Float = if (age == AgeGroup.AGE_9_PLUS) 50f else 60f
+    fun speedThreshold(age: AgeGroup?): Float =
+        of(MissionCode.SPEED_GUESS).script(age).thresholdKph ?: if (age == AgeGroup.AGE_9_PLUS) 50f else 60f
 
     // ---------------- F-07 신호 대기 ----------------
     // 주행 중 멈춘 뒤 10초. 정차 중에 묻고, 출발하면 버림. 5~6세 멈춰 / 7~8세 아무 말 / 9세+ 초록
@@ -278,7 +312,11 @@ object MissionDefinitions {
         validMs = null,
     )
 
-    fun of(code: MissionCode): MissionDefinition = when (code) {
+    /** 지금 쓸 정의: 미션팩 값, 없으면 앱 기본값 */
+    fun of(code: MissionCode): MissionDefinition = fromPack[code] ?: builtIn(code)
+
+    /** 앱에 넣어 둔 기본값 (피그마 대본) */
+    fun builtIn(code: MissionCode): MissionDefinition = when (code) {
         MissionCode.BLINK -> BLINK
         MissionCode.BLINK_LEARN -> BLINK_LEARN
         MissionCode.WIPER -> WIPER
@@ -338,27 +376,27 @@ object MissionDefinitions {
      * 9세+는 실제 깜빡이 방향 (방향을 모르면 YES로 둔다)
      */
     fun blinkCandidate(nowMs: Long, signal: TurnSignal = TurnSignal.OFF, age: AgeGroup? = null): MissionCandidate {
-        val expected = if (BLINK.script(age).answerKind == AnswerKind.LEFT_RIGHT) {
+        val expected = if (of(MissionCode.BLINK).script(age).answerKind == AnswerKind.LEFT_RIGHT) {
             when (signal) {
                 TurnSignal.LEFT -> Answer.LEFT
                 TurnSignal.RIGHT -> Answer.RIGHT
                 TurnSignal.OFF -> Answer.YES
             }
         } else Answer.YES
-        return candidate(BLINK, nowMs, age, expected)
+        return candidate(of(MissionCode.BLINK), nowMs, age, expected)
     }
 
     /** F-02 깜빡이 배우기 */
     fun blinkLearnCandidate(nowMs: Long, age: AgeGroup? = null) =
-        candidate(BLINK_LEARN, nowMs, age, expectedFor(BLINK_LEARN.script(age).answerKind))
+        of(MissionCode.BLINK_LEARN).let { candidate(it, nowMs, age, expectedFor(it.script(age).answerKind)) }
 
     /** F-03 와이퍼 켜짐 → 후보. 켜진 상태이므로 5~8세 정답은 YES, 9세+는 "와이퍼"(OPTION_A) */
     fun wiperCandidate(nowMs: Long, age: AgeGroup? = null) =
-        candidate(WIPER, nowMs, age, expectedFor(WIPER.script(age).answerKind))
+        of(MissionCode.WIPER).let { candidate(it, nowMs, age, expectedFor(it.script(age).answerKind)) }
 
     /** F-04 와이퍼가 1분 이상 켜졌다 꺼짐 → 후보 */
     fun rainStopCandidate(nowMs: Long, age: AgeGroup? = null) =
-        candidate(RAIN_STOP, nowMs, age, expectedFor(RAIN_STOP.script(age).answerKind))
+        of(MissionCode.RAIN_STOP).let { candidate(it, nowMs, age, expectedFor(it.script(age).answerKind)) }
 
     /** F-05 내비 다음 회전이 좌/우일 때 후보. 정답은 내비 방향. */
     fun nextTurnCandidate(nowMs: Long, dir: TurnDir, age: AgeGroup? = null): MissionCandidate? {
@@ -367,29 +405,29 @@ object MissionDefinitions {
             TurnDir.RIGHT -> Answer.RIGHT
             TurnDir.NONE -> return null
         }
-        return candidate(NEXT_TURN, nowMs, age, expected)
+        return candidate(of(MissionCode.NEXT_TURN), nowMs, age, expected)
     }
 
     /** F-06 일정한 속도 → 후보. 기준보다 빠르면 "빨리/빨라"(OPTION_A). 멘트 속도는 10km 단위 */
     fun speedGuessCandidate(nowMs: Long, speedKmh: Float, age: AgeGroup? = null) = candidate(
-        SPEED_GUESS, nowMs, age,
+        of(MissionCode.SPEED_GUESS), nowMs, age,
         expected = if (speedKmh >= speedThreshold(age)) Answer.OPTION_A else Answer.OPTION_B,
         values = mapOf(SPEED to ((speedKmh / 10f).roundToInt() * 10).toString()),
     )
 
     /** F-07 정차 10초 → 후보 */
     fun signalWaitCandidate(nowMs: Long, age: AgeGroup? = null) =
-        candidate(SIGNAL_WAIT, nowMs, age, expectedFor(SIGNAL_WAIT.script(age).answerKind))
+        of(MissionCode.SIGNAL_WAIT).let { candidate(it, nowMs, age, expectedFor(it.script(age).answerKind)) }
 
     /** F-08 주행 첫 출발 → 후보 */
-    fun departCandidate(nowMs: Long, age: AgeGroup? = null) = candidate(DEPART, nowMs, age, Answer.ANY)
+    fun departCandidate(nowMs: Long, age: AgeGroup? = null) = candidate(of(MissionCode.DEPART), nowMs, age, Answer.ANY)
 
     /** F-09 이번 주행 깜빡이 횟수 → 후보. 4번 미만이거나 좌우가 같으면 null */
     fun blinkMemoryCandidate(nowMs: Long, left: Int, right: Int, age: AgeGroup? = null): MissionCandidate? {
-        if (left + right < BLINK_MEMORY_MIN_COUNT || left == right) return null
+        if (left + right < blinkMemoryMinCount() || left == right) return null
         val rightMore = right > left
         return candidate(
-            BLINK_MEMORY, nowMs, age,
+            of(MissionCode.BLINK_MEMORY), nowMs, age,
             expected = if (rightMore) Answer.RIGHT else Answer.LEFT,
             values = mapOf(
                 "side" to if (rightMore) "오른쪽" else "왼쪽",
@@ -404,7 +442,7 @@ object MissionDefinitions {
 
     /** F-10 정차 5초 → 후보. 정답은 다시 출발할 때 정한다 (waitBetJudged) */
     fun waitBetCandidate(nowMs: Long, stopStartMs: Long, age: AgeGroup? = null) = candidate(
-        WAIT_BET, nowMs, age, expected = Answer.NONE,
+        of(MissionCode.WAIT_BET), nowMs, age, expected = Answer.NONE,
         values = mapOf(STOP_START to stopStartMs.toString()),
     )
 
@@ -412,7 +450,7 @@ object MissionDefinitions {
     fun waitBetJudged(c: MissionCandidate, departedAtMs: Long): MissionCandidate {
         val start = c.values[STOP_START]?.toLongOrNull() ?: c.triggeredAtMs
         val waited = (departedAtMs - start).coerceAtLeast(0)
-        val short = waited <= WAIT_BET_SHORT_MS
+        val short = waited <= waitBetShortMs()
         return c.copy(
             expectedAnswer = if (short) Answer.OPTION_A else Answer.OPTION_B,
             values = c.values + mapOf(
@@ -426,11 +464,11 @@ object MissionDefinitions {
 
     /** F-11 20초 사이 속도 변화 → 후보. 빨라졌으면 OPTION_A. 15km/h 미만이면 null */
     fun speedChangeCandidate(nowMs: Long, diffKmh: Float, age: AgeGroup? = null): MissionCandidate? {
-        if (abs(diffKmh) < SPEED_CHANGE_MIN_KMH) return null
+        if (abs(diffKmh) < speedChangeMinKmh()) return null
         val up = diffKmh > 0
         val diff = abs(diffKmh).roundToInt()
         return candidate(
-            SPEED_CHANGE, nowMs, age,
+            of(MissionCode.SPEED_CHANGE), nowMs, age,
             expected = if (up) Answer.OPTION_A else Answer.OPTION_B,
             values = mapOf(
                 SPEED_DIFF to (if (up) diff else -diff).toString(),
@@ -442,19 +480,52 @@ object MissionDefinitions {
     }
 
     /** F-12 곧 도착 후보. 아무 말이나 하면 정답 */
-    fun nearDestCandidate(nowMs: Long, age: AgeGroup? = null) = candidate(NEAR_DEST, nowMs, age, Answer.ANY)
+    fun nearDestCandidate(nowMs: Long, age: AgeGroup? = null) = candidate(of(MissionCode.NEAR_DEST), nowMs, age, Answer.ANY)
 
     /** F-13 발표 문장 (발표 + 마무리). 오늘 한 미션이 없으면 null */
     fun todayReport(age: AgeGroup?, done: Int, correct: Int, best: MissionCode?): String? {
         if (done <= 0) return null
-        val s = TODAY_REPORT.script(age)
+        val s = of(MissionCode.TODAY_REPORT).script(age)
         val values = mapOf(
             "n" to done.toString(),
             "m" to correct.toString(),
-            "best" to (best?.let { of(it).name } ?: BLINK.name),
+            "best" to (best?.let { of(it).name } ?: of(MissionCode.BLINK).name),
         )
         return fill(s.question, values) + " " + s.correctMessage
     }
+
+    // ---------------- 미션팩 숫자 설정 (없으면 앱 기본값) ----------------
+
+    private fun p(code: MissionCode, key: String): Double? = of(code).param(key)
+
+    /** F-04 와이퍼가 이만큼 켜져 있다 꺼지면 */
+    fun rainStopMinWiperMs(): Long = p(MissionCode.RAIN_STOP, "trigger.minOnMs")?.toLong() ?: RAIN_STOP_MIN_WIPER_MS
+    /** F-06 이만큼 속도가 일정하면 */
+    fun speedSteadyMs(): Long = p(MissionCode.SPEED_GUESS, "trigger.stableSeconds")?.let { (it * 1000).toLong() } ?: SPEED_STEADY_MS
+    fun speedSteadyRangeKmh(): Float = p(MissionCode.SPEED_GUESS, "trigger.toleranceKph")?.toFloat() ?: SPEED_STEADY_RANGE_KMH
+    fun speedGuessMinKmh(): Float = p(MissionCode.SPEED_GUESS, "trigger.minSpeedKph")?.toFloat() ?: SPEED_GUESS_MIN_KMH
+    /** F-07 정차 후 이만큼 지나면 */
+    fun signalWaitAfterMs(): Long = p(MissionCode.SIGNAL_WAIT, "trigger.stoppedSeconds")?.let { (it * 1000).toLong() } ?: SIGNAL_WAIT_AFTER_MS
+    /** F-09 깜빡이를 이만큼 켰으면 */
+    fun blinkMemoryMinCount(): Int = p(MissionCode.BLINK_MEMORY, "trigger.minSignalCount")?.toInt() ?: BLINK_MEMORY_MIN_COUNT
+    /** F-10 정차 후 이만큼 지나면 묻고, 이만큼 안에 출발하면 "금방", 이만큼 넘으면 버림 */
+    fun waitBetAfterMs(): Long = p(MissionCode.WAIT_BET, "trigger.stoppedSeconds")?.let { (it * 1000).toLong() } ?: WAIT_BET_AFTER_MS
+    fun waitBetShortMs(): Long = p(MissionCode.WAIT_BET, "resolution.thresholdSeconds")?.let { (it * 1000).toLong() } ?: WAIT_BET_SHORT_MS
+    fun waitBetGiveUpMs(): Long = p(MissionCode.WAIT_BET, "resolution.discardAfterSeconds")?.let { (it * 1000).toLong() } ?: WAIT_BET_GIVE_UP_MS
+    /** F-11 이 시간 동안 이만큼 변하면 */
+    fun speedChangeWindowMs(): Long = p(MissionCode.SPEED_CHANGE, "trigger.windowSeconds")?.let { (it * 1000).toLong() } ?: SPEED_CHANGE_WINDOW_MS
+    fun speedChangeMinKmh(): Float = p(MissionCode.SPEED_CHANGE, "trigger.deltaKphExclusive")?.toFloat() ?: SPEED_CHANGE_MIN_KMH
+    /** F-11 정답을 정할 때 비교할 시간 (9세+ "1분 전보다"). 없으면 트리거 시간 */
+    fun speedChangeComparisonMs(age: AgeGroup?): Long =
+        of(MissionCode.SPEED_CHANGE).script(age).comparisonMs ?: speedChangeWindowMs()
+    /** F-05 다음 회전까지 이 거리 안에 들어오면 묻는다 */
+    fun nextTurnMaxDistM(): Int = p(MissionCode.NEXT_TURN, "trigger.maxDistanceMeters")?.toInt() ?: NEXT_TURN_MAX_DIST_M
+    fun nextTurnMinDistM(): Int = p(MissionCode.NEXT_TURN, "trigger.minDistanceMeters")?.toInt() ?: MissionTiming.TURN_HOLD_M
+    /** F-12 */
+    fun nearDestEtaSec(): Int = p(MissionCode.NEAR_DEST, "trigger.etaSecondsAtMost")?.toInt() ?: NEAR_DEST_ETA_SEC
+    fun nearDestMinDistM(): Int = p(MissionCode.NEAR_DEST, "trigger.minDistanceMeters")?.toInt() ?: NEAR_DEST_MIN_DIST_M
+
+    const val NEXT_TURN_MAX_DIST_M = 500
 
     // ---------------- 화면(S-06)에 넘기는 값의 키 ----------------
     const val SPEED = "speed"
@@ -470,12 +541,12 @@ object MissionDefinitions {
     /** NEAR_DEST 시작 조건. ETA 0은 경로 없음으로 본다 */
     fun isNearDestination(info: NaviInfo): Boolean {
         val eta = info.etaSec ?: return false
-        return eta in 1..NEAR_DEST_ETA_SEC && !isTooCloseToDestination(info)
+        return eta in 1..nearDestEtaSec() && !isTooCloseToDestination(info)
     }
 
     /** 남은 거리를 모르면 false (ETA만으로 판단) */
     fun isTooCloseToDestination(info: NaviInfo): Boolean =
-        info.remainDistM?.let { it <= NEAR_DEST_MIN_DIST_M } ?: false
+        info.remainDistM?.let { it <= nearDestMinDistM() } ?: false
 
     /** 응답 정답 여부. 무응답(NONE)은 오답 취급이 아니라 호출 쪽에서 재질문 처리한다. */
     fun isCorrect(candidate: MissionCandidate, given: Answer): Boolean = when (candidate.expectedAnswer) {
