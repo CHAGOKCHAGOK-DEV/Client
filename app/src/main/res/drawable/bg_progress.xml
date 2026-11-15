@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 진행 바(높이 32): 트랙·채움 모두 반지름 16으로 양 끝 완전히 둥글게 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gray_100" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <scale android:scaleWidth="100%" android:scaleGravity="start">
+            <shape android:shape="rectangle">
+                <solid android:color="@color/brand" />
+                <corners android:radius="16dp" />
+            </shape>
+        </scale>
+    </item>
+</layer-list>

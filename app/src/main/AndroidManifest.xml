@@ -3,9 +3,24 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <!-- Vehicle SDK: 주행 정보 및 주행거리 -->
     <uses-permission android:name="pleos.car.permission.CAR_DRIVE" />
+    <uses-permission android:name="pleos.car.permission.CAR_LIGHTS" />
+
+    <!-- 와이퍼 -->
+    <uses-permission android:name="pleos.car.permission.CAR_WINDOWS" />
+
+    <!-- 기어(P = 주차 판단). Gear API 권한이 문서에 없어 Pleos 샘플 앱과 같은 권한을 선언 -->
+    <uses-permission android:name="pleos.car.permission.CAR_POWERTRAIN" />
+
+    <!-- 속도: 안드로이드 차량 API(CarPropertyManager). 런타임 요청 필요 -->
+    <uses-permission android:name="android.car.permission.CAR_SPEED" />
+    <uses-permission android:name="pleos.car.permission.CAR_SPEED" />
+
+    <!-- 마이크: 아이 대답 듣기(STT). 런타임 요청 필요 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- FusedLocation SDK: 차량 위치 -->
     <uses-permission android:name="pleos.car.permission.FUSED_LOCATION" />
@@ -20,6 +35,7 @@
     <uses-permission android:name="pleos.car.permission.NAVI_ROUTE" />
 
     <application
+        android:name=".ChagokApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -29,14 +45,81 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chagok"
         tools:targetApi="31">
+
+        <!-- 속도 수집용 안드로이드 차량 라이브러리. 차량이 아닌 기기에서도 설치는 되게 required=false -->
+        <uses-library
+            android:name="android.car"
+            android:required="false" />
+
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".ui.landing.LandingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Bugi.Splash">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.loading.LoadingActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".ui.permission.PermissionActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".ui.consent.ConsentActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".ui.profile.ProfileActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+
+        <!-- S-06 주행 중: 주행 중에 보이는 화면이라 distractionOptimized 필수 -->
+        <activity
+            android:name=".ui.driving.DrivingActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
+        </activity>
+        <!-- S-07 주행 종료 요약: 요약 중 다시 달릴 수 있어(C-02 잠금) distractionOptimized -->
+        <activity
+            android:name=".ui.summary.SummaryActivity"
+            android:exported="false">
+            <meta-data
+                android:name="distractionOptimized"
+                android:value="true" />
         </activity>
     </application>
 

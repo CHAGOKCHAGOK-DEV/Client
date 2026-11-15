@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- C-04 나가기 모달 (S02_3). S-02·S-03 공통 -->
+    <string name="exit_modal_title">지금 나가면 저장되지 않아요</string>
+    <string name="exit_modal_sub">다음에 다시 시작할까요?</string>
+    <string name="exit_modal_leave">나가기</string>
+    <string name="exit_modal_continue">계속하기</string>
+    <!-- C-02 주행 잠금 오버레이 (S07_h 카드) -->
+    <string name="lock_title">주행 중이에요</string>
+    <string name="lock_sub">차를 멈추면 계속할 수 있어요</string>
+    <string name="common_ok">확인</string>
+</resources>

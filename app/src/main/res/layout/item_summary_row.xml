@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- S-07 결과 행 (피그마 S07_결과행): 아이콘 타일 · 미션 이름 · 성공/다음에! 칩 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="96dp"
+    android:background="@drawable/bg_summary_row"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="32dp">
+
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_icon_tile"
+        android:backgroundTint="@color/summary_icon_tile">
+
+        <ImageView
+            android:id="@+id/iv_row_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            tools:src="@drawable/ic_mission_blinker" />
+    </FrameLayout>
+
+    <!-- 이름이 길면 한 줄 말줄임. 아이콘·칩은 줄지 않는다 -->
+    <TextView
+        android:id="@+id/tv_row_title"
+        style="@style/ChagokText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/gray_600"
+        android:textSize="34sp"
+        android:textStyle="bold"
+        tools:text="깜빡이 소리" />
+
+    <TextView
+        android:id="@+id/tv_row_chip"
+        style="@style/ChagokChip"
+        android:backgroundTint="@color/mint_100"
+        android:textColor="@color/brand_pressed"
+        android:textFontWeight="600"
+        android:textStyle="normal"
+        tools:text="성공" />
+</LinearLayout>

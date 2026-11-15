@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 권한 카드 아이콘: 마이크 사용 (44x44) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+
+    <!-- 받침 곡선 (선) -->
+    <path
+        android:pathData="M7.74658,19.8311C7.74658,28.9203 12.4978,33.4649 22.0001,33.4649C31.5025,33.4649 36.2536,28.9203 36.2536,19.8311"
+        android:strokeWidth="3"
+        android:strokeLineCap="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient android:type="linear" android:startX="0.619822" android:startY="23.2395" android:endX="8.20082" android:endY="39.0907">
+                <item android:offset="0" android:color="#FFAFB8CF" />
+                <item android:offset="1" android:color="#FF93A2C7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 기둥 -->
+    <path android:pathData="M23.8589,33.4648H20.1406V40.9015H23.8589V33.4648Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="19.211" android:startY="35.324" android:endX="23.4605" android:endY="37.4487">
+                <item android:offset="0" android:color="#FFAFB8CF" />
+                <item android:offset="1" android:color="#FF93A2C7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 받침대 -->
+    <path android:pathData="M28.5068,39.6619H15.4927C14.2948,39.6619 13.3237,40.633 13.3237,41.8309C13.3237,43.0288 14.2948,43.9999 15.4927,43.9999H28.5068C29.7047,43.9999 30.6758,43.0288 30.6758,41.8309C30.6758,40.633 29.7047,39.6619 28.5068,39.6619Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="8.9857" android:startY="40.7464" android:endX="10.4439" android:endY="46.579">
+                <item android:offset="0" android:color="#FFAFB8CF" />
+                <item android:offset="1" android:color="#FF93A2C7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- 마이크 머리 -->
+    <path android:pathData="M30.0565,8.05634C30.0565,3.60695 26.4496,0 22.0002,0C17.5508,0 13.9438,3.60695 13.9438,8.05634V20.4507C13.9438,24.9001 17.5508,28.507 22.0002,28.507C26.4496,28.507 30.0565,24.9001 30.0565,20.4507V8.05634Z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="9.91568" android:startY="7.12676" android:endX="27.3606" android:endY="16.987">
+                <item android:offset="0" android:color="#FFFFA7BE" />
+                <item android:offset="1" android:color="#FFFF7EA1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 체크됨 -->
+    <item android:state_selected="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="10dp" />
+            <solid android:color="@color/mint_200" />
+            <stroke android:width="4dp" android:color="@color/brand" />
+        </shape>
+    </item>
+
+    <!-- 미체크 -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="10dp" />
+            <solid android:color="@android:color/transparent" />
+            <stroke android:width="4dp" android:color="@color/brand" />
+        </shape>
+    </item>
+</selector>

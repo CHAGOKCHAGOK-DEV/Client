@@ -1,0 +1,33 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="844dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_permission_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="32dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="32dp">
+
+    <ImageView
+        android:id="@+id/iv_permission_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:importantForAccessibility="no"
+        android:scaleType="centerInside"
+        tools:background="@color/gray_400" />
+
+    <TextView
+        android:id="@+id/tv_permission_title"
+        style="@style/ChagokText.Bold36"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_weight="1"
+        tools:text="차량 신호 읽기" />
+
+    <TextView
+        android:id="@+id/tv_permission_status"
+        style="@style/ChagokChip"
+        tools:text="허용 필요" />
+</LinearLayout>

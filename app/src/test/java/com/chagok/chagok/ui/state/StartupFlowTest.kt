@@ -1,0 +1,120 @@
+package com.chagok.chagok.ui.state
+
+import com.chagok.chagok.model.PermissionState
+import com.chagok.chagok.model.PermissionStatus
+import com.chagok.chagok.permission.FakePermissionChecker
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class StartupFlowTest {
+
+    private val allGranted = PermissionState(PermissionStatus.GRANTED, PermissionStatus.GRANTED, PermissionStatus.GRANTED)
+
+    @Test
+    fun `권한이 없으면 3단계를 지나 S-02로`() = runTest {
+        val t = TestApp(this)
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start()
+        advanceTimeBy(100)
+
+        assertEquals(StartupStep.SETTINGS, flow.state.value.step)
+        assertEquals("3 / 3", flow.state.value.progress)
+        assertEquals(Screen.PERMISSION, flow.state.value.destination)
+    }
+
+    @Test
+    fun `권한 있고 동의 없으면 S-03, 다 있으면 S-05`() = runTest {
+        val t = TestApp(this, permission = FakePermissionChecker(initial = allGranted))
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+        assertEquals(Screen.CONSENT, flow.state.value.destination)
+
+        val t2 = TestApp(this, permission = FakePermissionChecker(initial = allGranted)).apply { onboarded() }
+        val flow2 = StartupFlow(backgroundScope, t2.app, t2.onboarding)
+        flow2.start(); advanceTimeBy(100)
+        assertEquals(Screen.MAIN, flow2.state.value.destination)
+    }
+
+    @Test
+    fun `서버 미션팩 확인이 실패해도 진행한다`() = runTest {
+        val t = TestApp(this, permission = FakePermissionChecker(initial = allGranted)).apply { onboarded() }
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding, missionPackSync = { error("서버 없음") })
+        flow.start(); advanceTimeBy(100)
+        assertEquals(Screen.MAIN, flow.state.value.destination)
+    }
+
+    @Test
+    fun `연결 실패가 반복돼도 다시 시도만 있고 다른 화면으로 가지 않는다`() = runTest {
+        val t = TestApp(this)
+        t.vehicle.failConnect = true
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+
+        flow.start(); advanceTimeBy(100)
+        assertTrue(flow.state.value.error)
+        assertTrue(flow.state.value.showRetry)
+        assertEquals(ScreenTexts.STARTUP_ERROR, flow.state.value.message)
+
+        flow.retry(); advanceTimeBy(100)
+        flow.retry(); advanceTimeBy(100)
+        assertEquals(3, flow.state.value.attempts)
+        assertTrue(flow.state.value.showRetry)
+        assertEquals(StartupError.CAR_CONN, flow.state.value.errorKind)
+        assertEquals(null, flow.state.value.destination)
+    }
+
+    @Test
+    fun `재시도로 연결되면 다음 화면으로 간다`() = runTest {
+        val t = TestApp(this)
+        t.vehicle.failConnect = true
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+
+        t.vehicle.failConnect = false
+        flow.retry(); advanceTimeBy(100)
+        assertFalse(flow.state.value.error)
+        assertEquals(Screen.PERMISSION, flow.state.value.destination)
+    }
+
+    @Test
+    fun `속도를 지원하지 않는 차는 다시 시도 없이 미지원 오류`() = runTest {
+        val t = TestApp(
+            this,
+            vehicle = com.chagok.chagok.sdk.vehicle.FakeVehicleGateway(
+                capability = com.chagok.chagok.model.Capability(speed = false, blink = true, wiper = true, navi = true),
+            ),
+            permission = com.chagok.chagok.permission.FakePermissionChecker(
+                com.chagok.chagok.model.PermissionState(
+                    vehicle = com.chagok.chagok.model.PermissionStatus.GRANTED,
+                    mic = com.chagok.chagok.model.PermissionStatus.NEEDED,
+                    voice = com.chagok.chagok.model.PermissionStatus.NEEDED,
+                ),
+            ),
+        )
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+
+        assertTrue(flow.state.value.error)
+        assertEquals(StartupError.CAR_UNSUPPORTED, flow.state.value.errorKind)
+        assertFalse(flow.state.value.showRetry)
+        assertEquals(null, flow.state.value.destination)
+    }
+
+    @Test
+    fun `연결 실패는 CAR_CONN, 재시도하면 오류가 지워진다`() = runTest {
+        val t = TestApp(this)
+        t.vehicle.failConnect = true
+        val flow = StartupFlow(backgroundScope, t.app, t.onboarding)
+        flow.start(); advanceTimeBy(100)
+        assertEquals(StartupError.CAR_CONN, flow.state.value.errorKind)
+
+        t.vehicle.failConnect = false
+        flow.retry(); advanceTimeBy(100)
+        assertEquals(null, flow.state.value.errorKind)
+    }
+}

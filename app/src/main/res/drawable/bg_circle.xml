@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 원. 색은 backgroundTint로 바꾼다 (상태 점, 프로필 첫 글자) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/gray_00" />
+</shape>

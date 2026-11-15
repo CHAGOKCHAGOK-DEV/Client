@@ -1,19 +1,242 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<!-- S-05 메인 (S05_1). 가로 1700x1184 기준 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/brand_soft"
     tools:context=".MainActivity">
 
-    <TextView
+    <!-- 닫기 -->
+    <ImageView
+        android:id="@+id/btn_close"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="100dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/main_close"
+        android:focusable="true"
+        android:src="@drawable/ic_close" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="141dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- ===================== 왼쪽: S05-03 말풍선 + 마스코트 ===================== -->
+        <LinearLayout
+            android:layout_width="483dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="62dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_bubble"
+                style="@style/ChagokText"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@drawable/bg_bubble"
+                android:gravity="center"
+                android:maxLines="1"
+                android:textColor="@color/gray_500"
+                android:textSize="32sp"
+                android:textStyle="bold"
+                tools:text="자리에 앉아서 귀로 임무를!" />
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="21dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_bubble_tail" />
+
+            <!-- 일러스트: 그림만 바꾸려면 drawable-nodpi/img_bugi_main.png 교체 -->
+            <ImageView
+                android:id="@+id/iv_mascot"
+                android:layout_width="376dp"
+                android:layout_height="354dp"
+                android:layout_marginTop="59dp"
+                android:contentDescription="@string/main_mascot"
+                android:scaleType="fitCenter"
+                android:src="@drawable/img_bugi_main" />
+        </LinearLayout>
+
+        <!-- ===================== 가운데: 칩 · 미션 목록 · 진행 · 출발 =====================
+             폭 720 = 본문 652 + 탭 앞 여백 68. 칩 줄만 720을 다 쓰고, 나머지는 marginEnd 68로 652 -->
+        <LinearLayout
+            android:layout_width="720dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="156dp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- S05-01 상태 칩 -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_chip_shadow"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="24dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="16dp">
+
+                    <View
+                        android:id="@+id/dot_status"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/status_dot_ok" />
+
+                    <TextView
+                        android:id="@+id/tv_status"
+                        style="@style/ChagokText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:maxLines="1"
+                        android:textColor="@color/gray_600"
+                        android:textFontWeight="600"
+                        android:textSize="28sp"
+                        tools:text="정차 중 · 차와 연결됨" />
+                </LinearLayout>
+
+                <!-- S05-02 프로필 칩: 탭하면 S-04 수정 -->
+                <LinearLayout
+                    android:id="@+id/chip_profile"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:background="@drawable/bg_chip_shadow"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="24dp"
+                    android:paddingBottom="12dp">
+
+                    <TextView
+                        android:id="@+id/tv_profile_initial"
+                        style="@style/ChagokText"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="@drawable/bg_circle"
+                        android:backgroundTint="@color/mission_chip_available"
+                        android:gravity="center"
+                        android:textColor="@color/brand_pressed"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="은" />
+
+                    <TextView
+                        android:id="@+id/tv_profile"
+                        style="@style/ChagokText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textColor="@color/gray_600"
+                        android:textFontWeight="600"
+                        android:textSize="28sp"
+                        tools:text="은우 부기장 · 7~8세" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_title"
+                style="@style/ChagokText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/main_title"
+                android:textColor="@color/text_primary"
+                android:textSize="44sp"
+                android:textStyle="bold" />
+
+            <!-- S05-08 미션 목록: item_mission_row를 코드에서 붙인다 -->
+            <LinearLayout
+                android:id="@+id/list_missions"
+                android:layout_width="match_parent"
+                android:layout_marginEnd="68dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:orientation="vertical" />
+
+            <!-- S05-04 오늘 진행 -->
+            <TextView
+                android:id="@+id/tv_progress"
+                style="@style/ChagokText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:textColor="@color/gray_500"
+                android:textFontWeight="500"
+                android:textSize="30sp"
+                tools:text="오늘의 미션 5개 중 2개 완료" />
+
+            <ProgressBar
+                android:id="@+id/progress_today"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_marginEnd="68dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="14dp"
+                android:max="100"
+                android:progressDrawable="@drawable/bg_progress_mission"
+                tools:progress="40" />
+
+            <!-- S05-07 [부기장 출발!]: 토글. 연결 끊김이면 오프(isActivated=false) -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_start"
+                style="@style/ChagokCta"
+                android:layout_width="match_parent"
+                android:layout_marginEnd="68dp"
+                android:layout_height="112dp"
+                android:layout_marginTop="36dp"
+                android:text="@string/main_start" />
+        </LinearLayout>
+
+        <!-- ===================== 오른쪽: S05-05 사이드 탭 ===================== -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="61dp"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tab_mission"
+                layout="@layout/item_side_tab" />
+
+            <include
+                android:id="@+id/tab_record"
+                layout="@layout/item_side_tab"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" />
+
+            <include
+                android:id="@+id/tab_settings"
+                layout="@layout/item_side_tab"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

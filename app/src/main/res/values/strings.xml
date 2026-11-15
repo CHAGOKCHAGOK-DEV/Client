@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">chagok</string>
+    <string name="permission_status_need">허용 필요</string>
+    <string name="permission_status_granted">완료</string>
+    <string name="permission_status_denied">거부됨</string>
+    <string name="common_next">다음</string>
 </resources>

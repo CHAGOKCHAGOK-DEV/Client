@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- C-03 토스트: 아래 가운데 알약, 글 한 줄 (ChagokToast) -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/ChagokText"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_toast"
+    android:elevation="8dp"
+    android:gravity="center"
+    android:maxLines="1"
+    android:paddingHorizontal="40dp"
+    android:paddingVertical="22dp"
+    android:textColor="@color/gray_00"
+    android:textFontWeight="600"
+    android:textSize="28sp"
+    tools:text="연결이 돌아왔어요" />

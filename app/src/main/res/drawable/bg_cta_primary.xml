@@ -1,0 +1,46 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 오프 (isActivated = false). 클릭은 됨 → 경고 토스트 -->
+    <item android:state_activated="false">
+        <shape android:shape="rectangle">
+            <corners android:radius="20dp" />
+            <solid android:color="@color/gray_200" />
+        </shape>
+    </item>
+
+    <!-- 온 + 눌림 -->
+    <item android:state_pressed="true">
+        <layer-list>
+            <item android:top="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/divider_1" />
+                </shape>
+            </item>
+            <item android:bottom="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/brand_pressed" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+    <!-- 온 -->
+    <item>
+        <layer-list>
+            <item android:top="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/divider_1" />
+                </shape>
+            </item>
+            <item android:bottom="4dp">
+                <shape android:shape="rectangle">
+                    <corners android:radius="20dp" />
+                    <solid android:color="@color/brand" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+</selector>

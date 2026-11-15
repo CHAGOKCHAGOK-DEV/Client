@@ -1,0 +1,76 @@
+<resources>
+
+    <style name="ChagokText">
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- 36 / Bold / gray-600 (권한 텍스트) -->
+    <style name="ChagokText.Bold36">
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/gray_600</item>
+    </style>
+
+    <!-- 권한 상태 칩 -->
+    <style name="ChagokChip" parent="ChagokText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">20dp</item>
+        <item name="android:paddingVertical">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_chip</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- CTA 버튼: 온/오프는 isActivated (오프여도 클릭은 됨) -->
+    <style name="ChagokCta" parent="ChagokText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">92dp</item>
+        <item name="android:paddingHorizontal">40dp</item>
+        <item name="android:paddingVertical">0dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:background">@drawable/bg_cta_primary</item>
+        <item name="android:textColor">@color/gray_00</item>
+        <item name="android:textSize">36sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- CTA 버튼: Stroke (600) -->
+    <style name="ChagokCta.Stroke">
+        <item name="android:background">@drawable/bg_cta_stroke</item>
+        <item name="android:textColor">@color/mint_400</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <!-- CTA 버튼: Gray (모달 [나가기]) -->
+    <style name="ChagokCta.Gray">
+        <item name="android:background">@drawable/bg_cta_gray</item>
+        <item name="android:textColor">@color/gray_500</item>
+    </style>
+
+    <!-- 나이 버튼. 온/오프는 setChoiceSelected() -->
+    <style name="ChagokChoiceChip" parent="ChagokText">
+        <item name="android:layout_width">262dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:paddingTop">24dp</item>
+        <item name="android:paddingBottom">28dp</item> <!-- 24 + 그림자 4 -->
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_choice_chip</item>
+        <item name="android:textColor">@color/choice_chip_text</item>
+        <item name="android:textSize">40sp</item>
+        <item name="android:fontFamily">@font/asta_sans</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+</resources>
