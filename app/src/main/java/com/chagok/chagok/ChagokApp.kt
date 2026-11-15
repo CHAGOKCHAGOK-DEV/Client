@@ -13,6 +13,7 @@ import com.chagok.chagok.data.remote.InstallationRepository
 import com.chagok.chagok.data.remote.InstallationStore
 import com.chagok.chagok.data.remote.AgreementRepository
 import com.chagok.chagok.data.remote.CopilotRepository
+import com.chagok.chagok.data.remote.copilotApi
 import com.chagok.chagok.data.remote.MissionPackRepository
 import com.chagok.chagok.data.remote.PendingSyncStore
 import com.chagok.chagok.data.remote.ServerSync
@@ -79,7 +80,9 @@ class ChagokApp : Application() {
     val pendingSync: PendingSyncStore by lazy { PendingSyncStore(this) }
     val missionPacks: MissionPackRepository by lazy { MissionPackRepository(this, api) }
     val agreements: AgreementRepository by lazy { AgreementRepository(api, installations, pendingSync, onboarding) }
-    val copilots: CopilotRepository by lazy { CopilotRepository(api, installations, pendingSync, onboarding) }
+    val copilots: CopilotRepository by lazy {
+        CopilotRepository(api.copilotApi(), { installations.ensureRegistered() }, pendingSync, onboarding, onboarding::saveProfile)
+    }
     val network: NetworkMonitor by lazy { NetworkMonitor(this, appScope) }
     val tripSync: TripSyncRepository by lazy { TripSyncRepository(this, api, installations, missionPacks) }
     val dailyProgress: DailyProgressRepository by lazy {

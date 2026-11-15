@@ -5,7 +5,7 @@ import android.content.Context
 /**
  * 서버 전송 실패 표시 (재시도 큐). 다음 앱 시작(S-01 3/3) 때 다시 보낸다.
  */
-class PendingSyncStore(context: Context) {
+class PendingSyncStore(context: Context) : CopilotSyncFlags {
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -16,12 +16,12 @@ class PendingSyncStore(context: Context) {
         set(v) { prefs.edit().putBoolean(KEY_CONSENT, v).apply() }
 
     /** S-04 프로필을 아직 서버에 못 보냄 */
-    var copilot: Boolean
+    override var copilot: Boolean
         get() = prefs.getBoolean(KEY_COPILOT, false)
         set(v) { prefs.edit().putBoolean(KEY_COPILOT, v).apply() }
 
     /** 서버에 프로필이 만들어진 적 있음 (true면 수정은 PUT) */
-    var copilotCreated: Boolean
+    override var copilotCreated: Boolean
         get() = prefs.getBoolean(KEY_COPILOT_CREATED, false)
         set(v) { prefs.edit().putBoolean(KEY_COPILOT_CREATED, v).apply() }
 
