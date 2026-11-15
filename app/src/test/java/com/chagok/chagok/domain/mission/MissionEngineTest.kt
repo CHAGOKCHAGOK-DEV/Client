@@ -8,6 +8,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -351,9 +352,45 @@ class MissionEngineTest {
         val e = engine(env, setOf(MissionCode.WIPER, MissionCode.TODAY_REPORT), age = AgeGroup.AGE_7_8)
         env.wiper.value = true
         advanceTimeBy(4_000)
-        e.onTripEnded(TripEndReason.PARKED)
+        e.onTripEnded(TripEndReason.PARKED, "trip-1")
+        runCurrent()
+        assertEquals(true, e.reporting.value)                       // S06F_13 말하는 중
+        assertEquals(MissionCode.TODAY_REPORT, e.current.value)
+        assertEquals(null, e.reportDoneTripId.value)                // 아직 S-07로 가지 않음
         advanceTimeBy(2_000)
-        assertEquals("도착! 오늘 1개 중에 1개 맞혔어요! 기장님, 부기장에게 고맙다고 말해 주세요!", env.speech.spoken.last())
+        assertEquals(
+            listOf("도착! 오늘 1개 중에 1개 맞혔어요!", "기장님, 부기장에게 고맙다고 말해 주세요!"),
+            env.speech.spoken.takeLast(2),
+        )
         assertEquals(1, env.store.results.first().size)
+        advanceTimeBy(MissionEngine.REPORT_RESULT_HOLD_MS + 500)
+        assertEquals(false, e.reporting.value)
+        assertEquals("trip-1", e.reportDoneTripId.value)            // 이제 S-07
+    }
+
+    @Test
+    fun `F-13 오늘 한 미션이 없으면 리포트 없이 바로 끝`() = runTest {
+        val env = Env()
+        val e = engine(env, setOf(MissionCode.WIPER, MissionCode.TODAY_REPORT))
+        advanceTimeBy(100)
+        val before = env.speech.spoken.size
+        e.onTripEnded(TripEndReason.PARKED, "trip-1")
+        advanceTimeBy(1_000)
+        assertEquals(false, e.reporting.value)
+        assertEquals("trip-1", e.reportDoneTripId.value)
+        assertEquals(before, env.speech.spoken.size)
+    }
+
+    @Test
+    fun `F-13 정차 완료로 끝나면 리포트 없음`() = runTest {
+        val env = Env()
+        val e = engine(env, setOf(MissionCode.WIPER, MissionCode.TODAY_REPORT))
+        env.wiper.value = true
+        advanceTimeBy(4_000)
+        val before = env.speech.spoken.size
+        e.onTripEnded(TripEndReason.USER_STOP, "trip-1")
+        assertEquals("trip-1", e.reportDoneTripId.value)            // 바로 S-07
+        advanceTimeBy(3_000)
+        assertEquals(before, env.speech.spoken.size)
     }
 }

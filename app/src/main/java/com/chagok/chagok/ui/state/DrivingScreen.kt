@@ -81,12 +81,15 @@ class DrivingScreen(
     }
 
     val state: StateFlow<DrivingUiState> = combine(
-        missionView, app.currentTrip, onboarding.profile, app.driveState, app.vehicleHealth,
-    ) { mission, trip, profile, drive, health ->
-        val modeOn = trip != null
-        val stopped = drive == DriveState.STOPPED
+        combine(missionView, app.missionReporting) { m, r -> m to r },
+        app.currentTrip, onboarding.profile, app.driveState, app.vehicleHealth,
+    ) { (mission, reporting), trip, profile, drive, health ->
+        // F-13 리포트는 주행이 끝난 뒤(주차)에 말하지만 부기장 모드 화면 그대로 보여 준다
+        val modeOn = trip != null || reporting
+        val stopped = drive == DriveState.STOPPED && trip != null
         val name = profile?.nickname?.let { "$it " } ?: ""
         val display = when {
+            reporting && mission.display != DrivingDisplay.WAITING -> mission.display
             !modeOn -> DrivingDisplay.MODE_OFF
             health != VehicleHealth.OK -> DrivingDisplay.SIGNAL_LOST
             mission.display != DrivingDisplay.WAITING -> mission.display   // 하던 미션은 정차해도 끝까지 보여 준다

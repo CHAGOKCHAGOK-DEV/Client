@@ -62,6 +62,17 @@ class MissionEngine(
     /** 방금 판정한 미션. JUDGING으로 바뀌기 직전에 채운다 (다음 판정 때까지 유지) */
     val judged: StateFlow<JudgedMission?> = _judged.asStateFlow()
 
+    private val _reporting = MutableStateFlow(false)
+    /** F-13 오늘의 리포트를 말하는 중 (주행은 이미 끝남). S-06이 리포트 화면을 보여 준다 */
+    val reporting: StateFlow<Boolean> = _reporting.asStateFlow()
+
+    private val _reportDoneTripId = MutableStateFlow<String?>(null)
+    /**
+     * F-13이 끝난(또는 할 게 없어 건너뛴) 주행 id. 주차로 끝난 주행은 이게 그 주행 id가 될 때까지
+     * S-06에 머문다 (DriveRouter). 주행이 끝나는 순간 S-07로 넘어갔다 돌아오지 않게
+     */
+    val reportDoneTripId: StateFlow<String?> = _reportDoneTripId.asStateFlow()
+
     private var pending: MissionCandidate? = null   // 대기 후보 최대 1개
     private var running = false
     private var tripEndedWhileRunning = false       // 묻거나 듣는 중에 주행이 끝났는지
@@ -335,7 +346,7 @@ class MissionEngine(
      * 주차(PARKED)로 끝나면 F-13 오늘의 리포트를 발표한다.
      * 인식 실패 횟수, 쉬는 상태, 주행별 횟수도 여기서 풀린다 (다음 주행은 새로 시작).
      */
-    fun onTripEnded(reason: TripEndReason? = null) {
+    fun onTripEnded(reason: TripEndReason? = null, tripId: String? = null) {
         if (running) tripEndedWhileRunning = true
         tripEnds.value++
         failStreak = 0
@@ -345,8 +356,19 @@ class MissionEngine(
         blinkMemoryDone = false
         stopStartMs = null
         reset()
-        if (reason == TripEndReason.PARKED && MissionCode.TODAY_REPORT in missions) {
-            scope.launch { announceTodayReport() }
+        if (reason == TripEndReason.PARKED && MissionCode.TODAY_REPORT in missions &&
+            MissionDefinitions.isEnabled(MissionCode.TODAY_REPORT)
+        ) {
+            scope.launch {
+                try {
+                    withTimeoutOrNull(REPORT_TIMEOUT_MS) { announceTodayReport() }
+                } finally {
+                    _reporting.value = false
+                    _reportDoneTripId.value = tripId
+                }
+            }
+        } else {
+            _reportDoneTripId.value = tripId
         }
     }
 
@@ -363,7 +385,11 @@ class MissionEngine(
         if (!running) _state.value = null
     }
 
-    /** F-13: 오늘 한 미션(정답·오답)을 세서 발표. 진행 중인 미션이 끝난 뒤에 말한다 */
+    /**
+     * F-13: 오늘 한 미션(정답·오답)을 세서 발표. 진행 중인 미션이 끝난 뒤에 말한다.
+     * 화면(S06F_13): 발표하는 동안 "말하는 중", 마무리 멘트 동안 "결과", 잠깐 보여 준 뒤 끝.
+     * 판정·저장 없음. 오늘 한 미션이 없으면 아무것도 안 한다
+     */
     private suspend fun announceTodayReport() {
         while (running) delay(tickMs)
         val now = nowMs()
@@ -372,8 +398,24 @@ class MissionEngine(
             !it.interrupted && it.attempted && dayOf(it.triggeredAtMs) == today && it.code != MissionCode.TODAY_REPORT
         }
         val best = done.filter { it.succeeded }.groupingBy { it.code }.eachCount().maxByOrNull { it.value }?.key
-        val text = MissionDefinitions.todayReport(ageGroup(), done.size, done.count { it.succeeded }, best) ?: return
-        speech.speak(text)
+        val (report, ending) = MissionDefinitions.todayReportParts(ageGroup(), done.size, done.count { it.succeeded }, best)
+            ?: return
+        running = true
+        _reporting.value = true
+        try {
+            _current.value = MissionCode.TODAY_REPORT
+            _state.value = MissionState.ASKING
+            speech.speak(report)
+            _judged.value = JudgedMission(MissionCode.TODAY_REPORT, correct = true)
+            _state.value = MissionState.JUDGING
+            speech.speak(ending)
+            _state.value = MissionState.DONE
+            delay(REPORT_RESULT_HOLD_MS)            // 결과 화면을 잠깐 보여 주고 S-07로
+        } finally {
+            _current.value = null
+            _state.value = null
+            running = false
+        }
     }
 
     private suspend fun run(c: MissionCandidate) {
@@ -514,6 +556,8 @@ class MissionEngine(
 
     companion object {
         const val REST_AFTER_FAILURES = 3
+        const val REPORT_RESULT_HOLD_MS = 2_000L      // F-13 결과 화면 (다른 미션 결과 2초와 같게)
+        private const val REPORT_TIMEOUT_MS = 60_000L // 음성이 멈춰도 S-07로 넘어가게
         /** 🟡 인식 실패가 이어졌을 때 멘트. 대본 문서에 문구가 없어 임시 */
         const val REST_MESSAGE = "부기장님, 잠깐 쉬어요. 다음에 또 같이 해요!"
 
