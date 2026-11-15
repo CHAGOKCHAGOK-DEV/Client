@@ -9,6 +9,7 @@ import com.chagok.chagok.ui.state.MainUiState
 import com.chagok.chagok.ui.state.UiEvent
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /** S-05 화면용. 실제 동작은 MainScreen */
 class MainViewModel(application: Application) : AndroidViewModel(application) {
@@ -21,7 +22,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         onboarding = app.onboarding,
         speak = { text -> app.appState.speak(text) },
         nowMs = { System.currentTimeMillis() },
+        serverToday = app.dailyProgress.progress,
     )
+
+    init {
+        // S-05에 올 때마다 서버 숫자를 새로 (S-07에서 돌아올 때 포함)
+        viewModelScope.launch { app.dailyProgress.refresh() }
+    }
 
     val state: StateFlow<MainUiState> = screen.state
     val events: SharedFlow<UiEvent> = screen.events
