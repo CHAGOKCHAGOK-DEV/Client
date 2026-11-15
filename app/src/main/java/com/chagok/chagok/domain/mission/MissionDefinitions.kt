@@ -48,7 +48,7 @@ data class MissionDefinition(
 
 /** 세 연령대 대본을 한 번에 */
 private fun scripts(a56: AgeScript, a78: AgeScript, a9: AgeScript) =
-    mapOf(AgeGroup.AGE_5_6 to a56, AgeGroup.AGE_7_8 to a78, AgeGroup.AGE_9P to a9)
+    mapOf(AgeGroup.AGE_5_6 to a56, AgeGroup.AGE_7_8 to a78, AgeGroup.AGE_9_PLUS to a9)
 
 object MissionDefinitions {
 
@@ -155,7 +155,7 @@ object MissionDefinitions {
     )
 
     /** F-06 빠름 기준 속도 */
-    fun speedThreshold(age: AgeGroup?): Float = if (age == AgeGroup.AGE_9P) 50f else 60f
+    fun speedThreshold(age: AgeGroup?): Float = if (age == AgeGroup.AGE_9_PLUS) 50f else 60f
 
     // ---------------- F-07 신호 대기 ----------------
     // 주행 중 멈춘 뒤 10초. 정차 중에 묻고, 출발하면 버림. 5~6세 멈춰 / 7~8세 아무 말 / 9세+ 초록

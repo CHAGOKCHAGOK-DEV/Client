@@ -25,7 +25,8 @@ class MissionPackRepository(context: Context, private val api: ChagokApi) {
     suspend fun sync(): Result<MissionPackResponse> =
         apiCall { api.currentMissionPack(PACK_CODE, SUPPORTED_SCHEMA_VERSION) }
             .onSuccess { pack ->
-                if (pack.version > cachedVersion) {
+                // 버전이 올랐거나, 예전 스키마 팩이 저장돼 있으면 바꾼다
+                if (pack.version > cachedVersion || cached()?.schemaVersion != pack.schemaVersion) {
                     prefs.edit()
                         .putInt(KEY_VERSION, pack.version)
                         .putString(KEY_JSON, ApiClient.json.encodeToString(pack))
@@ -34,9 +35,9 @@ class MissionPackRepository(context: Context, private val api: ChagokApi) {
             }
 
     companion object {
-        /** 🟡 TODO: 백엔드에서 받은 값으로 교체 */
         const val PACK_CODE = "DEFAULT"
-        const val SUPPORTED_SCHEMA_VERSION = 1
+        /** 3 = 13개 미션 팩 (BLINK … WAIT_BET). 1은 예전 4개 미션 팩 */
+        const val SUPPORTED_SCHEMA_VERSION = 3
 
         private const val PREFS = "chagok_mission_pack"
         private const val KEY_VERSION = "version"

@@ -143,7 +143,7 @@ class MissionEngineTest {
             speech = speech,
             store = store,
             nowMs = { testScheduler.currentTime },
-            ageGroup = { AgeGroup.AGE_9P },
+            ageGroup = { AgeGroup.AGE_9_PLUS },
         )
         advanceTimeBy(100)
         blink.emit(com.chagok.chagok.domain.driving.BlinkEvent.Ended(TurnSignal.RIGHT, testScheduler.currentTime))
@@ -170,12 +170,12 @@ class MissionEngineTest {
             speech = speech,
             store = store,
             nowMs = { testScheduler.currentTime },
-            ageGroup = { AgeGroup.AGE_9P },
+            ageGroup = { AgeGroup.AGE_9_PLUS },
         )
         wiper.value = true
         advanceTimeBy(4_000)
 
-        assertEquals(MissionDefinitions.WIPER.script(AgeGroup.AGE_9P).question, speech.spoken.first())
+        assertEquals(MissionDefinitions.WIPER.script(AgeGroup.AGE_9_PLUS).question, speech.spoken.first())
         assertEquals(true, store.results.first().single().correct)
     }
 
@@ -272,7 +272,7 @@ class MissionEngineTest {
     @Test
     fun `F-06 속도가 30초 일정하면 묻고, 9세 이상 50km 기준`() = runTest {
         val env = Env(speech = FakeSpeechPort(nextAnswer = Answer.OPTION_A))
-        engine(env, setOf(MissionCode.SPEED_GUESS), age = AgeGroup.AGE_9P)
+        engine(env, setOf(MissionCode.SPEED_GUESS), age = AgeGroup.AGE_9_PLUS)
         repeat(70) { env.speed.emit(72f); advanceTimeBy(500) }
         val r = env.store.results.first().first()
         assertEquals(MissionCode.SPEED_GUESS, r.code)
