@@ -118,7 +118,7 @@ class MissionEngine(
                 } else {
                     val since = wiperOnSinceMs
                     wiperOnSinceMs = null
-                    if (since != null && now - since >= MissionDefinitions.RAIN_STOP_MIN_WIPER_MS) {
+                    if (since != null && now - since >= MissionDefinitions.rainStopMinWiperMs()) {
                         offer(MissionDefinitions.rainStopCandidate(now, ageGroup()))
                     }
                 }
@@ -154,8 +154,8 @@ class MissionEngine(
         }
 
         val dist = info.distToTurnM
-        if (dist == null || dist > 500) { nextTurnArmed = true; return }   // 다음 회전을 위해 재무장
-        if (nextTurnArmed && dist >= 300) {
+        if (dist == null || dist > MissionDefinitions.nextTurnMaxDistM()) { nextTurnArmed = true; return }   // 다음 회전을 위해 재무장
+        if (nextTurnArmed && dist >= MissionDefinitions.nextTurnMinDistM()) {
             MissionDefinitions.nextTurnCandidate(nowMs(), info.nextTurnDir, ageGroup())?.let {
                 nextTurnArmed = false
                 offer(it)
@@ -189,11 +189,11 @@ class MissionEngine(
                 }
             }
             val stoppedFor = now - start
-            if (!waitBetOffered && stoppedFor >= MissionDefinitions.WAIT_BET_AFTER_MS) {
+            if (!waitBetOffered && stoppedFor >= MissionDefinitions.waitBetAfterMs()) {
                 waitBetOffered = true
                 offer(MissionDefinitions.waitBetCandidate(now, start, age))
             }
-            if (!signalWaitOffered && stoppedFor >= MissionDefinitions.SIGNAL_WAIT_AFTER_MS) {
+            if (!signalWaitOffered && stoppedFor >= MissionDefinitions.signalWaitAfterMs()) {
                 signalWaitOffered = true
                 offer(MissionDefinitions.signalWaitCandidate(now, age))
             }
@@ -208,9 +208,15 @@ class MissionEngine(
                     offerThrottled(MissionDefinitions.speedGuessCandidate(now, v, age), now)
                 }
             }
-            speedChange(now)?.let { diff ->
-                if (canOfferAgain(MissionCode.SPEED_CHANGE, now)) {
-                    MissionDefinitions.speedChangeCandidate(now, diff, age)?.let { offerThrottled(it, now) }
+            speedChange(now, MissionDefinitions.speedChangeWindowMs())?.let { diff ->
+                if (canOfferAgain(MissionCode.SPEED_CHANGE, now) &&
+                    kotlin.math.abs(diff) >= MissionDefinitions.speedChangeMinKmh()
+                ) {
+                    // 정답은 연령대별 비교 시간으로 (9세+ "1분 전보다"). 그 기록이 없으면 트리거 값
+                    val compareMs = MissionDefinitions.speedChangeComparisonMs(age)
+                    val answerDiff = if (compareMs == MissionDefinitions.speedChangeWindowMs()) diff
+                    else speedChange(now, compareMs) ?: diff
+                    MissionDefinitions.speedChangeCandidate(now, answerDiff, age)?.let { offerThrottled(it, now) }
                 }
             }
         }
@@ -218,22 +224,23 @@ class MissionEngine(
 
     /** 최근 30초 동안 속도가 일정하면 그 평균 */
     private fun steadySpeed(now: Long): Float? {
-        val recent = speedSamples.filter { now - it.first <= MissionDefinitions.SPEED_STEADY_MS }
+        val steadyMs = MissionDefinitions.speedSteadyMs()
+        val recent = speedSamples.filter { now - it.first <= steadyMs }
         // 30초치 기록이 쌓였을 때만 (가장 오래된 기록이 30초 가까이 됐는가)
-        if (recent.isEmpty() || now - recent.first().first < MissionDefinitions.SPEED_STEADY_MS - SPEED_SLACK_MS) return null
+        if (recent.isEmpty() || now - recent.first().first < steadyMs - SPEED_SLACK_MS) return null
         val max = recent.maxOf { it.second }
         val min = recent.minOf { it.second }
-        if (max - min > MissionDefinitions.SPEED_STEADY_RANGE_KMH) return null
+        if (max - min > MissionDefinitions.speedSteadyRangeKmh()) return null
         val avg = recent.map { it.second }.average().toFloat()
-        return avg.takeIf { it >= MissionDefinitions.SPEED_GUESS_MIN_KMH }
+        return avg.takeIf { it >= MissionDefinitions.speedGuessMinKmh() }
     }
 
-    /** 20초 전 속도와 지금 속도의 차이 (+ 빨라짐). 20초 전 기록이 없으면 null */
-    private fun speedChange(now: Long): Float? {
+    /** windowMs 전 속도와 지금 속도의 차이 (+ 빨라짐). 그때 기록이 없으면 null */
+    private fun speedChange(now: Long, windowMs: Long): Float? {
         val current = speedSamples.lastOrNull()?.second ?: return null
-        val before = speedSamples.lastOrNull { now - it.first >= MissionDefinitions.SPEED_CHANGE_WINDOW_MS }
+        val before = speedSamples.lastOrNull { now - it.first >= windowMs }
             ?: return null
-        if (now - before.first > MissionDefinitions.SPEED_CHANGE_WINDOW_MS + SPEED_SLACK_MS) return null
+        if (now - before.first > windowMs + SPEED_SLACK_MS) return null
         return current - before.second
     }
 
@@ -250,6 +257,7 @@ class MissionEngine(
     /** 새 후보 등록. 중복이면 무시, 기존 대기 후보는 EXPIRED로 교체 (F-09-4). 받았으면 true */
     private fun offer(c: MissionCandidate): Boolean {
         if (c.code !in missions) return false
+        if (!MissionDefinitions.isEnabled(c.code)) return false        // 서버 미션팩에 없는 미션
         if (!enabled()) return false
         if (resting) return false
         if (!isSupported(c.code)) return false
@@ -436,7 +444,7 @@ class MissionEngine(
         _current.value = null
         _state.value = MissionState.HOLD
         val endsAtStart = tripEnds.value
-        val departed = withTimeoutOrNull(MissionDefinitions.WAIT_BET_GIVE_UP_MS) {
+        val departed = withTimeoutOrNull(MissionDefinitions.waitBetGiveUpMs()) {
             combine(driveState, tripEnds) { d, e -> d to e }
                 .first { (d, e) -> d != DriveState.STOPPED || e != endsAtStart }
                 .let { (d, e) -> d == DriveState.DRIVING && e == endsAtStart }
@@ -509,7 +517,7 @@ class MissionEngine(
         /** 🟡 인식 실패가 이어졌을 때 멘트. 대본 문서에 문구가 없어 임시 */
         const val REST_MESSAGE = "부기장님, 잠깐 쉬어요. 다음에 또 같이 해요!"
 
-        private const val SPEED_KEEP_MS = 70_000L       // 속도 기록 보관
+        private const val SPEED_KEEP_MS = 70_000L       // 속도 기록 보관 (9세+ F-11 1분 전 비교 포함)
         private const val SPEED_SLACK_MS = 1_500L       // 속도 수신 간격 여유
         private const val SPEED_REOFFER_MS = 60_000L    // 속도 미션 후보를 다시 낼 수 있는 간격
 

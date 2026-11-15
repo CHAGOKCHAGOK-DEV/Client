@@ -15,6 +15,8 @@ import com.chagok.chagok.data.remote.AgreementRepository
 import com.chagok.chagok.data.remote.CopilotRepository
 import com.chagok.chagok.data.remote.copilotApi
 import com.chagok.chagok.data.remote.MissionPackRepository
+import com.chagok.chagok.data.remote.MissionPackMapper
+import com.chagok.chagok.domain.mission.MissionDefinitions
 import com.chagok.chagok.data.remote.PendingSyncStore
 import com.chagok.chagok.data.remote.ServerSync
 import com.chagok.chagok.data.remote.NetworkMonitor
@@ -78,7 +80,12 @@ class ChagokApp : Application() {
     val api: ChagokApi by lazy { ApiClient.create(this, installationStore) }
     val installations: InstallationRepository by lazy { InstallationRepository(api, installationStore) }
     val pendingSync: PendingSyncStore by lazy { PendingSyncStore(this) }
-    val missionPacks: MissionPackRepository by lazy { MissionPackRepository(this, api) }
+    val missionPacks: MissionPackRepository by lazy {
+        MissionPackRepository(this, api) { pack ->
+            val m = MissionPackMapper.map(pack)
+            MissionDefinitions.applyPack(m.definitions, m.codes)
+        }
+    }
     val agreements: AgreementRepository by lazy { AgreementRepository(api, installations, pendingSync, onboarding) }
     val copilots: CopilotRepository by lazy {
         CopilotRepository(api.copilotApi(), { installations.ensureRegistered() }, pendingSync, onboarding, onboarding::saveProfile)

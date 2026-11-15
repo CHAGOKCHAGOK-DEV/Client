@@ -8,15 +8,24 @@ import kotlinx.serialization.encodeToString
  * S-01 3/3 미션팩. 서버 버전이 더 높으면 앱에 저장해 둔다.
  * 실패하면 저장된 팩(없으면 앱 내장팩)을 쓴다.
  */
-class MissionPackRepository(context: Context, private val api: ChagokApi) {
+class MissionPackRepository(
+    context: Context,
+    private val api: ChagokApi,
+    /** 쓸 팩이 정해질 때마다 (저장된 팩 읽음, 서버에서 새로 받음). 미션 엔진에 적용한다 */
+    private val onPack: (MissionPackResponse) -> Unit = {},
+) {
 
     private val prefs = context.applicationContext
         .getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    init {
+        usable()?.let(onPack)     // 앱 시작: 서버를 못 읽어도 지난번 팩으로
+    }
+
     /** 저장된 미션팩 버전 (없으면 0) */
     val cachedVersion: Int get() = prefs.getInt(KEY_VERSION, 0)
 
-    /** 저장된 미션팩. TODO: 미션 엔진(MissionDefinitions)이 이걸 쓰도록 연결 */
+    /** 저장된 미션팩 (주행 업로드의 팩 코드·버전, 미션 엔진 설정) */
     fun cached(): MissionPackResponse? =
         prefs.getString(KEY_JSON, null)?.let {
             runCatching { ApiClient.json.decodeFromString<MissionPackResponse>(it) }.getOrNull()
@@ -32,7 +41,12 @@ class MissionPackRepository(context: Context, private val api: ChagokApi) {
                         .putString(KEY_JSON, ApiClient.json.encodeToString(pack))
                         .apply()
                 }
+                usable()?.let(onPack)
             }
+
+    /** 미션 엔진에 적용할 팩. 예전 스키마(4개 미션) 팩이면 null → 앱 기본값으로 13개 다 켠다 */
+    private fun usable(): MissionPackResponse? =
+        cached()?.takeIf { it.schemaVersion == SUPPORTED_SCHEMA_VERSION }
 
     companion object {
         const val PACK_CODE = "DEFAULT"
