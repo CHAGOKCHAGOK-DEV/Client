@@ -1,6 +1,7 @@
 package com.chagok.chagok.data.remote
 
 import com.chagok.chagok.data.repository.PrefsOnboardingRepository
+import com.chagok.chagok.model.AgeGroup
 
 /**
  * S-04 부기장 프로필 서버 저장. 로컬에 저장된 프로필을 서버에 반영한다.
@@ -26,7 +27,7 @@ class CopilotRepository(
 
         val body = CopilotRequest(
             nickname = profile.nickname,
-            ageGroup = serverAgeGroup(profile.ageGroup),
+            ageGroup = AgeGroup.fromCode(profile.ageGroup)?.code ?: profile.ageGroup,
             missionIntensity = SERVER_INTENSITY,
         )
 
@@ -53,12 +54,6 @@ class CopilotRepository(
         if (pending.copilot) sync() else Result.success(Unit)
 
     private companion object {
-        /** 🟡 앱(설계서) AGE_9P ↔ 서버 AGE_9_PLUS. 코드 통일되면 삭제 */
-        fun serverAgeGroup(code: String): String = when (code) {
-            "AGE_9P" -> "AGE_9_PLUS"
-            else -> code
-        }
-
         /** 미션 강도 선택은 없앴다 (간격 3분 고정). 서버 필드가 남아 있어 NORMAL로 보낸다 */
         const val SERVER_INTENSITY = "NORMAL"
     }

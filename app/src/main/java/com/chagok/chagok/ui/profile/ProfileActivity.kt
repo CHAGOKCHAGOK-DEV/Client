@@ -62,7 +62,7 @@ class ProfileActivity : AppCompatActivity() {
         chips = mapOf(
             AgeGroup.AGE_5_6 to findViewById(R.id.chip_age_5_6),
             AgeGroup.AGE_7_8 to findViewById(R.id.chip_age_7_8),
-            AgeGroup.AGE_9P to findViewById(R.id.chip_age_9p),
+            AgeGroup.AGE_9_PLUS to findViewById(R.id.chip_age_9p),
         )
 
         findViewById<TextView>(R.id.tv_title).text =

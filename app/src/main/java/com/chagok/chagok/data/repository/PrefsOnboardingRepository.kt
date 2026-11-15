@@ -1,6 +1,7 @@
 package com.chagok.chagok.data.repository
 
 import android.content.Context
+import com.chagok.chagok.model.AgeGroup
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -76,7 +77,9 @@ class PrefsOnboardingRepository(context: Context) : OnboardingRepository {
 
     private fun readProfile(): CopilotProfile? {
         val name = prefs.getString(KEY_NICKNAME, null)?.takeIf { it.isNotBlank() } ?: return null
-        val age = prefs.getString(KEY_AGE_GROUP, null) ?: return null
+        val stored = prefs.getString(KEY_AGE_GROUP, null) ?: return null
+        val age = AgeGroup.fromCode(stored)?.code ?: stored        // 옛 코드 AGE_9P → AGE_9_PLUS
+        if (age != stored) prefs.edit().putString(KEY_AGE_GROUP, age).apply()
         return CopilotProfile(name, age)
     }
 

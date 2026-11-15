@@ -133,4 +133,14 @@ class TripSyncMapperTest {
         val json = ApiClient.json.encodeToString(TripSyncRequest.serializer(), req)
         assertEquals(req, ApiClient.json.decodeFromString(TripSyncRequest.serializer(), json))
     }
+
+    @Test fun `13개 미션 팩이면 모든 미션 결과가 실린다`() {
+        val all = MissionCode.entries.map { it.name }.toSet()
+        val req = TripSyncMapper.build(
+            trip(), MissionCode.entries.mapIndexed { i, c -> result(id = "r$i", code = c) },
+            packCode = "DEFAULT", packVersion = 4, packMissionCodes = all,
+        )!!
+        assertEquals(MissionCode.entries.size, req.missionResults.size)
+        assertEquals(4, req.missionPackVersion)
+    }
 }

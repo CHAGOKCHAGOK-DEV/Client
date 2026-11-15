@@ -111,7 +111,7 @@ class TripSyncRepository(
 /** 앱 값 → 서버 값. 이름이 서로 다른 건 여기서만 바꾼다 */
 object TripSyncMapper {
 
-    /** 앱 미션 코드 → 서버 미션팩 코드. 🟡 서버 팩에 13개 미션이 생기면 여기서 맞춘다 */
+    /** 앱 미션 코드 → 서버 미션팩 코드. 스키마 3 팩(13개)과 이름이 같다 */
     fun serverCode(code: MissionCode): String = code.name
 
     fun endReason(r: TripEndReason?): String = when (r) {
@@ -130,7 +130,7 @@ object TripSyncMapper {
 
     /**
      * 끝난 주행 → 요청. 끝나지 않은 주행이면 null.
-     * 미션팩에 없는 미션 결과는 서버가 통째로 거절하므로 뺀다 (🟡 서버 팩이 13개가 되면 다 들어간다).
+     * 미션팩에 없는 미션 결과는 서버가 통째로 거절하므로 뺀다 (예전 4개 팩이 저장돼 있을 때).
      * 결과 시각은 주행 시간 안으로 맞춘다 (서버 검증: 결과가 주행 밖이면 거절).
      */
     fun build(
