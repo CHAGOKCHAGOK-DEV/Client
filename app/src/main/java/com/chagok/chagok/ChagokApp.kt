@@ -18,6 +18,7 @@ import com.chagok.chagok.data.remote.PendingSyncStore
 import com.chagok.chagok.data.remote.ServerSync
 import com.chagok.chagok.data.remote.NetworkMonitor
 import com.chagok.chagok.data.remote.TripSyncRepository
+import com.chagok.chagok.data.remote.DailyProgressRepository
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChangedBy
 import kotlinx.coroutines.flow.drop
@@ -57,7 +58,14 @@ class ChagokApp : Application() {
             }
         }
         appScope.launch {
-            network.online.drop(1).filter { it }.collect { tripSync.flush() }
+            network.online.drop(1).filter { it }.collect {
+                tripSync.flush()
+                dailyProgress.refresh()
+            }
+        }
+        // 주행이 서버에 올라가면 오늘의 미션 숫자도 새로
+        appScope.launch {
+            tripSync.synced.drop(1).collect { dailyProgress.refresh() }
         }
     }
 
@@ -74,6 +82,9 @@ class ChagokApp : Application() {
     val copilots: CopilotRepository by lazy { CopilotRepository(api, installations, pendingSync, onboarding) }
     val network: NetworkMonitor by lazy { NetworkMonitor(this, appScope) }
     val tripSync: TripSyncRepository by lazy { TripSyncRepository(this, api, installations, missionPacks) }
+    val dailyProgress: DailyProgressRepository by lazy {
+        DailyProgressRepository(api, installations) { tripSync.synced.value }
+    }
     val serverSync: ServerSync by lazy { ServerSync(appScope, installations, missionPacks, agreements, copilots, tripSync) }
 
     companion object {

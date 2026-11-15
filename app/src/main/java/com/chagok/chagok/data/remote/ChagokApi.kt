@@ -29,6 +29,10 @@ interface ChagokApi {
         @Query("supportedSchemaVersion") supportedSchemaVersion: Int? = null,
     ): ApiResponse<MissionPackResponse>
 
+    /** S05-04 오늘의 미션 현황. date 생략 시 오늘(Asia/Seoul). 서버에 올라간 주행만 센다 */
+    @GET("api/v1/missions/daily-progress")
+    suspend fun dailyProgress(@Query("date") date: String? = null): ApiResponse<DailyProgressResponse>
+
     /** 서버 기준 동의 필요 여부 */
     @GET("api/v1/agreements/status")
     suspend fun agreementStatus(): ApiResponse<AgreementStatusResponse>

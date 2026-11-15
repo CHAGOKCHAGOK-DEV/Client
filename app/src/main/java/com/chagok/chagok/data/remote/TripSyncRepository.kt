@@ -42,6 +42,13 @@ class TripSyncRepository(
      */
     val pending: StateFlow<Set<String>> = _pending.asStateFlow()
 
+    private val _synced = MutableStateFlow<Set<String>>(emptySet())
+    /**
+     * 이번 실행에서 서버에 올라간 주행 id. 오늘 진행(daily-progress)이 서버 숫자에 이미 들어간
+     * 주행을 기기 기록과 두 번 세지 않게 쓴다. 미션 결과 저장소도 실행 동안만 있어서 같이 맞는다
+     */
+    val synced: StateFlow<Set<String>> = _synced.asStateFlow()
+
     /** 주행 종료: 요청을 만들어 저장하고 보내 본다. 미션팩을 아직 못 받았으면 보내지 않는다 */
     suspend fun enqueue(trip: Trip, results: List<MissionResult>) {
         val pack = missionPacks.cached()
@@ -74,13 +81,14 @@ class TripSyncRepository(
             val request = runCatching { ApiClient.json.decodeFromString<TripSyncRequest>(json) }.getOrNull()
             if (request == null) { remaining.remove(tripId); continue }
             apiCall { api.syncTrip(request) }
-                .onSuccess { remaining.remove(tripId) }
+                .onSuccess { remaining.remove(tripId); _synced.value = _synced.value + tripId }
                 .onFailure { e ->
                     when {
                         e is IOException -> Unit                                   // 다음에 다시
                         e is ApiException && e.httpStatus?.let { it in DROP_STATUSES } == true -> {
                             Log.w(TAG, "주행 업로드 거절, 버림: ${e.code} ${e.message}")
                             remaining.remove(tripId)
+                            if (e.httpStatus == 409) _synced.value = _synced.value + tripId   // 서버에 이미 있음
                         }
                         else -> Log.w(TAG, "주행 업로드 실패, 다음에 다시: ${e.message}")   // 401·403(동의)·5xx
                     }

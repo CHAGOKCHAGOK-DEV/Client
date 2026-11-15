@@ -1,5 +1,6 @@
 package com.chagok.chagok.ui.state
 
+import com.chagok.chagok.data.remote.DailyProgress
 import com.chagok.chagok.data.repository.OnboardingRepository
 import com.chagok.chagok.domain.driving.VehicleHealth
 import com.chagok.chagok.domain.mission.MissionDefinitions
@@ -57,6 +58,11 @@ fun MissionCode.title(): String = MissionDefinitions.of(this).name
  * 오늘 진행 = 오늘 날짜(zone 기준)에 시작된 미션 중 DONE(정답·오답 모두) 수.
  * 건너뜀(SKIPPED)·만료(EXPIRED)는 아이가 실제로 한 게 아니라서 세지 않는다.
  *
+ * S05-04 서버 연동 (GET /api/v1/missions/daily-progress):
+ * - 서버 값이 오늘 것이면: 목표 = 서버 goal, 완료 = 서버 participatedCount + 아직 서버에 안 올라간 기기 기록
+ *   (앱을 다시 켜도, 다른 주행 것도 합쳐서 보인다)
+ * - 서버를 못 읽었거나 날짜가 지났으면: 기기 기록만, 목표는 todayGoal
+ *
  * @param homeMissions 목록에 보여 줄 미션과 순서 (피그마 S05_1: 깜빡이 소리 · 다음 회전 · 비 오는 날)
  */
 class MainScreen(
@@ -66,7 +72,8 @@ class MainScreen(
     private val speak: suspend (String) -> Unit,
     private val nowMs: () -> Long,
     private val zone: ZoneId = ZoneId.of("Asia/Seoul"),
-    private val todayGoal: Int = 5,                      // 열린 이슈 #7: 상수
+    private val todayGoal: Int = 5,                      // 서버 값이 없을 때만
+    private val serverToday: Flow<DailyProgress?> = flowOf(null),
     private val homeMissions: List<MissionCode> = listOf(MissionCode.BLINK, MissionCode.NEXT_TURN, MissionCode.WIPER),
 ) {
     private val _events = MutableSharedFlow<UiEvent>(extraBufferCapacity = 8)
@@ -99,21 +106,32 @@ class MainScreen(
         }
     }
 
+    /** (완료 수, 목표) */
+    private val todayCount: Flow<Pair<Int, Int>> = combine(todayDone, serverToday) { done, server ->
+        val today = Instant.ofEpochMilli(nowMs()).atZone(zone).toLocalDate()
+        if (server == null || server.date != today) {
+            done.size to todayGoal
+        } else {
+            val notYetOnServer = done.count { it.tripId == null || it.tripId !in server.countedTrips }
+            (server.done + notYetOnServer) to server.goal
+        }
+    }
+
     val state: StateFlow<MainUiState> = combine(
         combine(chip, onboarding.profile, mascot) { c, p, m -> Triple(c, p, m) },
-        todayDone,
+        combine(todayDone, todayCount) { d, c -> d to c },
         app.capability,
         app.ready,
         app.vehicleHealth,
-    ) { (c, p, m), done, cap, ready, health ->
+    ) { (c, p, m), (done, count), cap, ready, health ->
         val doneCodes = done.map { it.code }.toSet()
         MainUiState(
             statusChip = c,
             profileChip = p?.let { "${it.nickname} 부기장 · ${ageLabel(it.ageGroup)}" },
             profileInitial = p?.nickname?.take(1),
             mascotMessage = m,
-            todayDone = done.size,
-            todayGoal = todayGoal,
+            todayDone = count.first,
+            todayGoal = count.second,
             missions = homeMissions.map { code ->
                 val status = when {
                     !cap.supports(code) -> MissionRowStatus.UNSUPPORTED

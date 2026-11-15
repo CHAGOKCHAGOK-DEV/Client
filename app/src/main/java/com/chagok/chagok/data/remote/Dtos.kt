@@ -118,3 +118,19 @@ data class TripSyncResponse(
     val syncedAt: String? = null,
     val missionResultCount: Int = 0,
 )
+
+// ---------- S-05 오늘의 미션 ----------
+
+@Serializable
+data class DailyProgressResponse(
+    val date: String,                    // YYYY-MM-DD (Asia/Seoul)
+    val timeZone: String? = null,
+    val goal: Int,
+    val contributingTripCount: Int = 0,
+    val missionResultCount: Int = 0,
+    val participatedCount: Int = 0,      // 아이가 대답한 미션 (정답·오답). 앱의 "완료"와 같다
+    val completedCount: Int = 0,         // 대답 없이 넘어간 것까지
+    val expiredCount: Int = 0,
+    val cancelledCount: Int = 0,
+    val correctCount: Int = 0,
+)
