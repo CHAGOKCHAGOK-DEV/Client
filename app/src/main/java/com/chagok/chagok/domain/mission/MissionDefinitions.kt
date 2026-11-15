@@ -483,7 +483,11 @@ object MissionDefinitions {
     fun nearDestCandidate(nowMs: Long, age: AgeGroup? = null) = candidate(of(MissionCode.NEAR_DEST), nowMs, age, Answer.ANY)
 
     /** F-13 발표 문장 (발표 + 마무리). 오늘 한 미션이 없으면 null */
-    fun todayReport(age: AgeGroup?, done: Int, correct: Int, best: MissionCode?): String? {
+    fun todayReport(age: AgeGroup?, done: Int, correct: Int, best: MissionCode?): String? =
+        todayReportParts(age, done, correct, best)?.let { (report, ending) -> "$report $ending" }
+
+    /** F-13 (발표 문장, 마무리 멘트). 화면이 둘을 나눠 보여 준다 (S06F_13 말하는 중 → 결과) */
+    fun todayReportParts(age: AgeGroup?, done: Int, correct: Int, best: MissionCode?): Pair<String, String>? {
         if (done <= 0) return null
         val s = of(MissionCode.TODAY_REPORT).script(age)
         val values = mapOf(
@@ -491,7 +495,7 @@ object MissionDefinitions {
             "m" to correct.toString(),
             "best" to (best?.let { of(it).name } ?: of(MissionCode.BLINK).name),
         )
-        return fill(s.question, values) + " " + s.correctMessage
+        return fill(s.question, values) to s.correctMessage
     }
 
     // ---------------- 미션팩 숫자 설정 (없으면 앱 기본값) ----------------

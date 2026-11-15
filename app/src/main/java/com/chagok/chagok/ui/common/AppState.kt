@@ -130,6 +130,10 @@ class AppState(
     val missionState: StateFlow<MissionState?> = engine.state
     val missionCurrent: StateFlow<MissionCode?> = engine.current
     val missionJudged: StateFlow<JudgedMission?> = engine.judged
+    /** F-13 오늘의 리포트를 말하는 중 */
+    val missionReporting: StateFlow<Boolean> = engine.reporting
+    /** F-13이 끝난 주행 id (주차로 끝난 주행은 이때까지 S-06) */
+    val reportDoneTripId: StateFlow<String?> = engine.reportDoneTripId
 
     // ---- 주행 기록 ----
     init {
@@ -141,7 +145,7 @@ class AppState(
             nowMs = nowMs,
             longStopMs = longStopMs,
             onEnded = { ended ->
-                engine.onTripEnded(ended.endReason)     // 주차로 끝나면 F-13 오늘의 리포트
+                engine.onTripEnded(ended.endReason, ended.id)     // 주차로 끝나면 F-13 오늘의 리포트
                 _ready.value = false        // 주행이 끝나면 출발 버튼은 다시 꺼진 상태로
             },
         )

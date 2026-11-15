@@ -23,13 +23,14 @@ class TestApp(
     val store: InMemoryMissionResultStore = InMemoryMissionResultStore(),
     val permission: FakePermissionChecker = FakePermissionChecker(),
     val onboarding: InMemoryOnboardingRepository = InMemoryOnboardingRepository(),
+    missions: Set<MissionCode> = BASIC_MISSIONS,
 ) {
     val app = AppState(
         scope = scope.backgroundScope,
         vehicle = vehicle, navi = navi, speech = speech, store = store,
         permissionChecker = permission,
         nowMs = { scope.testScheduler.currentTime },
-        missions = BASIC_MISSIONS,
+        missions = missions,
     )
 
     fun onboarded() {
